@@ -1,0 +1,28 @@
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+html {
+    // rem 初始值
+    font-size: 100px;
+}
+
+body {
+    background-color: #fff;
+    // 默认字体设置
+    font-size: 0.14rem;
+    color: #000;
+}
+
+#app {
+    width: 100%;
+    margin: 0 auto;
+    background-color: #fff;
+}
+
+
+
+

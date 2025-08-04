@@ -1,0 +1,52 @@
+{
+    "name": "basic-framework",
+    "author": {
+        "name": "ZhaoYu"
+    },
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "start": "vite --mode dev",
+        "dev": "vite --mode dev",
+        "test": "vite --mode test",
+        "pro": "vite --mode pro",
+        "build:test": "vite build --mode test",
+        "build:pro": "vite build --mode pro",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@vitejs/plugin-vue-jsx": "^3.1.0",
+        "artplayer": "^5.1.6",
+        "axios": "^1.5.0",
+        "browser-md5-file": "^1.1.1",
+        "crypto-js": "^4.1.1",
+        "dayjs": "^1.11.10",
+        "element-plus": "^2.9.6",
+        "hls.js": "^1.5.13",
+        "html2canvas": "^1.4.1",
+        "i": "^0.3.7",
+        "npm": "^10.2.3",
+        "pinia": "^2.1.6",
+        "qrcode-decoder": "^0.3.3",
+        "qrcode.vue": "^3.4.1",
+        "swiper": "^10.3.1",
+        "vant": "^4.7.0",
+        "vue": "^3.3.4",
+        "vue-aliplayer-v3": "^1.0.3",
+        "vue-router": "^4.2.4",
+        "xgplayer": "^3.0.9",
+        "xgplayer-hls": "^3.0.9"
+    },
+    "devDependencies": {
+        "@vant/auto-import-resolver": "^1.0.1",
+        "@vitejs/plugin-vue": "^4.2.3",
+        "sass": "^1.64.1",
+        "unplugin-auto-import": "^0.16.6",
+        "unplugin-vue-components": "^0.25.2",
+        "vconsole": "^3.15.1",
+        "versions": "^11.0.2",
+        "vite": "^4.4.9",
+        "vite-plugin-html": "^3.2.0"
+    }
+}
