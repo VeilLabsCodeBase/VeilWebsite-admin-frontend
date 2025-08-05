@@ -85,9 +85,6 @@ const getTableData = async (page) => {
     })
     if (res) {
         tableData.value = res
-        formValue.userId=''
-        formValue.email=''
-        formValue.username=''
     }
 }
 getTableData(currentPage.value)
