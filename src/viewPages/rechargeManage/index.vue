@@ -1,5 +1,21 @@
 <template>
     <div class="batchUpload">
+        <div class="filter">
+            <el-form :inline="true" :model="formValue" class="demo-form-inline">
+                <el-form-item label="用户id">
+                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
+                </el-form-item>
+                <el-form-item label="用户名">
+                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                </el-form-item>
+                <el-form-item label="交易哈希">
+                    <el-input v-model="formValue.transactionHash" placeholder="请输入交易哈希" clearable />
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">搜索</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
         <div class="uploadList">
             <div class="taskUploadList">
                 <div class="title">
@@ -36,9 +52,6 @@
         </div>
         <el-dialog v-model="dialogVisible" title="修改状态" width="800" :before-close="beforeClose" destroy-on-close>
             <div class="diaContent">
-                <!-- <el-form-item label="帖子标题">
-                    <el-input v-model="formValue.name" placeholder="请输入帖子标题" clearable />
-                </el-form-item> -->
                 <el-radio-group v-model="radio1">
                     <el-radio value="PENDING" size="large">待处理</el-radio>
                     <el-radio value="COMPLETED" size="large">已完成</el-radio>
@@ -62,29 +75,33 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive } from 'vue'
+const formValue = reactive({
+    userId: "",
+    transactionHash: "",
+    username: "",
+})
 const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
 const showDialog = (index, row) => {
     dialogVisible.value = true;
-    console.log(row);
     rowData.value = row
     radio1.value = rowData.value?.status
 }
-
-
 const _Api = inject('$api')
 const pageSize = ref(10)
 const currentPage = ref(1)
-//获取视频标签列表
 const getTableData = async (page) => {
     const res = await _Api._depositList({
         pageNo: page,
-        pageSize: pageSize.value
+        pageSize: pageSize.value,
+        ...formValue
     })
     if (res) {
         tableData.value = res
-
+        formValue.userId=''  
+        formValue.username=''  
+        formValue.transactionHash=''  
     }
 }
 getTableData(currentPage.value)
@@ -99,25 +116,7 @@ const handleCurrentChange = (val) => {
 
 //关闭前回调
 const beforeClose = () => {
-
     dialogVisible.value = false
-    // showFileList.value = true
-    // fileName.value = ""
-    // img_file.value = ""
-    // video_file.value = ""
-    // formValue.name = ""
-    // formValue.video = ""
-    // formValue.img = ""
-    // formValue.tag_ids = ""
-    // formValue.img_ext = ""
-    // dialogImageUrl.value = ""
-    // checkedNum.value = 0
-    // tagsData.value.forEach((item, index) => {
-    //     item.items.forEach((it, ind) => {
-    //         it.checked = false;
-    //     })
-    // })
-
 }
 const statius = reactive({
     'PENDING': "待处理",
@@ -135,6 +134,10 @@ const handConfirm = async () => {
         ElMessage('修改成功')
         getTableData(currentPage.value)
     }
+}
+const onSearch = () => {
+    currentPage.value = 1
+    getTableData(currentPage.value)
 }
 </script>
 <style lang="scss" scoped>
