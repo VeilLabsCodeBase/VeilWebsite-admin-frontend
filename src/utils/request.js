@@ -36,9 +36,10 @@ export const _Request = async (url, param, method = 'post') => {
         } else if (res?.code == 401) {
             router.push('/login')
         } else {
-            _ErrorMethod(res?.error)
+            _ErrorMethod(res?.message)
         }
     } catch (error) {
+        console.log(error);
         _ErrorMethod(error?.response?.data?.message)
     }
 }

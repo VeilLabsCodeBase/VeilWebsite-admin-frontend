@@ -16,23 +16,9 @@
             <div class="aside">
                 <el-menu background-color="rgb(121.3, 187.1, 255)" text-color="#000" active-text-color="#ffd04b"
                     unique-opened  router  class="el-menu-vertical-demo">
-                    <!-- <el-sub-menu index="1">
-                        <template #title>
-                            用户管理
-                        </template>
-                        <router-link to="/mediaManage/longVideo"><el-menu-item index="1-1">长视频列表</el-menu-item></router-link>
-                        <router-link to="/mediaManage/shortVideo"><el-menu-item index="1-2">短视频列表</el-menu-item></router-link>
-                        </el-sub-menu> -->
-
-                    <!-- <el-sub-menu index="2">
-                        <template #title>
-                            充值管理
-                        </template>
-                        <router-link to="/uploadManage/batchUpload"><el-menu-item
-                                index="2-1">批量上传媒体</el-menu-item></router-link>
-                    </el-sub-menu> -->
                     <el-menu-item index="1" route="/">用户管理</el-menu-item>
                     <el-menu-item index="2" route="/rechargeManage">充值管理</el-menu-item>
+                    <el-menu-item index="3" route="/withdrawCashManage">提现管理</el-menu-item>
                 </el-menu>
             </div>
             <div class="main"><router-view></router-view></div>

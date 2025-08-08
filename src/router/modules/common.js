@@ -9,8 +9,13 @@ export default [
             },
             {
                 path: '/rechargeManage',
-                name: 'longVideo',
+                name: 'rechargeManage',
                 component: () => import('@/viewPages/rechargeManage/index.vue'),
+            },
+             {
+                path: '/withdrawCashManage',
+                name: 'withdrawCashManage',
+                component: () => import('@/viewPages/withdrawCashManage/index.vue'),
             },
           
         ]
