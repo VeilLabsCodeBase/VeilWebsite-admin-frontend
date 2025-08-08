@@ -144,7 +144,7 @@ const handConfirm = async () => {
     const res = await _Api._WithdrawAudit({
         userWithdrawId: rowData.value.id,
         status: radio1.value,
-        description: reason.value
+        reason: reason.value
     })
     if (res) {
         dialogVisible.value = false;
