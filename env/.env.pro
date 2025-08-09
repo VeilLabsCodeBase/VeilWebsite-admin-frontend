@@ -14,4 +14,4 @@ E_API_BASE_URL = https://www.veillabs.io/
 ##############
 
 # 本地开发环境 接口请求的前缀
-E_API_PREFIX =''
+E_API_PREFIX = https://www.veillabs.io/

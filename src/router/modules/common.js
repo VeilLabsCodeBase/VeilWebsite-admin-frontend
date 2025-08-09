@@ -17,7 +17,11 @@ export default [
                 name: 'withdrawCashManage',
                 component: () => import('@/viewPages/withdrawCashManage/index.vue'),
             },
-          
+            {
+                path: '/sse',
+                name: 'sse',
+                component: () => import('@/viewPages/sse/index.vue'),
+            },
         ]
     },
     {

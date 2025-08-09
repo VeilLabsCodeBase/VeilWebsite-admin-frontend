@@ -5,7 +5,7 @@ import router from '@/router'
 import { _LocalCache } from "@/utils/cache";
 import { TOKEN } from '@/utils/constants'
 const service = axios.create({
-    baseURL: IS_DEV ? API_PREFIX : '/',
+    baseURL: IS_DEV ? API_PREFIX : API_PREFIX,
     timeout: 30 * 1000,
     headers: { 'Content-Type': 'application/json' },
 })
