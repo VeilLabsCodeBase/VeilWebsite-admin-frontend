@@ -89,7 +89,7 @@ const showDialog = (index, row) => {
     radio1.value = rowData.value?.status
 }
 const _Api = inject('$api')
-const pageSize = ref(10)
+const pageSize = ref(8)
 const currentPage = ref(1)
 const getTableData = async (page) => {
     const res = await _Api._depositList({
@@ -139,9 +139,7 @@ const onSearch = () => {
 </script>
 <style lang="scss" scoped>
 .batchUpload {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    padding-bottom: 40px;
 
     .add {
         height: 0.32rem;

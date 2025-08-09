@@ -34,7 +34,7 @@ export class WebSource {
             // console.log('监听用户提现')
             // console.log(e.data)
             this.withdrawData.push(e.data) 
-            console.log(this.withdrawData);
+            console.log('提现',this.withdrawData);
             callback(this.withdrawData)
         })
     }
@@ -43,7 +43,7 @@ export class WebSource {
         this.eventSource.addEventListener('new-deposit', e => {
             // console.log('监听用户充值')
             this.despositData.push(e.data) 
-            console.log(this.despositData);
+            console.log('充值',this.despositData);
            callback(this.despositData)
         })
     }

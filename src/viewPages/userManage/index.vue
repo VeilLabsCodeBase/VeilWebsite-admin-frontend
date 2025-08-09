@@ -75,7 +75,7 @@ const formValue = reactive({
     username: "",
 })
 const _Api = inject('$api')
-const pageSize = ref(15)
+const pageSize = ref(8)
 const currentPage = ref(1)
 const getTableData = async (page) => {
     const res = await _Api._userList({
@@ -104,9 +104,7 @@ const onSearch = () => {
 </script>
 <style lang="scss" scoped>
 .batchUpload {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    padding-bottom: 40px;
 
     .add {
         height: 0.32rem;

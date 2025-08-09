@@ -130,6 +130,7 @@ const loginIn = () => {
             width: 90%;
             height: 100%;
             padding: 0.2rem 0.15rem;
+            overflow-y: auto;
         }
     }
 }
