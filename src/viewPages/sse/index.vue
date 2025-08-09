@@ -32,8 +32,16 @@ onMounted(() => {
         messages.value.push(`系统消息: ${e}`);
     };
 
-    // 监听指定事件
+    // 监听用户提现
     eventSource.addEventListener('new-withdraw', (e) => {
+        // messages.value.push(`订单更新: ${e.data}`);
+        // debugger
+        console.log("fsafsafsafsafsafsa");
+        console.log(e.data);
+    });
+
+    // 监听用户充值
+    eventSource.addEventListener('new-deposit', (e) => {
         // messages.value.push(`订单更新: ${e.data}`);
         // debugger
         console.log("fsafsafsafsafsafsa");
