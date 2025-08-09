@@ -19,7 +19,6 @@
                     <el-menu-item index="1" route="/">用户管理</el-menu-item>
                     <el-menu-item index="2" route="/rechargeManage">充值管理</el-menu-item>
                     <el-menu-item index="3" route="/withdrawCashManage">提现管理</el-menu-item>
-                    <el-menu-item index="4" route="/sse">sse</el-menu-item>
                 </el-menu>
             </div>
             <div class="main"><router-view></router-view></div>
