@@ -1,4 +1,4 @@
-import { TOKEN } from '@/utils/constants'
+import { API_PREFIX, IS_DEV, TOKEN } from '@/utils/constants'
 import { _LocalCache } from '@/utils/cache.js'
 export class WebSource {
     eventSource = null
@@ -12,7 +12,7 @@ export class WebSource {
             return
         } else {
             this.eventSource = new EventSource(
-                `http://192.168.100.98:8084/api/admin/sse/userWithdrawNotice?token=${this.token}`
+                API_PREFIX+`/api/admin/sse/userWithdrawNotice?token=${this.token}`
             )
             // 错误处理
             this.eventSource.onerror = err => {
