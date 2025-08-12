@@ -4,8 +4,8 @@ export class WebSource {
     eventSource = null
     token = _LocalCache.Get(TOKEN)
     messages = []
-    withdrawData=[]
-    despositData=[]
+    withdrawData = []
+    despositData = []
     initWebSouce() {
         if (!this.token) {
             console.error('未登录，缺少 token')
@@ -30,22 +30,26 @@ export class WebSource {
     }
     getNewWithdraw(callback) {
         // 监听用户提现
-        this.eventSource.addEventListener('new-withdraw', e => {
-            // console.log('监听用户提现')
-            // console.log(e.data)
-            this.withdrawData.push(e.data) 
-            console.log('提现',this.withdrawData);
-            callback(this.withdrawData)
-        })
+        if (this.eventSource) {
+            this.eventSource.addEventListener('new-withdraw', e => {
+                // console.log('监听用户提现')
+                // console.log(e.data)
+                this.withdrawData.push(e.data)
+                console.log('提现', this.withdrawData)
+                callback(this.withdrawData)
+            })
+        }
     }
     getNewDesposit(callback) {
         // 监听用户充值
-        this.eventSource.addEventListener('new-deposit', e => {
-            // console.log('监听用户充值')
-            this.despositData.push(e.data) 
-            console.log('充值',this.despositData);
-           callback(this.despositData)
-        })
+        if (this.eventSource) {
+            this.eventSource.addEventListener('new-deposit', e => {
+                // console.log('监听用户充值')
+                this.despositData.push(e.data)
+                console.log('充值', this.despositData)
+                callback(this.despositData)
+            })
+        }
     }
     closeWebSource() {
         if (this.eventSource) {
