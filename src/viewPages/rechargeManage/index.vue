@@ -32,7 +32,11 @@
                         <el-table-column prop="amount" label="充值金额" width="100" />
                         <el-table-column prop="currency" label="充值币种" width="100" />
                         <el-table-column prop="transactionHash" label="交易哈希" width="300" />
-                        <el-table-column prop="status" label="状态" width="100" />
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template #default="{ row }">
+                                {{ statius[row.status] }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column prop="updatedAt" label="更新时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="120">
