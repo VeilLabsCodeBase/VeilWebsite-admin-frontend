@@ -51,6 +51,12 @@
                         <el-table-column prop="userModelling.userLevel" label="用户等级" width="200" />
                         <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200" />
                         <el-table-column prop="userModelling.createdAt" label="创建时间" width="200" />
+                        <el-table-column fixed="right" label="Operations" min-width="120">
+                            <template #default="scope">
+                                <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
+                                    size="small">查看经济模型树</el-button>
+                            </template>
+                        </el-table-column>
                     </el-table>
                 </div>
                 <div class="page">
@@ -60,7 +66,66 @@
                 </div>
             </div>
         </div>
+        <el-dialog v-model="dialogVisible" title="查看经济模型树" top="0" width="100%" :before-close="beforeClose"
+            destroy-on-close>
+            <div class="diaContent" v-if="modelTreeData">
+                <vue3-org-chart :data="modelTreeData">
+                    <template #node="{ item, children, open, toggleChildren }">
+                        <div class="contentBox" :class="{ 'active': open, 'passive': !open }">
+                            <div class="item">
+                                <div class="label">用户id：</div>
+                                <div class="value">{{ item.id }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">用户名：</div>
+                                <div class="value">{{ item.username }}</div>
+                            </div>
+                            <div class="item" v-if="item.parentId">
+                                <div class="label">上级id：</div>
+                                <div class="value">{{ item.parentId }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">推荐码：</div>
+                                <div class="value">{{ item.referralCode }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">角色：</div>
+                                <div class="value">{{ item.teamRole }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">用户等级：</div>
+                                <div class="value">{{ item.userLevel }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">直推人数：</div>
+                                <div class="value">{{ item.directReferrals }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">充值金额：</div>
+                                <div class="value">{{ item?.userModelling?.realDepositAmount }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">可提现金额：</div>
+                                <div class="value">{{ item?.userModelling?.withdrawableUsdt }}</div>
+                            </div>
 
+                        </div>
+                        <div class="btnBox">
+                            <button v-if="children.length" @click="toggleChildren"> {{ open ? '-' : '+' }}</button>
+                        </div>
+                        <!-- Node Element / TEMPLATE END -->
+                    </template>
+                </vue3-org-chart>
+            </div>
+            <!-- <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeClose">取消</el-button>
+                    <el-button type="primary" @click="handConfirm">
+                        确定修改
+                    </el-button>
+                </div>
+            </template> -->
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -100,7 +165,40 @@ const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
 }
+const dialogVisible = ref(false)
+//关闭前回调
+const beforeClose = () => {
+    dialogVisible.value = false
+    modelTreeData.value=''
+}
+const handConfirm = async () => {
+    // const res = await _Api._depositUpdate({
+    //     depositId: rowData.value.id,
+    //     status: radio1.value
+    // })
+    // if (res) {
+    //     dialogVisible.value = false;
+    //     ElMessage('修改成功')
+    //     getTableData(currentPage.value)
+    // }
+}
+const showDialog = (index, row) => {
+    dialogVisible.value = true;
+    // rowData.value = row
+    // radio1.value = rowData.value?.status
+    getUserModellingTree(row?.userModelling?.userId)
+}
 
+const modelTreeData = ref('')
+const getUserModellingTree = async (userId) => {
+    const res = await _Api._UserModellingTree({
+        userId: userId,
+    })
+    if (res) {
+        modelTreeData.value = res
+
+    }
+}
 </script>
 <style lang="scss" scoped>
 .batchUpload {
@@ -197,6 +295,82 @@ const onSearch = () => {
             font-size: 0.16rem;
             color: #67C23A;
         }
+    }
+
+    :deep() {
+        .el-dialog {
+            width: 100%;
+            height: 100%;
+        }
+
+        .el-dialog__body {
+            height: 100%;
+        }
+        .el-dialog__headerbtn{
+            font-size:28px;
+            font-weight:bold;
+        }
+        .vue3-org-chart {
+            height: 100%;
+        }
+
+        .vue3-org-chart .vue3-org-chart-container {
+            height: 100%;
+        }
+
+    }
+
+    .diaContent {
+        height: 100%;
+
+        .contentBox {
+            display: flex;
+            align-items: center;
+            width: 500px;
+            height: 200px;
+            flex-wrap: wrap;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+
+            .item {
+                display: flex;
+                align-items: center;
+                width: 33.33%;
+
+                .label {
+                    flex-shrink: 0;
+                }
+
+                .value {
+                    flex-shrink: 0;
+                }
+            }
+        }
+        .btnBox{
+            display:flex;
+            justify-content: center;
+            button{
+                width:30px;
+                height:30px;
+                font-size:36px;
+                display:flex;
+                justify-content: center;
+                align-items: center;
+                border:1px solid #ccc;
+                line-height: 28px;
+                text-align: center;
+            }
+        }
+    }
+
+    .contentBox.active {
+        border-color: rgb(165 180 252);
+        background-color: rgb(224 231 255);
+    }
+
+    .contentBox.passive {
+        background-color: rgb(248 250 252)
     }
 }
 </style>

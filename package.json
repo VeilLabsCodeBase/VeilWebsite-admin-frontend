@@ -35,6 +35,7 @@
         "vue": "^3.3.4",
         "vue-aliplayer-v3": "^1.0.3",
         "vue-router": "^4.2.4",
+        "vue3-org-chart": "^0.2.5",
         "xgplayer": "^3.0.9",
         "xgplayer-hls": "^3.0.9"
     },

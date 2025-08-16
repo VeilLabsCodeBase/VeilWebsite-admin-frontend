@@ -7,6 +7,7 @@ export const _depositList = data => _Request('/admin/deposit/list', data, 'get')
 export const _depositUpdate = data => _Request('/admin/deposit/update', data) //更新充值信息
 export const _WithdrawList = data => _Request('/withdraw/list', data,'get') //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
+export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
 
 export const _GlobalApi = {
     _upLogin,
@@ -15,4 +16,5 @@ export const _GlobalApi = {
     _depositUpdate,
     _WithdrawList,
     _WithdrawAudit,
+    _UserModellingTree
 }
