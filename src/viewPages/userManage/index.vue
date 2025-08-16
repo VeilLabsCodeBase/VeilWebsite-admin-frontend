@@ -43,7 +43,11 @@
                             width="200" />
                         <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="200" />
                         <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="200" />
-                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="200" />
+                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="200" >
+                            <template #default="{ row }">
+                                {{ statius[row.userModelling.teamRole] }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="userModelling.tokenReleaseRate" label="Token日释放比例(%)" width="200" />
                         <el-table-column prop="userModelling.maxTokenLimit" label="Token释放上限" width="200" />
                         <el-table-column prop="userModelling.lastReleaseTime" label="上次释放时间" width="200" />
@@ -133,11 +137,18 @@ import { ElMessage } from 'element-plus'
 import {
     _SessionCache
 } from '@/utils/cache'
+import { reactive } from 'vue'
 const tableData = ref()
 const formValue = reactive({
     userId: "",
     email: "",
     username: "",
+})
+const statius = reactive({
+    'NORMAL': "布道大使",
+    'TEAM_LEADER': "布道公会长",
+    'CITY_PARTNER': "节点共谋人",
+    'REGIONAL_PARTNER': "区域共建者"
 })
 const _Api = inject('$api')
 const pageSize = ref(8)
