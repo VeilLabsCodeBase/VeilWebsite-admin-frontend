@@ -9,7 +9,7 @@
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item label="交易哈希">
-                    <el-input v-model="formValue.transactionHash" placeholder="请输入交易哈希" clearable />
+                    <el-input v-model="formValue.fromAddr" placeholder="请输入交易哈希" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -81,7 +81,7 @@ import {
 import { reactive } from 'vue'
 const formValue = reactive({
     userId: "",
-    transactionHash: "",
+    fromAddr: "",
     username: "",
 })
 const dialogVisible = ref(false)
