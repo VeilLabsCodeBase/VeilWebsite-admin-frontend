@@ -23,10 +23,20 @@ export default [
                 name: 'geoManage',
                 component: () => import('@/viewPages/geoManage/index.vue'),
             },
-             {
+            {
                 path: '/bizNodeManage',
                 name: 'bizNodeManage',
                 component: () => import('@/viewPages/bizNodeManage/index.vue'),
+            },
+            {
+                path: '/nodeBindManage',
+                name: 'nodeBindManage',
+                component: () => import('@/viewPages/nodeBindManage/index.vue'),
+            },
+            {
+                path: '/nodeChangeManage',
+                name: 'nodeChangeManage',
+                component: () => import('@/viewPages/nodeChangeManage/index.vue'),
             },
         ],
     },

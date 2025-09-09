@@ -20,7 +20,7 @@
             </el-form>
         </div>
         <div class="creat">
-            <el-button type="primary" @click="showDialog">创建区域</el-button>
+            <el-button type="primary" @click="showGeo1Dialog">创建一级区域</el-button>
         </div>
         <div class="uploadList">
             <div class="taskUploadList">
@@ -42,6 +42,8 @@
                                     size="small">删除</el-button>
                                 <el-button link type="primary" @click="creatNode(scope.$index, scope.row)"
                                     size="small">创建节点</el-button>
+                                <el-button link type="primary" v-if="scope.row.level == 'LEVEL_ONE_OP_CENTER'"
+                                    @click="showGeo2Dialog(scope.$index, scope.row)" size="small">创建二级区域</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -53,27 +55,18 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="创建区域" width="800" :before-close="beforeClose" destroy-on-close>
+        <el-dialog v-model="dialogVisible1" title="创建一级区域" width="800" :before-close="beforeClose" destroy-on-close>
             <div class="diaContent">
-                <el-form :model="creatFrom" label-width="auto" style="max-width: 600px">
+                <el-form :model="creatGeo1From" label-width="auto" style="max-width: 600px">
                     <el-form-item label="区域名称">
-                        <el-input v-model="creatFrom.geoName" placeholder="请输入区域名称" clearable />
-                    </el-form-item>
-                    <el-form-item label="选择层级">
-                        <el-select v-model="creatFrom.level" placeholder="请选择层级" style="width: 240px">
-                            <el-option v-for="item in levelList" :key="item.value" :label="item.displayName"
-                                :value="item.level" />
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="父区域id" v-if="creatFrom.level == 'LEVEL_TWO_WORKSHOP'">
-                        <el-input v-model="creatFrom.parentId" placeholder="请输入父区域id" clearable />
+                        <el-input v-model="creatGeo1From.geoName" placeholder="请输入区域名称" clearable />
                     </el-form-item>
                 </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="beforeClose">取消</el-button>
-                    <el-button type="primary" @click="handConfirm">
+                    <el-button type="primary" @click="handConfirm1">
                         确定创建
                     </el-button>
                 </div>
@@ -86,7 +79,6 @@
                         <el-input v-model="creatNodeFrom.nodeName" placeholder="请输入节点名称" clearable />
                     </el-form-item>
                     <el-form-item label="区域名称">
-                        <!-- <el-input v-model="creatNodeFrom.geoId" placeholder="请输入区域id" clearable /> -->
                         {{ creatNodeFrom.geoName }}
                     </el-form-item>
                     <el-form-item label="负责人id">
@@ -109,6 +101,23 @@
                 </div>
             </template>
         </el-dialog>
+        <el-dialog v-model="dialogVisible2" title="创建二级区域" width="800" :before-close="beforeClose" destroy-on-close>
+            <div class="diaContent">
+                <el-form :model="creatGeo2From" label-width="auto" style="max-width: 600px">
+                    <el-form-item label="区域名称">
+                        <el-input v-model="creatGeo2From.geoName" placeholder="请输入区域名称" clearable />
+                    </el-form-item>
+                </el-form>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeClose">取消</el-button>
+                    <el-button type="primary" @click="handConfirm2">
+                        确定创建
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -122,23 +131,30 @@ const formValue = reactive({
     geoName: "",
     level: "",
 })
-const creatFrom = reactive({
+const creatGeo1From = reactive({
     geoName: "",
-    level: "",
-    parentId: "",
+})
+const creatGeo2From = reactive({
+    geoName: "",
 })
 const creatNodeFrom = reactive({
     nodeName: "",
     geoId: "",
     geoName: "",
-    level:"",
+    level: "",
     leaderUserId: "",
     parentNodeId: "",
 })
-const dialogVisible = ref(false)
+const dialogVisible1 = ref(false)
+const dialogVisible2 = ref(false)
+const selectRow=ref({})
 const tableData = ref()
-const showDialog = (index, row) => {
-    dialogVisible.value = true;
+const showGeo1Dialog = (index, row) => {
+    dialogVisible1.value = true;
+}
+const showGeo2Dialog = (index, row) => {
+    dialogVisible2.value = true;
+    selectRow.value=row
 }
 const _Api = inject('$api')
 const pageSize = ref(8)
@@ -217,31 +233,35 @@ const creatNodeConfirm = async () => {
 
 //关闭前回调
 const beforeClose = () => {
-    dialogVisible.value = false
+    dialogVisible1.value = false
+    dialogVisible2.value = false
     creatNodeDialog.value = false
 }
 
-const handConfirm = async () => {
-    if (!creatFrom.geoName) {
+const handConfirm1 = async () => {
+    if (!creatGeo1From.geoName) {
         ElMessage('请输入区域名称')
         return
     }
-    if (!creatFrom.level) {
-        ElMessage('请选择层级')
-        return
-    }
-    console.log(creatFrom.level);
-    if (creatFrom.level == 'LEVEL_TWO_WORKSHOP' && !creatFrom.parentId) {
-        ElMessage('请输入父区域id')
-        return
-    }
-    const res = await _Api._GeoRegionCreateGeo({ ...creatFrom })
+    const res = await _Api._GeoRegionCreateGeo({ level:'LEVEL_ONE_OP_CENTER',...creatGeo1From })
     if (res) {
         ElMessage('创建成功')
         beforeClose()
-        creatFrom.geoName = ''
-        creatFrom.level = ''
-        creatFrom.parentId = ''
+        creatGeo1From.geoName = ''
+        currentPage.value = 1
+        getTableData()
+    }
+}
+const handConfirm2 = async () => {
+    if (!creatGeo2From.geoName) {
+        ElMessage('请输入区域名称')
+        return
+    }
+    const res = await _Api._GeoRegionCreateGeo({ level:'LEVEL_TWO_WORKSHOP',parentId:selectRow.value.id,...creatGeo2From })
+    if (res) {
+        ElMessage('创建成功')
+        beforeClose()
+        creatGeo2From.geoName = ''
         currentPage.value = 1
         getTableData()
     }
