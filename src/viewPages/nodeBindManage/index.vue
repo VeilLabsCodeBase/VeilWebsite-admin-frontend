@@ -54,7 +54,10 @@
             <div class="diaContent">
                 <el-form :model="creatFrom" label-width="auto" style="max-width: 600px">
                     <el-form-item label="理由">
-                        <el-input v-model="reason" type="textarea" placeholder="请输入理由" clearable />
+                        <el-input v-model="reasonForm.reason" type="textarea" placeholder="请输入理由" clearable />
+                    </el-form-item>
+                    <el-form-item label="节点工作室id">
+                        <el-input v-model="reasonForm.workshopId" placeholder="请输入节点工作室id" clearable />
                     </el-form-item>
                 </el-form>
             </div>
@@ -63,6 +66,19 @@
                     <el-button @click="beforeClose">取消</el-button>
                     <el-button type="primary" @click="handConfirm">
                         确定转移
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
+        <el-dialog v-model="dialogVisible2" title="确定解除该节点绑定吗" width="800" :before-close="beforeClose" destroy-on-close>
+            <div class="diaContent">
+
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeClose">取消</el-button>
+                    <el-button type="primary" @click="handConfirm2">
+                        确定解除
                     </el-button>
                 </div>
             </template>
@@ -79,8 +95,13 @@ const formValue = reactive({
     opeValue: "",
     workValue: "",
 })
+const reasonForm = reactive({
+    reason: "",
+    workshopId: "",
+})
 
 const dialogVisible = ref(false)
+const dialogVisible2 = ref(false)
 const tableData = ref()
 const showDialog = (index, row) => {
     dialogVisible.value = true;
@@ -137,20 +158,17 @@ const getLevel2 = async () => {
     }
 }
 const changeNodeValue1 = () => {
+    if (!formValue.opeValue) {
+        formValue.workValue = ''
+    }
     getLevel2()
 }
-
-const removeBind = async (index, row) => {
-    const res = await _Api._UnBindUserNode({
-        userId: row.userId
-    })
-    if (res) {
-        ElMessage('解除绑定成功')
-        currentPage.value = 1
-        getTableData()
-    }
-}
 const changeBindRowData = ref({})
+const removeBind = async (index, row) => {
+    dialogVisible2.value = true
+    changeBindRowData.value = row
+}
+
 const showChangeDialog = async (index, row) => {
     changeBindRowData.value = row
     dialogVisible.value = true
@@ -159,20 +177,32 @@ const showChangeDialog = async (index, row) => {
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
+    dialogVisible2.value = false
 }
 const reason = ref('')
 const handConfirm = async () => {
     const res = await _Api._BizNodeChangeApply({
         userId: changeBindRowData.value.userId,
-        workshopId: changeBindRowData.value.workshopId,
-        reason: reason.value,
+        ...reasonForm
     })
     if (res) {
         ElMessage('转移绑定成功')
         currentPage.value = 1
         getTableData()
         dialogVisible.value = false
-        reason.value = ''
+        reasonForm.reason = ''
+        reasonForm.workValue = ''
+    }
+}
+const handConfirm2 = async () => {
+    const res = await _Api._UnBindUserNode({
+        userId: changeBindRowData.value.userId
+    })
+    if (res) {
+        ElMessage('解除绑定成功')
+        beforeClose()
+        currentPage.value = 1
+        getTableData()
     }
 }
 const onSearch = () => {

@@ -53,28 +53,15 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="创建区域" width="800" :before-close="beforeClose" destroy-on-close>
+        <el-dialog v-model="dialogVisible" title="确定删除该节点吗" width="800" :before-close="beforeClose" destroy-on-close>
             <div class="diaContent">
-                <el-form :model="creatFrom" label-width="auto" style="max-width: 600px">
-                    <el-form-item label="节点名称">
-                        <el-input v-model="creatFrom.nodeName" placeholder="请输入节点名称" clearable />
-                    </el-form-item>
-                    <el-form-item label="区域id">
-                        <el-input v-model="creatFrom.geoId" placeholder="请输入区域id" clearable />
-                    </el-form-item>
-                    <el-form-item label="负责人id">
-                        <el-input v-model="creatFrom.leaderUserId" placeholder="请输入负责人id" clearable />
-                    </el-form-item>
-                    <el-form-item label="父节点id">
-                        <el-input v-model="creatFrom.parentNodeId" placeholder="请输入父节点id" clearable />
-                    </el-form-item>
-                </el-form>
+
             </div>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="beforeClose">取消</el-button>
                     <el-button type="primary" @click="handConfirm">
-                        确定创建
+                        确定删除
                     </el-button>
                 </div>
             </template>
@@ -128,15 +115,10 @@ const getLevel = async () => {
     }
 }
 getLevel()
+const selectRow=ref({})
 const removeNode = async (index, row) => {
-    const res = await _Api._NodeRemoveBizNode({
-        bizNodeId: row.id
-    })
-    if (res) {
-        ElMessage('删除成功')
-        currentPage.value = 1
-        getTableData()
-    }
+    dialogVisible.value = true
+    selectRow.value=row
 }
 const handleSizeChange = (val) => {
     pageSize.value = val;
@@ -155,14 +137,12 @@ const beforeClose = () => {
 
 
 const handConfirm = async () => {
-    const res = await _Api._NodeCreateBizNode({ ...creatFrom })
+    const res = await _Api._NodeRemoveBizNode({
+        bizNodeId: selectRow.value.id
+    })
     if (res) {
-        ElMessage('创建成功')
+        ElMessage('删除成功')
         beforeClose()
-        creatFrom.nodeName = ''
-        creatFrom.geoId = ''
-        creatFrom.leaderUserId = ''
-        creatFrom.parentNodeId = ''
         currentPage.value = 1
         getTableData()
     }

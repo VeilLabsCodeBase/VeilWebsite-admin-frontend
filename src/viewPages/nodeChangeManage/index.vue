@@ -26,17 +26,17 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
-                        <el-table-column prop="id" label="申请id" width="80"/>
-                        <el-table-column prop="fromOpName" label="来源节点工作室" width="150"/>
-                        <el-table-column prop="toOpName" label="转移运营中心" width="150"/>
-                        <el-table-column prop="toWsName" label="转移节点工作室" width="150"/>
+                        <el-table-column prop="id" label="申请id" width="80" />
+                        <el-table-column prop="fromOpName" label="来源节点工作室" width="150" />
+                        <el-table-column prop="toOpName" label="转移运营中心" width="150" />
+                        <el-table-column prop="toWsName" label="转移节点工作室" width="150" />
 
                         <el-table-column prop="statusName" label="状态" width="150" />
-                        <el-table-column prop="userName" label="用户名" width="150"/>
-                        <el-table-column prop="approveName" label="审批员用户名" width="150"/>
-                        <el-table-column prop="reason" label="原因" width="200"/>
-                        <el-table-column prop="approveId" label="审批人id" width="100"/>
-                        <el-table-column prop="approvedAt" label="审批时间" width="200"/>
+                        <el-table-column prop="userName" label="用户名" width="150" />
+                        <el-table-column prop="approveName" label="审批员用户名" width="150" />
+                        <el-table-column prop="reason" label="原因" width="200" />
+                        <el-table-column prop="approveId" label="审批人id" width="100" />
+                        <el-table-column prop="approvedAt" label="审批时间" width="200" />
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column fixed="right" label="Operations" width="200">
                             <template #default="scope">
@@ -53,6 +53,23 @@
                 </div>
             </div>
         </div>
+        <el-dialog v-model="dialogVisible" title="更改申请转移用户绑定节点" width="800" :before-close="beforeClose"
+            destroy-on-close>
+            <div class="diaContent">
+                <el-radio-group v-model="radio1">
+                    <el-radio value="1" size="large">通过</el-radio>
+                    <el-radio value="2" size="large">拒绝</el-radio>
+                </el-radio-group>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeClose">取消</el-button>
+                    <el-button type="primary" @click="handConfirm">
+                        确定转移
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -91,19 +108,25 @@ const handleCurrentChange = (val) => {
     currentPage.value = val
     getTableData(currentPage.value)
 }
-
+const dialogVisible=ref(false)
+const seletRow = ref({})
+const radio1 = ref()
 const changeBind = async (index, row) => {
+    seletRow.value = row
+    dialogVisible.value=true
+}
+const handConfirm = async () => {
     const res = await _Api._ChangeBizUserNode({
-        requestId: row.id,
-        status: row.status,
+        requestId: seletRow.value.id,
+        status: radio1.value,
     })
     if (res) {
         ElMessage('更改成功')
+        dialogVisible.value=false
         currentPage.value = 1
         getTableData()
     }
 }
-
 
 const onSearch = () => {
     currentPage.value = 1
