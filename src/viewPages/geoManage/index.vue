@@ -38,7 +38,7 @@
                         <el-table-column prop="updatedAt" label="更新时间" />
                         <el-table-column fixed="right" label="Operations">
                             <template #default="scope">
-                                <el-button link type="primary" @click="removeGeo(scope.$index, scope.row)"
+                                <el-button link type="primary" @click="showDeleteDialog(scope.$index, scope.row)"
                                     size="small">删除</el-button>
                                 <el-button link type="primary" @click="creatNode(scope.$index, scope.row)"
                                     size="small">创建节点</el-button>
@@ -118,6 +118,20 @@
                 </div>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="dialogVisible" title="确定删除该区域吗" width="800" :before-close="beforeClose" destroy-on-close>
+            <div class="diaContent">
+
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeClose">取消</el-button>
+                    <el-button type="primary" @click="handConfirm">
+                        确定删除
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -147,8 +161,10 @@ const creatNodeFrom = reactive({
 })
 const dialogVisible1 = ref(false)
 const dialogVisible2 = ref(false)
+const dialogVisible = ref(false)
 const selectRow=ref({})
 const tableData = ref()
+const deleteData = ref()
 const showGeo1Dialog = (index, row) => {
     dialogVisible1.value = true;
 }
@@ -156,6 +172,11 @@ const showGeo2Dialog = (index, row) => {
     dialogVisible2.value = true;
     selectRow.value=row
 }
+const showDeleteDialog = (index, row)=>{
+    dialogVisible.value =true;
+    deleteData.value = row;
+}
+
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
@@ -188,14 +209,14 @@ const getLevel = async () => {
     }
 }
 getLevel()
-const removeGeo = async (index, row) => {
+const removeGeo = async () => {
     const res = await _Api._GeoRegionRemoveGeo({
-        geoId: row.id
+        geoId: deleteData.value.id
     })
     if (res) {
         ElMessage('删除成功')
         currentPage.value = 1
-        getTableData()
+        await getTableData()
     }
 }
 const creatNodeDialog = ref(false)
@@ -235,7 +256,12 @@ const creatNodeConfirm = async () => {
 const beforeClose = () => {
     dialogVisible1.value = false
     dialogVisible2.value = false
+    dialogVisible.value =false
     creatNodeDialog.value = false
+}
+
+const handConfirm = async () => {
+    await removeGeo()
 }
 
 const handConfirm1 = async () => {

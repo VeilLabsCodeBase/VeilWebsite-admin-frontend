@@ -27,10 +27,12 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
-                        <el-table-column prop="id" label="节点id" />
-                        <el-table-column prop="opCenterName" label="运营中心节点名称" />
-                        <el-table-column prop="workshopName" label="节点工作室名称" />
-                        <el-table-column prop="userId" label="用户ID" />
+                        <el-table-column prop="id" label="id" />
+                        <el-table-column prop="opCenterName" label="运营中心节点" />
+                        <el-table-column prop="workshopName" label="节点工作室" />
+                        <el-table-column prop="workshopId" label="节点工作室id" />
+                        <el-table-column prop="userName" label="用户" />
+                        <el-table-column prop="lockName"  label="状态" />
 
                         <el-table-column prop="lastChangeAt" label="变更时间" />
                         <el-table-column fixed="right" label="Operations">
@@ -186,9 +188,9 @@ const handConfirm = async () => {
         ...reasonForm
     })
     if (res) {
-        ElMessage('转移绑定成功')
+        ElMessage('转移申请已提交')
         currentPage.value = 1
-        getTableData()
+        await getTableData()
         dialogVisible.value = false
         reasonForm.reason = ''
         reasonForm.workValue = ''

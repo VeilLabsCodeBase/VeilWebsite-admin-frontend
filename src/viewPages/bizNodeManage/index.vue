@@ -9,13 +9,13 @@
                     <el-input v-model="formValue.nodeName" placeholder="请输入节点名称" clearable />
                 </el-form-item>
                 <el-form-item label="节点类型">
-                    <el-select v-model="formValue.level" placeholder="请选择节点类型" style="width: 240px">
+                    <el-select v-model="formValue.type" placeholder="请选择节点类型" style="width: 240px">
                         <el-option v-for="item in levelList" :key="item.value" :label="item.displayName"
                             :value="item.level" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="节点编码">
-                    <el-input v-model="formValue.nodeCode" placeholder="请输入提现地址" clearable />
+                    <el-input v-model="formValue.nodeCode" placeholder="请输入节点编码" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -30,12 +30,13 @@
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
                         <el-table-column prop="id" label="id" width="50" />
-                        <el-table-column prop="nodeName" label="节点名称" width="160" />
+                        <el-table-column prop="nodeName" label="节点" width="160" />
                         <el-table-column prop="typeName" label="节点类型" width="150" />
                         <el-table-column prop="nodeCode" label="节点编码" width="150" />
-                        <el-table-column prop="parentNodeName" label="父节点名称" width="200" />
-                        <el-table-column prop="leaderUserName" label="负责人名称" width="100" />
-                        <el-table-column prop="statusName" label="状态" width="100" />
+                        <el-table-column prop="parentNodeName" label="父节点" width="200" />
+                        <el-table-column prop="leaderUserName" label="负责人" width="100" />
+                        <el-table-column prop="leaderUserId" label="负责人id" width="100" />
+<!--                        <el-table-column prop="statusName" label="状态" width="100" />-->
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column prop="updatedAt" label="更新时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="120">

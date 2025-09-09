@@ -33,15 +33,15 @@
 
                         <el-table-column prop="statusName" label="状态" width="150" />
                         <el-table-column prop="userName" label="用户名" width="150" />
+                        <el-table-column prop="userId" label="用户id" width="100" />
                         <el-table-column prop="approveName" label="审批员用户名" width="150" />
                         <el-table-column prop="reason" label="原因" width="200" />
-                        <el-table-column prop="approveId" label="审批人id" width="100" />
                         <el-table-column prop="approvedAt" label="审批时间" width="200" />
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column fixed="right" label="Operations" width="200">
                             <template #default="scope">
                                 <el-button link type="primary" @click="changeBind(scope.$index, scope.row)"
-                                    size="small">更改申请转移用户绑定节点</el-button>
+                                    size="small">操作</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -114,6 +114,11 @@ const radio1 = ref()
 const changeBind = async (index, row) => {
     seletRow.value = row
     dialogVisible.value=true
+}
+
+//关闭前回调
+const beforeClose = () => {
+    dialogVisible.value = false
 }
 const handConfirm = async () => {
     const res = await _Api._ChangeBizUserNode({
