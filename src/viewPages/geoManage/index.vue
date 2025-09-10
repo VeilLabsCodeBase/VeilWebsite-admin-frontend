@@ -84,8 +84,8 @@
                     <el-form-item label="负责人id">
                         <el-input v-model="creatNodeFrom.leaderUserId" placeholder="请输入负责人id" clearable />
                     </el-form-item>
-                    <el-form-item label="父节点名称" v-if="creatNodeFrom.level == 'LEVEL_TWO_WORKSHOP'">
-                        <el-select v-model="creatNodeFrom.parentNodeId" placeholder="请选择父节点id" style="width: 240px">
+                    <el-form-item label="上级节点名称" v-if="creatNodeFrom.level == 'LEVEL_TWO_WORKSHOP'">
+                        <el-select v-model="creatNodeFrom.parentNodeId" placeholder="请选择上级节点id" style="width: 240px">
                             <el-option v-for="item in parentIdList" :key="item.value" :label="item.nodeName"
                                 :value="item.id" />
                         </el-select>

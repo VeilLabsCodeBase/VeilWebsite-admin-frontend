@@ -33,7 +33,7 @@
                         <el-table-column prop="nodeName" label="节点" width="160" />
                         <el-table-column prop="typeName" label="节点类型" width="150" />
                         <el-table-column prop="nodeCode" label="节点编码" width="150" />
-                        <el-table-column prop="parentNodeName" label="父节点" width="200" />
+                        <el-table-column prop="parentNodeName" label="上级节点" width="200" />
                         <el-table-column prop="leaderUserName" label="负责人" width="100" />
                         <el-table-column prop="leaderUserId" label="负责人id" width="100" />
 <!--                        <el-table-column prop="statusName" label="状态" width="100" />-->
