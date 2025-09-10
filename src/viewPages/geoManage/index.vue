@@ -31,7 +31,7 @@
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
                         <el-table-column prop="id" label="区域id" />
                         <el-table-column prop="name" label="区域名称" />
-                        <el-table-column prop="parentName" label="父区域名称" />
+                        <el-table-column prop="parentName" label="上级区域名称" />
                         <el-table-column prop="levelName" label="层级" />
 
                         <el-table-column prop="createdAt" label="创建时间" />
