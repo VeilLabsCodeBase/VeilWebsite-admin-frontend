@@ -14,6 +14,12 @@
                 <el-form-item label="邮箱">
                     <el-input v-model="formValue.email" placeholder="请输入邮箱" clearable />
                 </el-form-item>
+                <el-form-item label="提现类型">
+                    <el-select v-model="formValue.withdrawType" placeholder="请选择提现类型" style="width: 240px">
+                        <el-option v-for="item in withdrawTypeList" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
                 </el-form-item>
@@ -38,6 +44,7 @@
                         <el-table-column prop="network" label="提现网络" width="100" />
                         <el-table-column prop="fee" label="手续费" width="100" />
                         <el-table-column prop="actualAmount" label="到账金额" width="100" />
+                        <el-table-column prop="withdrawTypeName" label="提现类型" width="100" />
                         <el-table-column prop="status" label="提现状态" width="100">
                             <template #default="{ row }">
                                 {{ status[row.status] }}
@@ -96,7 +103,14 @@ const formValue = reactive({
     address: "",
     username: "",
     email: "",
+    withdrawType:"",
 })
+  const withdrawTypeList = reactive([
+    { label: '全部', value: '' },
+    { label: '个人基金提现', value: 'USER' },
+    { label: '节点基金提现', value: 'WORK_NODE' },
+    { label: '运营基金提现', value: 'OP_NODE' },
+  ])
 const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')

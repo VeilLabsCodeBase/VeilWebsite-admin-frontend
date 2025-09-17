@@ -11,6 +11,12 @@
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
+                <el-form-item label="是否已绑定">
+                    <el-select v-model="formValue.bindNode" placeholder="请选择节点类型" style="width: 240px">
+                        <el-option v-for="item in isBindNodeList" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
                 </el-form-item>
@@ -43,7 +49,7 @@
                             width="200" />
                         <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="200" />
                         <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="200" />
-                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="200" >
+                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="200">
                             <template #default="{ row }">
                                 {{ statius[row.userModelling.teamRole] }}
                             </template>
@@ -55,8 +61,10 @@
                         <el-table-column prop="userModelling.userLevel" label="用户等级" width="200" />
                         <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200" />
                         <el-table-column prop="userModelling.createdAt" label="创建时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="120">
+                        <el-table-column fixed="right" label="Operations" min-width="200">
                             <template #default="scope">
+                                <el-button link type="primary" v-if="!scope.row.isBindNode"
+                                    @click="showBindDialog(scope.$index, scope.row)" size="small">绑定节点</el-button>
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">查看经济模型树</el-button>
                             </template>
@@ -70,65 +78,82 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="查看经济模型树" top="0" width="100%" :before-close="beforeClose"
-            destroy-on-close>
-            <div class="diaContent" v-if="modelTreeData">
-                <vue3-org-chart :data="modelTreeData">
-                    <template #node="{ item, children, open, toggleChildren }">
-                        <div class="contentBox" :class="{ 'active': open, 'passive': !open }">
-                            <div class="item">
-                                <div class="label">用户id：</div>
-                                <div class="value">{{ item.id }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">用户名：</div>
-                                <div class="value">{{ item.username }}</div>
-                            </div>
-                            <div class="item" v-if="item.parentId">
-                                <div class="label">上级id：</div>
-                                <div class="value">{{ item.parentId }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">推荐码：</div>
-                                <div class="value">{{ item.referralCode }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">角色：</div>
-                                <div class="value">{{ item.teamRole }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">用户等级：</div>
-                                <div class="value">{{ item.userLevel }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">直推人数：</div>
-                                <div class="value">{{ item.directReferrals }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">充值金额：</div>
-                                <div class="value">{{ item?.userModelling?.realDepositAmount }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">可提现金额：</div>
-                                <div class="value">{{ item?.userModelling?.withdrawableUsdt }}</div>
-                            </div>
+        <div class="checktree">
+            <el-dialog v-model="dialogVisible" title="查看经济模型树" top="0" width="100%" :before-close="beforeClose"
+                destroy-on-close>
+                <div class="diaContent" v-if="modelTreeData">
+                    <vue3-org-chart :data="modelTreeData">
+                        <template #node="{ item, children, open, toggleChildren }">
+                            <div class="contentBox" :class="{ 'active': open, 'passive': !open }">
+                                <div class="item">
+                                    <div class="label">用户id：</div>
+                                    <div class="value">{{ item.id }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">用户名：</div>
+                                    <div class="value">{{ item.username }}</div>
+                                </div>
+                                <div class="item" v-if="item.parentId">
+                                    <div class="label">上级id：</div>
+                                    <div class="value">{{ item.parentId }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">推荐码：</div>
+                                    <div class="value">{{ item.referralCode }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">角色：</div>
+                                    <div class="value">{{ item.teamRole }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">用户等级：</div>
+                                    <div class="value">{{ item.userLevel }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">直推人数：</div>
+                                    <div class="value">{{ item.directReferrals }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">充值金额：</div>
+                                    <div class="value">{{ item?.userModelling?.realDepositAmount }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">可提现金额：</div>
+                                    <div class="value">{{ item?.userModelling?.withdrawableUsdt }}</div>
+                                </div>
 
-                        </div>
-                        <div class="btnBox">
-                            <button v-if="children.length" @click="toggleChildren"> {{ open ? '-' : '+' }}</button>
-                        </div>
-                        <!-- Node Element / TEMPLATE END -->
-                    </template>
-                </vue3-org-chart>
+                            </div>
+                            <div class="btnBox">
+                                <button v-if="children.length" @click="toggleChildren"> {{ open ? '-' : '+' }}</button>
+                            </div>
+                            <!-- Node Element / TEMPLATE END -->
+                        </template>
+                    </vue3-org-chart>
+                </div>
+            </el-dialog>
+        </div>
+        <el-dialog v-model="bindNodeDialog" title="绑定节点" width="800" :before-close="beforeClose" destroy-on-close>
+            <div class="diaContent">
+                <el-form-item label="运营中心">
+                    <el-select v-model="nodeValue1" placeholder="请选择" @change="changeNodeValue1">
+                        <el-option v-for="item in nodeList" :key="item.value" :label="item.nodeName" :value="item.id" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="工作室" v-if="nodeValue1">
+                    <el-select v-model="nodeValue2" placeholder="请选择">
+                        <el-option v-for="item in nodeTwoList" :key="item.value" :label="item.nodeName"
+                            :value="item.id" />
+                    </el-select>
+                </el-form-item>
             </div>
-            <!-- <template #footer>
+            <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="beforeClose">取消</el-button>
-                    <el-button type="primary" @click="handConfirm">
-                        确定修改
+                    <el-button type="primary" @click="bindNodeConfirm">
+                        确定绑定
                     </el-button>
                 </div>
-            </template> -->
+            </template>
         </el-dialog>
     </div>
 </template>
@@ -143,6 +168,7 @@ const formValue = reactive({
     userId: "",
     email: "",
     username: "",
+    bindNode: "",
 })
 const statius = reactive({
     'NORMAL': "布道大使",
@@ -150,6 +176,7 @@ const statius = reactive({
     'CITY_PARTNER': "节点共谋人",
     'REGIONAL_PARTNER': "区域共建者"
 })
+const isBindNodeList=reactive([{label:'全部',value:''},{label:'是',value:true},{label:'否',value:false},])
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
@@ -177,10 +204,12 @@ const onSearch = () => {
     getTableData(currentPage.value)
 }
 const dialogVisible = ref(false)
+const bindNodeDialog = ref(false)
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
-    modelTreeData.value=''
+    bindNodeDialog.value = false
+    modelTreeData.value = ''
 }
 const handConfirm = async () => {
     // const res = await _Api._depositUpdate({
@@ -209,6 +238,52 @@ const getUserModellingTree = async (userId) => {
         modelTreeData.value = res
 
     }
+}
+const selectUserId = ref('')
+
+const showBindDialog = (index, row) => {
+    bindNodeDialog.value = true
+    selectUserId.value = row.userModelling.userId
+}
+const nodeValue1 = ref('')
+const nodeValue2 = ref('')
+//获取节点列表
+const nodeList = ref([])
+const getNodeList = async () => {
+    const response = await _Api._NodePage({
+        pageNo: 1,
+        pageSize: 1000000,
+        type: 'LEVEL_ONE_OP_CENTER'
+    });
+    nodeList.value = response.records
+
+}
+getNodeList()
+//获取二级节点列表
+const nodeTwoList = ref([])
+const getNodeTwoList = async (id) => {
+    const response = await _Api._NodeList({
+        pageNo: 1,
+        pageSize: 10000,
+        bizParentNodeId: nodeValue1.value
+    });
+    nodeTwoList.value = response
+
+}
+//第一级节点选择狂改变时
+const changeNodeValue1 = () => {
+    nodeValue2.value = ''
+    getNodeTwoList()
+}
+const bindNodeConfirm = async () => {
+    const response = await _Api._BindBizUserNode({
+        userId: selectUserId.value,
+        bizNodeId: nodeValue2.value,
+    });
+    ElMessage('绑定成功')
+    bindNodeDialog.value = false
+    currentPage.value = 1
+    getTableData(currentPage.value)
 }
 </script>
 <style lang="scss" scoped>
@@ -270,6 +345,7 @@ const getUserModellingTree = async (userId) => {
         }
     }
 
+
     :deep() {
         .upload-demo {
             border: 1px dashed #dcdfe6;
@@ -295,6 +371,7 @@ const getUserModellingTree = async (userId) => {
             margin-right: 0.1rem;
             font-weight: 400;
         }
+
     }
 
     .previewImg {
@@ -308,27 +385,31 @@ const getUserModellingTree = async (userId) => {
         }
     }
 
-    :deep() {
-        .el-dialog {
-            width: 100%;
-            height: 100%;
-        }
+    .checktree {
+        :deep() {
+            .el-dialog {
+                width: 100%;
+                height: 100%;
+            }
 
-        .el-dialog__body {
-            height: 100%;
-        }
-        .el-dialog__headerbtn{
-            font-size:28px;
-            font-weight:bold;
-        }
-        .vue3-org-chart {
-            height: 100%;
-        }
+            .el-dialog__body {
+                height: 100%;
+            }
 
-        .vue3-org-chart .vue3-org-chart-container {
-            height: 100%;
-        }
+            .el-dialog__headerbtn {
+                font-size: 28px;
+                font-weight: bold;
+            }
 
+            .vue3-org-chart {
+                height: 100%;
+            }
+
+            .vue3-org-chart .vue3-org-chart-container {
+                height: 100%;
+            }
+
+        }
     }
 
     .diaContent {
@@ -358,17 +439,19 @@ const getUserModellingTree = async (userId) => {
                 }
             }
         }
-        .btnBox{
-            display:flex;
+
+        .btnBox {
+            display: flex;
             justify-content: center;
-            button{
-                width:30px;
-                height:30px;
-                font-size:36px;
-                display:flex;
+
+            button {
+                width: 30px;
+                height: 30px;
+                font-size: 36px;
+                display: flex;
                 justify-content: center;
                 align-items: center;
-                border:1px solid #ccc;
+                border: 1px solid #ccc;
                 line-height: 28px;
                 text-align: center;
             }

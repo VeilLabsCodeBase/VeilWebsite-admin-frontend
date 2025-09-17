@@ -2,10 +2,10 @@ import { _Request } from '../utils/request'
 
 // 全局接口
 export const _upLogin = data => _Request('/admin/login', data) //登陆
-export const _userList = data => _Request('/admin/user/list', data, 'get') //用户列表
+export const _userList = data => _Request('/admin/user/list', data) //用户列表
 export const _depositList = data => _Request('/admin/deposit/list', data, 'get') //充值列表
 export const _depositUpdate = data => _Request('/admin/deposit/update', data) //更新充值信息
-export const _WithdrawList = data => _Request('/withdraw/list', data,'get') //提现记录
+export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
 export const _GeoRegion = data => _Request('/admin/geoRegion/page', data) //地域管理列表
@@ -21,6 +21,7 @@ export const _UnBindUserNode = data => _Request('/admin/nodeBind/unBindUserNode'
 export const _BizNodeChangeApply = data => _Request('/nodeBind/bizNodeChangeApply', data) //申请转移用户绑定节点
 export const _RequestPage = data => _Request('/admin/request/page', data) //节点转移申请列表
 export const _ChangeBizUserNode = data => _Request('/admin/request/changeBizUserNode', data) //更改申请转移用户绑定节点
+export const _BindBizUserNode= data => _Request('/nodeBind/bindBizUserNode', data) //绑定节点
 
 export const _GlobalApi = {
     _upLogin,
@@ -43,4 +44,5 @@ export const _GlobalApi = {
     _BizNodeChangeApply,
     _RequestPage,
     _ChangeBizUserNode,
+    _BindBizUserNode,
 }
