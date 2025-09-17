@@ -12,7 +12,7 @@
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item label="是否已绑定">
-                    <el-select v-model="formValue.bindNode" placeholder="请选择节点类型" style="width: 240px">
+                    <el-select v-model="formValue.isBindNode" placeholder="请选择" style="width: 240px">
                         <el-option v-for="item in isBindNodeList" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
@@ -37,7 +37,7 @@
                         <el-table-column prop="status" label="用户状态" width="180" />
                         <el-table-column prop="userModelling.rebateUsdtBalance" label="推荐返利-USDT释放余额" width="200" />
                         <el-table-column prop="userModelling.rebateReleasedUsdtAmount"
-                            label="推荐返利-USDT已释放数量(保存已经释放全部的推荐返利-USDT数)" width="400" />
+                            label="推荐返利-USDT已释放数量" width="400" />
                         <el-table-column prop="userModelling.rebateDirectEarned" label="累计推荐直推返利" width="200" />
                         <el-table-column prop="userModelling.rebateGapEarned" label="累计推荐级差返利" width="200" />
                         <el-table-column prop="userModelling.bonusUsdtBalance" label="团队分红-USDT余额" width="200" />
@@ -45,7 +45,7 @@
                             width="200" />
                         <el-table-column prop="userModelling.bonusEarned" label="累计团队推广分红" width="200" />
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
-                        <el-table-column prop="userModelling.tokenReleaseBalance" label="token释放余额/空投token基数"
+                        <el-table-column prop="userModelling.tokenReleaseBalance" label="token释放余额"
                             width="200" />
                         <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="200" />
                         <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="200" />
@@ -168,7 +168,7 @@ const formValue = reactive({
     userId: "",
     email: "",
     username: "",
-    bindNode: "",
+    isBindNode: "",
 })
 const statius = reactive({
     'NORMAL': "布道大使",

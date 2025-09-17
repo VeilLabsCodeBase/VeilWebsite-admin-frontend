@@ -190,7 +190,7 @@ const handConfirm = async () => {
     if (res) {
         ElMessage('转移申请已提交')
         currentPage.value = 1
-        await getTableData()
+        await getTableData(currentPage.value)
         dialogVisible.value = false
         reasonForm.reason = ''
         reasonForm.workValue = ''
@@ -204,7 +204,7 @@ const handConfirm2 = async () => {
         ElMessage('解除绑定成功')
         beforeClose()
         currentPage.value = 1
-        getTableData()
+        await getTableData(currentPage.value)
     }
 }
 const onSearch = () => {
