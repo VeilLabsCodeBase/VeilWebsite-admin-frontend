@@ -34,31 +34,34 @@
                         <el-table-column prop="username" label="用户名" width="180" />
                         <el-table-column prop="role" label="用户角色" width="180" />
                         <el-table-column prop="email" label="email" width="180" />
-                        <el-table-column prop="status" label="用户状态" width="180" />
+                        <el-table-column prop="opCenterName" label="运营中心" width="200" />
+                        <el-table-column prop="workshopName" label="节点" width="180" />
+
                         <el-table-column prop="userModelling.rebateUsdtBalance" label="推荐返利-USDT释放余额" width="200" />
                         <el-table-column prop="userModelling.rebateReleasedUsdtAmount"
-                            label="推荐返利-USDT已释放数量" width="400" />
-                        <el-table-column prop="userModelling.rebateDirectEarned" label="累计推荐直推返利" width="200" />
-                        <el-table-column prop="userModelling.rebateGapEarned" label="累计推荐级差返利" width="200" />
-                        <el-table-column prop="userModelling.bonusUsdtBalance" label="团队分红-USDT余额" width="200" />
+                            label="推荐返利-USDT已释放数量" width="200" />
+                        <el-table-column prop="userModelling.rebateDirectEarned" label="累计推荐直推返利" width="180" />
+                        <el-table-column prop="userModelling.rebateGapEarned" label="累计推荐级差返利" width="180" />
+                        <el-table-column prop="userModelling.bonusUsdtBalance" label="团队分红-USDT余额" width="180" />
                         <el-table-column prop="userModelling.bonusReleasedUsdtAmount" label="团队分红-USDT已释放额度"
                             width="200" />
                         <el-table-column prop="userModelling.bonusEarned" label="累计团队推广分红" width="200" />
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
                         <el-table-column prop="userModelling.tokenReleaseBalance" label="token释放余额"
-                            width="200" />
-                        <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="200" />
-                        <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="200" />
-                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="200">
+                            width="120" />
+                        <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="120" />
+                        <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="100" />
+                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="100">
                             <template #default="{ row }">
                                 {{ statius[row.userModelling.teamRole] }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.tokenReleaseRate" label="Token日释放比例(%)" width="200" />
-                        <el-table-column prop="userModelling.maxTokenLimit" label="Token释放上限" width="200" />
-                        <el-table-column prop="userModelling.lastReleaseTime" label="上次释放时间" width="200" />
+                        <el-table-column prop="userModelling.tokenReleaseRate" label="Token日释放比例(%)" width="100" />
+                        <el-table-column prop="userModelling.maxTokenLimit" label="Token释放上限" width="100" />
+                        <el-table-column prop="userModelling.lastReleaseTime" label="上次释放时间" width="100" />
                         <el-table-column prop="userModelling.lastDepositTime" label="最近真实充值时间" width="200" />
                         <el-table-column prop="userModelling.userLevel" label="用户等级" width="200" />
+                        <el-table-column prop="status" label="用户状态" width="180" />
                         <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200" />
                         <el-table-column prop="userModelling.createdAt" label="创建时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="200">
