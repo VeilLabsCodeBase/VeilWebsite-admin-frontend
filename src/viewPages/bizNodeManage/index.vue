@@ -121,6 +121,7 @@ const getTableData = async (page) => {
     const res = await _Api._NodePage({
         pageNo: page,
         pageSize: pageSize.value,
+        isIncludeNodeModelling:true,
         ...formValue
     })
     if (res) {
