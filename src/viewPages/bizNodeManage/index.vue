@@ -36,9 +36,30 @@
                         <el-table-column prop="parentNodeName" label="上级节点" width="200" />
                         <el-table-column prop="leaderUserName" label="负责人" width="100" />
                         <el-table-column prop="leaderUserId" label="负责人id" width="100" />
+                        <el-table-column prop="ratio" label="比例" width="60" >
+                            <template #default="{ row }">
+                                {{row.ratio}}%
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="nodeAmount" label="节点总业绩" width="100" >
+                            <template #default="{ row }">
+                                {{row.nodeAmount}} U
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="withdrawableUsdt"  label="可提激励基金" width="120" >
+                            <template #default="{ row }">
+                                {{row.withdrawableUsdt}} U
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="freezeUsdt" label="冻结金额" width="90" >
+                            <template #default="{ row }">
+                                {{row.freezeUsdt}} U
+                            </template>
+                        </el-table-column>
+
 <!--                        <el-table-column prop="statusName" label="状态" width="100" />-->
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
-                        <el-table-column prop="updatedAt" label="更新时间" width="200" />
+                        <el-table-column prop="updatedAt"  label="更新时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="120">
                             <template #default="scope">
                                 <el-button link type="primary" @click="removeNode(scope.$index, scope.row)"
