@@ -19,6 +19,10 @@
                     <el-menu-item index="1" route="/">用户管理</el-menu-item>
                     <el-menu-item index="2" route="/rechargeManage">充值管理</el-menu-item>
                     <el-menu-item index="3" route="/withdrawCashManage">提现管理</el-menu-item>
+                    <el-menu-item index="4" route="/geoManage">区域管理</el-menu-item>
+                    <el-menu-item index="5" route="/bizNodeManage">节点管理</el-menu-item>
+                    <el-menu-item index="6" route="/nodeBindManage">节点绑定管理</el-menu-item>
+                    <el-menu-item index="7" route="/nodeChangeManage">节点转移申请管理</el-menu-item>
                 </el-menu>
             </div>
             <div class="main"><router-view></router-view></div>

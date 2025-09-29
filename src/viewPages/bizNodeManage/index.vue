@@ -2,23 +2,20 @@
     <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
-                <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
+                <el-form-item label="节点id">
+                    <el-input v-model="formValue.bizNodeId" placeholder="请输入节点id" clearable />
                 </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                <el-form-item label="节点名称">
+                    <el-input v-model="formValue.nodeName" placeholder="请输入节点名称" clearable />
                 </el-form-item>
-                <el-form-item label="提现地址">
-                    <el-input v-model="formValue.address" placeholder="请输入提现地址" clearable />
-                </el-form-item>
-                <el-form-item label="邮箱">
-                    <el-input v-model="formValue.email" placeholder="请输入邮箱" clearable />
-                </el-form-item>
-                <el-form-item label="提现类型">
-                    <el-select v-model="formValue.withdrawType" placeholder="请选择提现类型" style="width: 240px">
-                        <el-option v-for="item in withdrawTypeList" :key="item.value" :label="item.label"
-                            :value="item.value" />
+                <el-form-item label="节点类型">
+                    <el-select v-model="formValue.type" placeholder="请选择节点类型" style="width: 240px">
+                        <el-option v-for="item in levelList" :key="item.value" :label="item.displayName"
+                            :value="item.level" />
                     </el-select>
+                </el-form-item>
+                <el-form-item label="节点编码">
+                    <el-input v-model="formValue.nodeCode" placeholder="请输入节点编码" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -28,34 +25,45 @@
         <div class="uploadList">
             <div class="taskUploadList">
                 <div class="title">
-                    <span>提现管理列表</span>
+                    <span>节点管理列表</span>
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
                         <el-table-column prop="id" label="id" width="50" />
-                        <el-table-column prop="userId" label="用户id" width="80" />
-                        <el-table-column prop="username" label="用户名" width="100" />
-                        <el-table-column prop="email" label="邮箱" width="150" />
-                        <el-table-column prop="createdAt" label="申请时间" width="200" />
-                        <el-table-column prop="amount" label="提现金额" width="100" />
-                        <el-table-column prop="balanceBefore" label="提现前余额" width="100" />
-                        <el-table-column prop="balanceAfter" label="提现后余额" width="100" />
-                        <el-table-column prop="address" label="提现地址" width="300" />
-                        <el-table-column prop="network" label="提现网络" width="100" />
-                        <el-table-column prop="fee" label="手续费" width="100" />
-                        <el-table-column prop="actualAmount" label="到账金额" width="100" />
-                        <el-table-column prop="withdrawTypeName" label="提现类型" width="100" />
-                        <el-table-column prop="status" label="提现状态" width="100">
+                        <el-table-column prop="nodeName" label="节点" width="160" />
+                        <el-table-column prop="typeName" label="节点类型" width="150" />
+                        <el-table-column prop="nodeCode" label="节点编码" width="150" />
+                        <el-table-column prop="parentNodeName" label="上级节点" width="200" />
+                        <el-table-column prop="leaderUserName" label="负责人" width="100" />
+                        <el-table-column prop="leaderUserId" label="负责人id" width="100" />
+                        <el-table-column prop="ratio" label="比例" width="60" >
                             <template #default="{ row }">
-                                {{ status[row.status] }}
+                                {{row.ratio}}%
                             </template>
                         </el-table-column>
-                        <el-table-column prop="reason" label="备注" width="200" />
-                        <el-table-column prop="approvedAt" label="审核通过时间" width="200" />
+                        <el-table-column prop="nodeAmount" label="节点总业绩" width="100" >
+                            <template #default="{ row }">
+                                {{row.nodeAmount}} U
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="withdrawableUsdt"  label="可提激励基金" width="120" >
+                            <template #default="{ row }">
+                                {{row.withdrawableUsdt}} U
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="freezeUsdt" label="冻结金额" width="90" >
+                            <template #default="{ row }">
+                                {{row.freezeUsdt}} U
+                            </template>
+                        </el-table-column>
+
+<!--                        <el-table-column prop="statusName" label="状态" width="100" />-->
+                        <el-table-column prop="createdAt" label="创建时间" width="200" />
+                        <el-table-column prop="updatedAt"  label="更新时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="120">
                             <template #default="scope">
-                                <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
-                                    size="small">审核</el-button>
+                                <el-button link type="primary" @click="removeNode(scope.$index, scope.row)"
+                                    size="small">删除</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -67,25 +75,15 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="修改状态" width="800" :before-close="beforeClose" destroy-on-close>
+        <el-dialog v-model="dialogVisible" title="确定删除该节点吗" width="800" :before-close="beforeClose" destroy-on-close>
             <div class="diaContent">
-                <el-radio-group v-model="radio1">
-                    <el-radio value="APPROVAL" size="large">{{ status.APPROVAL }}</el-radio>
-                    <el-radio value="FAILED" size="large">{{ status.FAILED }}</el-radio>
-                    <el-radio value="SUCCESSFULLY" size="large">{{ status.SUCCESSFULLY }}</el-radio>
-                    <el-radio value="CANCELED" size="large">{{ status.CANCELED }}</el-radio>
-                </el-radio-group>
 
-                <el-form-item label="理由">
-                    <el-input v-model="reason" style="width: 440px" :rows="2" type="textarea"
-                        placeholder="Please input" />
-                </el-form-item>
             </div>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="beforeClose">取消</el-button>
                     <el-button type="primary" @click="handConfirm">
-                        确定修改
+                        确定删除
                     </el-button>
                 </div>
             </template>
@@ -99,33 +97,31 @@ import {
 } from '@/utils/cache'
 import { reactive } from 'vue'
 const formValue = reactive({
-    userId: "",
-    address: "",
-    username: "",
-    email: "",
-    withdrawType:"",
+    bizNodeId: "",
+    nodeName: "",
+    type: "",
+    nodeCode: "",
 })
-  const withdrawTypeList = reactive([
-    { label: '全部', value: '' },
-    { label: '个人基金提现', value: 'USER' },
-    { label: '节点基金提现', value: 'WORK_NODE' },
-    { label: '运营基金提现', value: 'OP_NODE' },
-  ])
+const creatFrom = reactive({
+    nodeName: "",
+    geoId: "",
+    leaderUserId: "",
+    parentNodeId: "",
+})
 const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
 const showDialog = (index, row) => {
     dialogVisible.value = true;
-    rowData.value = row
-    radio1.value = rowData.value?.status
 }
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
 const getTableData = async (page) => {
-    const res = await _Api._WithdrawList({
+    const res = await _Api._NodePage({
         pageNo: page,
         pageSize: pageSize.value,
+        isIncludeNodeModelling:true,
         ...formValue
     })
     if (res) {
@@ -133,6 +129,20 @@ const getTableData = async (page) => {
     }
 }
 getTableData(currentPage.value)
+const levelList = ref([])
+const getLevel = async () => {
+    const res = await _Api._GeoRegionGeoType({
+    })
+    if (res) {
+        levelList.value = res
+    }
+}
+getLevel()
+const selectRow=ref({})
+const removeNode = async (index, row) => {
+    dialogVisible.value = true
+    selectRow.value=row
+}
 const handleSizeChange = (val) => {
     pageSize.value = val;
     getTableData(currentPage.value)
@@ -142,28 +152,22 @@ const handleCurrentChange = (val) => {
     getTableData(currentPage.value)
 }
 
+
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
 }
-const status = reactive({
-    APPROVAL: '待审核',
-    FAILED: '失败',
-    SUCCESSFULLY: '成功',
-    CANCELED: '已取消',
-})
-const radio1 = ref('')
-const reason = ref('')
+
+
 const handConfirm = async () => {
-    const res = await _Api._WithdrawAudit({
-        userWithdrawId: rowData.value.id,
-        status: radio1.value,
-        reason: reason.value
+    const res = await _Api._NodeRemoveBizNode({
+        bizNodeId: selectRow.value.id
     })
     if (res) {
-        dialogVisible.value = false;
-        ElMessage('修改成功')
-        getTableData(currentPage.value)
+        ElMessage('删除成功')
+        beforeClose()
+        currentPage.value = 1
+        getTableData()
     }
 }
 const onSearch = () => {

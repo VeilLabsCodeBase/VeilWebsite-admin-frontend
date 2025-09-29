@@ -24,21 +24,25 @@ import { WebSource } from '@/utils/webSource'
 import { computed, watch } from 'vue'
 import { ElNotification } from 'element-plus'
 const dialogVisible = ref(false)
-const webSource = new WebSource()
-webSource.initWebSouce()
-const despositDataNum = ref(0)
-webSource.getNewDesposit((data) => {
-    despositDataNum.value = data.length
-})
 //充值订单
-
+const despositDataNum = ref(0)
 //提现订单
 const withdrawCashDataNum = ref(0)
 const isShowDespositNotice = ref(false)
 const isShowWithdrodNotice = ref(false)
-webSource.getNewWithdraw((data) => {
-    withdrawCashDataNum.value = data.length
-})
+const webSource = new WebSource()
+if (webSource) {
+    webSource.initWebSouce()
+    webSource.getNewDesposit((data) => {
+        despositDataNum.value = data.length
+    })
+    webSource.getNewWithdraw((data) => {
+        withdrawCashDataNum.value = data.length
+    })
+}
+
+
+
 watch(() => [despositDataNum.value, withdrawCashDataNum.value], () => {
     if (despositDataNum.value > 0) {
         if (!isShowDespositNotice.value) {
@@ -49,7 +53,7 @@ watch(() => [despositDataNum.value, withdrawCashDataNum.value], () => {
                 duration: 0,
                 onClose: () => {
                     isShowDespositNotice.value = false
-                 
+
                 }
             })
             isShowDespositNotice.value = true

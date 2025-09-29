@@ -2,21 +2,15 @@
     <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
+                <el-form-item label="申请id">
+                    <el-input v-model="formValue.requestId" placeholder="请输入申请id" clearable />
+                </el-form-item>
                 <el-form-item label="用户id">
                     <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
                 </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
-                </el-form-item>
-                <el-form-item label="提现地址">
-                    <el-input v-model="formValue.address" placeholder="请输入提现地址" clearable />
-                </el-form-item>
-                <el-form-item label="邮箱">
-                    <el-input v-model="formValue.email" placeholder="请输入邮箱" clearable />
-                </el-form-item>
-                <el-form-item label="提现类型">
-                    <el-select v-model="formValue.withdrawType" placeholder="请选择提现类型" style="width: 240px">
-                        <el-option v-for="item in withdrawTypeList" :key="item.value" :label="item.label"
+                <el-form-item label="状态">
+                    <el-select v-model="formValue.status" placeholder="请选择状态" style="width: 240px">
+                        <el-option v-for="item in statusList" :key="item.value" :label="item.label"
                             :value="item.value" />
                     </el-select>
                 </el-form-item>
@@ -28,34 +22,26 @@
         <div class="uploadList">
             <div class="taskUploadList">
                 <div class="title">
-                    <span>提现管理列表</span>
+                    <span>节点转移申请列表</span>
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%">
-                        <el-table-column prop="id" label="id" width="50" />
-                        <el-table-column prop="userId" label="用户id" width="80" />
-                        <el-table-column prop="username" label="用户名" width="100" />
-                        <el-table-column prop="email" label="邮箱" width="150" />
-                        <el-table-column prop="createdAt" label="申请时间" width="200" />
-                        <el-table-column prop="amount" label="提现金额" width="100" />
-                        <el-table-column prop="balanceBefore" label="提现前余额" width="100" />
-                        <el-table-column prop="balanceAfter" label="提现后余额" width="100" />
-                        <el-table-column prop="address" label="提现地址" width="300" />
-                        <el-table-column prop="network" label="提现网络" width="100" />
-                        <el-table-column prop="fee" label="手续费" width="100" />
-                        <el-table-column prop="actualAmount" label="到账金额" width="100" />
-                        <el-table-column prop="withdrawTypeName" label="提现类型" width="100" />
-                        <el-table-column prop="status" label="提现状态" width="100">
-                            <template #default="{ row }">
-                                {{ status[row.status] }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="reason" label="备注" width="200" />
-                        <el-table-column prop="approvedAt" label="审核通过时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="120">
+                        <el-table-column prop="id" label="申请id" width="80" />
+                        <el-table-column prop="fromOpName" label="来源节点工作室" width="150" />
+                        <el-table-column prop="toOpName" label="转移运营中心" width="150" />
+                        <el-table-column prop="toWsName" label="转移节点工作室" width="150" />
+
+                        <el-table-column prop="statusName" label="状态" width="150" />
+                        <el-table-column prop="userName" label="用户名" width="150" />
+                        <el-table-column prop="userId" label="用户id" width="100" />
+                        <el-table-column prop="approveName" label="审批员用户名" width="150" />
+                        <el-table-column prop="reason" label="原因" width="200" />
+                        <el-table-column prop="approvedAt" label="审批时间" width="200" />
+                        <el-table-column prop="createdAt" label="创建时间" width="200" />
+                        <el-table-column fixed="right" label="Operations" width="200">
                             <template #default="scope">
-                                <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
-                                    size="small">审核</el-button>
+                                <el-button link type="primary" @click="changeBind(scope.$index, scope.row)"
+                                    size="small">操作</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -67,25 +53,19 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="修改状态" width="800" :before-close="beforeClose" destroy-on-close>
+        <el-dialog v-model="dialogVisible" title="更改申请转移用户绑定节点" width="800" :before-close="beforeClose"
+            destroy-on-close>
             <div class="diaContent">
                 <el-radio-group v-model="radio1">
-                    <el-radio value="APPROVAL" size="large">{{ status.APPROVAL }}</el-radio>
-                    <el-radio value="FAILED" size="large">{{ status.FAILED }}</el-radio>
-                    <el-radio value="SUCCESSFULLY" size="large">{{ status.SUCCESSFULLY }}</el-radio>
-                    <el-radio value="CANCELED" size="large">{{ status.CANCELED }}</el-radio>
+                    <el-radio value="1" size="large">通过</el-radio>
+                    <el-radio value="2" size="large">拒绝</el-radio>
                 </el-radio-group>
-
-                <el-form-item label="理由">
-                    <el-input v-model="reason" style="width: 440px" :rows="2" type="textarea"
-                        placeholder="Please input" />
-                </el-form-item>
             </div>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="beforeClose">取消</el-button>
                     <el-button type="primary" @click="handConfirm">
-                        确定修改
+                        确定转移
                     </el-button>
                 </div>
             </template>
@@ -99,37 +79,24 @@ import {
 } from '@/utils/cache'
 import { reactive } from 'vue'
 const formValue = reactive({
+    requestId: "",
     userId: "",
-    address: "",
-    username: "",
-    email: "",
-    withdrawType:"",
+    status: "",
 })
-  const withdrawTypeList = reactive([
-    { label: '全部', value: '' },
-    { label: '个人基金提现', value: 'USER' },
-    { label: '节点基金提现', value: 'WORK_NODE' },
-    { label: '运营基金提现', value: 'OP_NODE' },
-  ])
-const dialogVisible = ref(false)
+const statusList = reactive([{ label: '待审', value: 0 }, { label: '通过', value: 1 }, { label: '拒绝', value: 2 },])
 const tableData = ref()
-const rowData = ref('')
-const showDialog = (index, row) => {
-    dialogVisible.value = true;
-    rowData.value = row
-    radio1.value = rowData.value?.status
-}
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
 const getTableData = async (page) => {
-    const res = await _Api._WithdrawList({
+    const res = await _Api._RequestPage({
         pageNo: page,
         pageSize: pageSize.value,
         ...formValue
     })
     if (res) {
         tableData.value = res
+        console.log(tableData.value);
     }
 }
 getTableData(currentPage.value)
@@ -141,31 +108,31 @@ const handleCurrentChange = (val) => {
     currentPage.value = val
     getTableData(currentPage.value)
 }
+const dialogVisible=ref(false)
+const seletRow = ref({})
+const radio1 = ref()
+const changeBind = async (index, row) => {
+    seletRow.value = row
+    dialogVisible.value=true
+}
 
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
 }
-const status = reactive({
-    APPROVAL: '待审核',
-    FAILED: '失败',
-    SUCCESSFULLY: '成功',
-    CANCELED: '已取消',
-})
-const radio1 = ref('')
-const reason = ref('')
 const handConfirm = async () => {
-    const res = await _Api._WithdrawAudit({
-        userWithdrawId: rowData.value.id,
+    const res = await _Api._ChangeBizUserNode({
+        requestId: seletRow.value.id,
         status: radio1.value,
-        reason: reason.value
     })
     if (res) {
-        dialogVisible.value = false;
-        ElMessage('修改成功')
-        getTableData(currentPage.value)
+        ElMessage('更改成功')
+        dialogVisible.value=false
+        currentPage.value = 1
+        getTableData()
     }
 }
+
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)

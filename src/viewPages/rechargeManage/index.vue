@@ -9,7 +9,7 @@
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item label="交易哈希">
-                    <el-input v-model="formValue.transactionHash" placeholder="请输入交易哈希" clearable />
+                    <el-input v-model="formValue.fromAddr" placeholder="请输入交易哈希" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -31,8 +31,12 @@
                         <el-table-column prop="email" label="邮箱" width="150" />
                         <el-table-column prop="amount" label="充值金额" width="100" />
                         <el-table-column prop="currency" label="充值币种" width="100" />
-                        <el-table-column prop="transactionHash" label="交易哈希" width="300" />
-                        <el-table-column prop="status" label="状态" width="100" />
+                        <el-table-column prop="fromAddr" label="交易哈希" width="300" />
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template #default="{ row }">
+                                {{ statius[row.status] }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column prop="updatedAt" label="更新时间" width="200" />
                         <el-table-column fixed="right" label="Operations" min-width="120">
@@ -77,7 +81,7 @@ import {
 import { reactive } from 'vue'
 const formValue = reactive({
     userId: "",
-    transactionHash: "",
+    fromAddr: "",
     username: "",
 })
 const dialogVisible = ref(false)
