@@ -15,6 +15,7 @@ export const _GeoRegionCreateGeo = data => _Request('/admin/geoRegion/createGeo'
 export const _NodePage = data => _Request('/admin/node/page', data) //运营中心节点列表
 export const _NodeRemoveBizNode = data => _Request('/admin/node/removeBizNode', data) //删除节点
 export const _NodeCreateBizNode = data => _Request('/admin/node/createBizNode', data) //创建节点
+export const _UpdateBizNodeLeader = data => _Request('/admin/node/updateBizNodeLeader', data) //更新节点负责人
 export const _BindUserPage = data => _Request('/admin/nodeBind/bindUserPage', data,'get') //节点绑定用户列表
 export const _NodeList = data => _Request('/node/list', data) //运营工作室节点列表
 export const _UnBindUserNode = data => _Request('/admin/nodeBind/unBindUserNode', data,'get') //解除节点绑定用户
@@ -38,6 +39,7 @@ export const _GlobalApi = {
     _NodePage,
     _NodeRemoveBizNode,
     _NodeCreateBizNode,
+    _UpdateBizNodeLeader,
     _BindUserPage,
     _NodeList,
     _UnBindUserNode,

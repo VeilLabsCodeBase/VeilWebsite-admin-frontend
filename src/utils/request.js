@@ -7,8 +7,8 @@ import router from '@/router'
 import { ElMessage } from 'element-plus'
 
 export const _Request = async (url, param, method = 'post') => {
-    // 加上接口公共前缀
-    const _AllUrl = API_COMMON_PREFIX + url
+    // axios 的 baseURL 已经包含 /api，这里直接使用传入的 url
+    const _AllUrl = url
     let token = _LocalCache.Get(TOKEN)
     let params = {
         // token: token || '',
@@ -60,7 +60,7 @@ const _RefreshTOKEN = async (url, param, method) => {
     if (IS_ENCRYPT) {
         params = _EncryptData(params, AES_API_KEY)
     }
-    const res = await axios.post(API_COMMON_PREFIX + '/system/info', params)
+    const res = await axios.post('/system/info', params)
     if (res && !res.error) {
         let data
         if (IS_ENCRYPT) {

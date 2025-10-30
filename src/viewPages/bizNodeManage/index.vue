@@ -60,8 +60,10 @@
 <!--                        <el-table-column prop="statusName" label="状态" width="100" />-->
                         <el-table-column prop="createdAt" label="创建时间" width="200" />
                         <el-table-column prop="updatedAt"  label="更新时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="120">
+                        <el-table-column fixed="right" label="Operations" min-width="200">
                             <template #default="scope">
+                                <el-button link type="primary" @click="editLeader(scope.row)"
+                                    size="small">编辑负责人</el-button>
                                 <el-button link type="primary" @click="removeNode(scope.$index, scope.row)"
                                     size="small">删除</el-button>
                             </template>
@@ -88,6 +90,38 @@
                 </div>
             </template>
         </el-dialog>
+
+        <!-- 编辑负责人对话框 -->
+        <el-dialog v-model="editDialogVisible" title="编辑节点负责人" width="600" destroy-on-close>
+            <el-form :model="editForm" label-width="120px">
+                <el-form-item label="节点名称">
+                    <el-input v-model="editForm.nodeName" disabled />
+                </el-form-item>
+                <el-form-item label="节点类型">
+                    <el-input v-model="editForm.typeName" disabled />
+                </el-form-item>
+                <el-form-item label="当前负责人">
+                    <el-input v-model="editForm.currentLeaderName" disabled />
+                </el-form-item>
+                <el-form-item label="新负责人ID" required>
+                    <el-input v-model="editForm.newLeaderUserId"
+                        placeholder="请输入新负责人用户ID"
+                        type="number" />
+                </el-form-item>
+                <el-form-item label="变更原因">
+                    <el-input v-model="editForm.changeReason"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="请输入变更原因（选填）" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="editDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="confirmEditLeader">确认变更</el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -109,8 +143,17 @@ const creatFrom = reactive({
     parentNodeId: "",
 })
 const dialogVisible = ref(false)
+const editDialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
+const editForm = reactive({
+    nodeId: null,
+    nodeName: '',
+    typeName: '',
+    currentLeaderName: '',
+    newLeaderUserId: '',
+    changeReason: ''
+})
 const showDialog = (index, row) => {
     dialogVisible.value = true;
 }
@@ -173,6 +216,40 @@ const handConfirm = async () => {
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+// 编辑负责人相关方法
+const editLeader = (row) => {
+    editForm.nodeId = row.id
+    editForm.nodeName = row.nodeName
+    editForm.typeName = row.typeName
+    editForm.currentLeaderName = row.leaderUserName
+    editForm.newLeaderUserId = ''
+    editForm.changeReason = ''
+    editDialogVisible.value = true
+}
+
+const confirmEditLeader = async () => {
+    if (!editForm.newLeaderUserId) {
+        ElMessage.error('请输入新负责人ID')
+        return
+    }
+
+    try {
+        const res = await _Api._UpdateBizNodeLeader({
+            nodeId: editForm.nodeId,
+            newLeaderUserId: parseInt(editForm.newLeaderUserId),
+            changeReason: editForm.changeReason
+        })
+
+        if (res) {
+            ElMessage.success('负责人变更成功')
+            editDialogVisible.value = false
+            getTableData(currentPage.value) // 刷新列表
+        }
+    } catch (error) {
+        ElMessage.error('变更失败：' + (error.message || '未知错误'))
+    }
 }
 </script>
 <style lang="scss" scoped>

@@ -11,6 +11,9 @@
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
+                <el-form-item label="手机号码">
+                    <el-input v-model="formValue.phoneNumber" placeholder="请输入手机号码" clearable />
+                </el-form-item>
                 <el-form-item label="是否已绑定">
                     <el-select v-model="formValue.isBindNode" placeholder="请选择" style="width: 240px">
                         <el-option v-for="item in isBindNodeList" :key="item.value" :label="item.label"
@@ -34,6 +37,11 @@
                         <el-table-column prop="username" label="用户名" width="180" />
                         <el-table-column prop="role" label="用户角色" width="180" />
                         <el-table-column prop="email" label="email" width="180" />
+                        <el-table-column label="手机号码" width="180">
+                            <template #default="{ row }">
+                                {{ row.countryCode ? row.countryCode + ' ' + row.phoneNumber : row.phoneNumber || '-' }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="opCenterName" label="运营中心" width="200" />
                         <el-table-column prop="workshopName" label="节点" width="180" />
 
@@ -172,6 +180,7 @@ const formValue = reactive({
     email: "",
     username: "",
     isBindNode: "",
+    phoneNumber: "",
 })
 const statius = reactive({
     'NORMAL': "布道大使",
