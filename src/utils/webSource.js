@@ -12,7 +12,7 @@ export class WebSource {
             return
         } else {
             this.eventSource = new EventSource(
-                API_PREFIX+`/api/admin/sse/userWithdrawNotice?token=${this.token}`
+                API_PREFIX+`/admin/sse/userWithdrawNotice?token=${this.token}`
             )
             // 错误处理
             this.eventSource.onerror = err => {

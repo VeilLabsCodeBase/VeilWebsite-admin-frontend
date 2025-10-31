@@ -5,12 +5,9 @@ import router from '@/router'
 import { _LocalCache } from "@/utils/cache";
 import { TOKEN } from '@/utils/constants'
 
-// 开发环境使用 /api 让 Vite proxy 处理
-// 生产环境使用完整的API地址
-const baseURL = IS_DEV ? '/api' : (API_BASE_URL || API_PREFIX)
-
+// 统一使用环境变量中的API_BASE_URL作为baseURL
 const service = axios.create({
-    baseURL: baseURL,
+    baseURL: API_BASE_URL,
     timeout: 30 * 1000,
     headers: { 'Content-Type': 'application/json' },
 })

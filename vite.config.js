@@ -17,8 +17,7 @@ export default ({ mode }) => {
     const proxy = {}
     proxy[E_API_PREFIX] = {
         target: E_API_BASE_URL,
-        changeOrigin: true,
-        rewrite: path => path.replace(new RegExp(`^${E_API_PREFIX}`), ''),
+        changeOrigin: true, // 不移除前缀，直接转发完整路径到后端
     }
 
     return defineConfig({
@@ -46,8 +45,7 @@ export default ({ mode }) => {
             outDir,
             rollupOptions: { output: { manualChunks } },
         },
-        // server: { host: '0.0.0.0', port: 1612, proxy },
-        server: { host: '0.0.0.0', port: 1612},
+        server: { host: '0.0.0.0', port: 1612, proxy },
     })
 }
 
