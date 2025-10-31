@@ -1,13 +1,12 @@
 import axios from 'axios'
-import { IS_DEV, API_BASE_URL,API_PREFIX } from '@/utils/constants'
+import { IS_DEV, API_BASE_URL, API_PREFIX } from '@/utils/constants'
 import { _AdjustP8, _FormatDate } from '@/utils/commonFn'
 import router from '@/router'
 import { _LocalCache } from "@/utils/cache";
 import { TOKEN } from '@/utils/constants'
-
-// 统一使用环境变量中的API_BASE_URL作为baseURL
+// 统一使用环境变量中的API_PREFIX作为baseURL
 const service = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: API_PREFIX,
     timeout: 30 * 1000,
     headers: { 'Content-Type': 'application/json' },
 })
@@ -17,8 +16,8 @@ service.interceptors.request.use(
         if (request.data && request.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
             request.data = qs.stringify(request.data)
         }
-        request.headers['Authorization']=`Bearer ${_LocalCache.Get(TOKEN)}`;
-        
+        request.headers['Authorization'] = `Bearer ${_LocalCache.Get(TOKEN)}`;
+
         return request
     },
     error => Promise.reject(error)
@@ -27,7 +26,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
     response => {
-        
+
         // // 接口返回的三个字段
         // let { code, data, message } = response
 
