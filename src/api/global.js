@@ -5,6 +5,12 @@ export const _upLogin = data => _Request('/admin/login', data) //登陆
 export const _userList = data => _Request('/admin/user/list', data) //用户列表
 export const _depositList = data => _Request('/admin/deposit/list', data, 'get') //充值列表
 export const _depositUpdate = data => _Request('/admin/deposit/update', data) //更新充值信息
+export const _stakingRecordsList = data => _Request('/admin/deposit/staking-records', data, 'get') //质押记录列表
+export const _dailyRewardsList = data => _Request('/admin/deposit/daily-rewards', data, 'get') //每日收益列表
+export const _distributionFailuresList = data => _Request('/admin/deposit/distribution-failures', data, 'get') //失败记录列表
+export const _retryFailedDistribution = id => _Request(`/admin/deposit/distribution-failures/${id}/retry`, {}, 'post') //重试失败的收益发放
+export const _batchRetryFailedDistributions = data => _Request('/admin/deposit/distribution-failures/batch-retry', data, 'post') //批量重试失败的收益发放
+export const _executeDailyRewardCalculation = () => _Request('/admin/deposit/daily-reward-calculation/execute', {}, 'post') //手动执行每日收益计算任务
 export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
@@ -29,6 +35,12 @@ export const _GlobalApi = {
     _userList,
     _depositList,
     _depositUpdate,
+    _stakingRecordsList,
+    _dailyRewardsList,
+    _distributionFailuresList,
+    _retryFailedDistribution,
+    _batchRetryFailedDistributions,
+    _executeDailyRewardCalculation,
     _WithdrawList,
     _WithdrawAudit,
     _UserModellingTree,

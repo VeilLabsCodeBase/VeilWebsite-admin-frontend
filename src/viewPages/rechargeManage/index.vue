@@ -56,11 +56,27 @@
         </div>
         <el-dialog v-model="dialogVisible" title="修改状态" width="800" :before-close="beforeClose" destroy-on-close>
             <div class="diaContent">
-                <el-radio-group v-model="radio1">
-                    <el-radio value="PENDING" size="large">待处理</el-radio>
-                    <el-radio value="COMPLETED" size="large">已完成</el-radio>
-                    <el-radio value="FAILED" size="large">失败</el-radio>
-                </el-radio-group>
+                <el-form :model="dialogForm" label-width="120px">
+                    <el-form-item label="状态">
+                        <el-radio-group v-model="radio1">
+                            <el-radio value="PENDING" size="large">待处理</el-radio>
+                            <el-radio value="COMPLETED" size="large">已完成</el-radio>
+                            <el-radio value="FAILED" size="large">失败</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="质押周期（天）" v-if="radio1 === 'COMPLETED'">
+                        <el-select v-model="dialogForm.periodDays" placeholder="请选择质押周期（新机制）" clearable>
+                            <el-option label="15天" :value="15" />
+                            <el-option label="30天" :value="30" />
+                            <el-option label="90天" :value="90" />
+                            <el-option label="180天" :value="180" />
+                            <el-option label="360天" :value="360" />
+                        </el-select>
+                        <div style="margin-top: 8px; color: #909399; font-size: 12px;">
+                            <p>提示：如果选择质押周期，将使用新质押机制V2处理；如果不选择，将使用旧机制处理</p>
+                        </div>
+                    </el-form-item>
+                </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
@@ -87,10 +103,14 @@ const formValue = reactive({
 const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
+const dialogForm = reactive({
+    periodDays: null
+})
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
     radio1.value = rowData.value?.status
+    dialogForm.periodDays = null // 重置周期选择
 }
 const _Api = inject('$api')
 const pageSize = ref(8)
@@ -126,10 +146,15 @@ const statius = reactive({
 })
 const radio1 = ref('')
 const handConfirm = async () => {
-    const res = await _Api._depositUpdate({
+    const updateData = {
         depositId: rowData.value.id,
         status: radio1.value
-    })
+    }
+    // 如果状态为已完成且选择了周期，添加周期参数（使用新机制）
+    if (radio1.value === 'COMPLETED' && dialogForm.periodDays) {
+        updateData.periodDays = dialogForm.periodDays
+    }
+    const res = await _Api._depositUpdate(updateData)
     if (res) {
         dialogVisible.value = false;
         ElMessage('修改成功')

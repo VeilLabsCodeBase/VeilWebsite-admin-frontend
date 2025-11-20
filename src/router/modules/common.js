@@ -38,6 +38,26 @@ export default [
                 name: 'nodeChangeManage',
                 component: () => import('@/viewPages/nodeChangeManage/index.vue'),
             },
+            {
+                path: '/stakingManage',
+                name: 'stakingManage',
+                component: () => import('@/viewPages/stakingManage/index.vue'),
+            },
+            {
+                path: '/dailyRewardManage',
+                name: 'dailyRewardManage',
+                component: () => import('@/viewPages/dailyRewardManage/index.vue'),
+            },
+            {
+                path: '/distributionFailureManage',
+                name: 'distributionFailureManage',
+                component: () => import('@/viewPages/distributionFailureManage/index.vue'),
+            },
+            {
+                path: '/dailyRewardTaskManage',
+                name: 'dailyRewardTaskManage',
+                component: () => import('@/viewPages/dailyRewardTaskManage/index.vue'),
+            },
         ],
     },
     {

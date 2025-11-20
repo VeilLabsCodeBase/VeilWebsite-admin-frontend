@@ -19,6 +19,10 @@
                     <el-menu-item index="1" route="/">用户管理</el-menu-item>
                     <el-menu-item index="2" route="/rechargeManage">充值管理</el-menu-item>
                     <el-menu-item index="3" route="/withdrawCashManage">提现管理</el-menu-item>
+                    <el-menu-item index="8" route="/stakingManage">质押记录管理</el-menu-item>
+                    <el-menu-item index="9" route="/dailyRewardManage">每日收益管理</el-menu-item>
+                    <el-menu-item index="10" route="/distributionFailureManage">收益发放失败管理</el-menu-item>
+                    <el-menu-item index="11" route="/dailyRewardTaskManage">每日收益任务管理</el-menu-item>
                     <el-menu-item index="4" route="/geoManage">区域管理</el-menu-item>
                     <el-menu-item index="5" route="/bizNodeManage">节点管理</el-menu-item>
                     <el-menu-item index="6" route="/nodeBindManage">节点绑定管理</el-menu-item>

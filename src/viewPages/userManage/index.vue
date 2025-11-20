@@ -36,6 +36,7 @@
                         <el-table-column prop="userModelling.userId" label="用户id" />
                         <el-table-column prop="username" label="用户名" width="180" />
                         <el-table-column prop="role" label="用户角色" width="180" />
+                        <el-table-column prop="referredUserId" label="推荐人Id" />
                         <el-table-column prop="email" label="email" width="180" />
                         <el-table-column label="手机号码" width="180">
                             <template #default="{ row }">
