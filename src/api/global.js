@@ -14,6 +14,7 @@ export const _executeDailyRewardCalculation = (targetDate) => {
     const params = targetDate ? { targetDate } : null
     return _Request('/admin/deposit/daily-reward-calculation/execute', params, 'post') //手动执行每日收益计算任务
 }
+export const _getTaskLogs = data => _Request('/admin/deposit/daily-reward-calculation/logs', data, 'get') //查询任务执行日志列表
 export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
@@ -44,6 +45,7 @@ export const _GlobalApi = {
     _retryFailedDistribution,
     _batchRetryFailedDistributions,
     _executeDailyRewardCalculation,
+    _getTaskLogs,
     _WithdrawList,
     _WithdrawAudit,
     _UserModellingTree,
