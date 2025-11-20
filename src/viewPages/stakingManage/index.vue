@@ -50,7 +50,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="periodDays" label="质押周期(天)" width="120" />
-                        <el-table-column prop="dailyRate" label="日算力倍率(‰)" width="130">
+                        <el-table-column prop="dailyRate" label="日算力倍率(%)" width="130">
                             <template #default="{ row }">
                                 {{ row.dailyRate }}
                             </template>
@@ -80,12 +80,12 @@
                         </el-table-column>
                         <el-table-column prop="totalRewardUsdt" label="累计USDT收益" width="130">
                             <template #default="{ row }">
-                                {{ row.totalRewardUsdt?.toFixed(4) || '0.0000' }}
+                                {{ row.totalRewardUsdt?.toFixed(8) || '0.00000000' }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="totalRewardToken" label="累计Token收益" width="130">
                             <template #default="{ row }">
-                                {{ row.totalRewardToken?.toFixed(4) || '0.0000' }}
+                                {{ row.totalRewardToken?.toFixed(8) || '0.00000000' }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="principalWithdrawn" label="本金是否已提取" width="130">
@@ -137,7 +137,7 @@
                     <el-descriptions-item label="Token金额">{{ detailData.amountToken?.toFixed(2)
                         }}</el-descriptions-item>
                     <el-descriptions-item label="质押周期(天)">{{ detailData.periodDays }}</el-descriptions-item>
-                    <el-descriptions-item label="日算力倍率(‰)">{{ detailData.dailyRate }}</el-descriptions-item>
+                    <el-descriptions-item label="日算力倍率(%)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
                     <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule)
                         }}</el-descriptions-item>
@@ -148,10 +148,10 @@
                             {{ getStatusText(detailData.status) }}
                         </el-tag>
                     </el-descriptions-item>
-                    <el-descriptions-item label="累计USDT收益">{{ detailData.totalRewardUsdt?.toFixed(4) || '0.0000'
-                        }}</el-descriptions-item>
-                    <el-descriptions-item label="累计Token收益">{{ detailData.totalRewardToken?.toFixed(4) || '0.0000'
-                        }}</el-descriptions-item>
+                    <el-descriptions-item label="累计USDT收益">{{ detailData.totalRewardUsdt?.toFixed(8) || '0.00000000'
+                    }}</el-descriptions-item>
+                    <el-descriptions-item label="累计Token收益">{{ detailData.totalRewardToken?.toFixed(8) || '0.00000000'
+                    }}</el-descriptions-item>
                     <el-descriptions-item label="本金是否已提取">
                         <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
                             {{ detailData.principalWithdrawn ? '是' : '否' }}

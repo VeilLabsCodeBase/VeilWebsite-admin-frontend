@@ -102,20 +102,22 @@
                                 {{ row.durationSeconds || '-' }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="计算收益" width="150">
+                        <el-table-column label="计算收益" width="180">
                             <template #default="{ row }">
                                 <div style="font-size: 12px;">
                                     <div>总数: {{ row.calculateTotal || 0 }}</div>
                                     <div style="color: #67C23A;">成功: {{ row.calculateSuccess || 0 }}</div>
                                     <div style="color: #909399;">跳过: {{ row.calculateSkip || 0 }}</div>
+                                    <div style="color: #F56C6C;">失败: {{ row.calculateFail || 0 }}</div>
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column label="发放收益" width="150">
+                        <el-table-column label="发放收益" width="180">
                             <template #default="{ row }">
                                 <div style="font-size: 12px;">
                                     <div>总数: {{ row.distributeTotal || 0 }}</div>
                                     <div style="color: #67C23A;">成功: {{ row.distributeSuccess || 0 }}</div>
+                                    <div style="color: #909399;">跳过: {{ row.distributeSkip || 0 }}</div>
                                     <div style="color: #F56C6C;">失败: {{ row.distributeFail || 0 }}</div>
                                 </div>
                             </template>
@@ -192,7 +194,7 @@ const executeTask = async () => {
             : '使用T+1机制（计算昨天的收益）'
         
         await ElMessageBox.confirm(
-            `确定要手动执行每日收益计算任务吗？\n${dateText}\n此操作会立即触发任务执行。`,
+            `确定要手动执行每日收益计算任务吗？\n${dateText}\n此操作会立即触发任务执行（异步执行，可能需要较长时间）。`,
             '确认执行',
             {
                 confirmButtonText: '确定执行',
@@ -202,19 +204,58 @@ const executeTask = async () => {
         )
         
         executing.value = true
-        const res = await _Api._executeDailyRewardCalculation(executeForm.value.targetDate)
         
-        if (res) {
-            ElMessage.success('任务执行成功，请查看执行历史记录')
-            // 刷新日志列表
-            await refreshLogs()
+        // 创建超时Promise（12秒）
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error('TIMEOUT'))
+            }, 12000) // 12秒超时
+        })
+        
+        // 创建请求Promise
+        const requestPromise = _Api._executeDailyRewardCalculation(executeForm.value.targetDate)
+        
+        try {
+            // 使用Promise.race实现超时控制
+            const res = await Promise.race([requestPromise, timeoutPromise])
+            
+            if (res) {
+                ElMessage.success('任务已提交，正在后台执行中，请稍后刷新查看执行结果')
+                // 延迟刷新日志列表，给后端一些时间创建日志记录
+                setTimeout(async () => {
+                    await refreshLogs()
+                }, 2000)
+            }
+        } catch (error) {
+            if (error === 'cancel') {
+                return
+            }
+            
+            if (error.message === 'TIMEOUT') {
+                // 超时情况：任务可能仍在执行，提示用户刷新
+                ElMessage.warning({
+                    message: '任务已提交，正在后台执行中，可能需要较长时间。请稍后刷新页面查看执行结果。',
+                    duration: 5000,
+                    showClose: true
+                })
+                // 延迟刷新日志列表
+                setTimeout(async () => {
+                    await refreshLogs()
+                }, 2000)
+            } else {
+                // 其他错误
+                console.error('任务执行失败:', error)
+                ElMessage.error('任务提交失败：' + (error.message || '未知错误'))
+                // 刷新日志列表以查看是否有失败记录
+                setTimeout(async () => {
+                    await refreshLogs()
+                }, 2000)
+            }
         }
     } catch (error) {
         if (error !== 'cancel') {
             console.error('任务执行失败:', error)
             ElMessage.error('任务执行失败：' + (error.message || '未知错误'))
-            // 刷新日志列表以查看失败记录
-            await refreshLogs()
         }
     } finally {
         executing.value = false

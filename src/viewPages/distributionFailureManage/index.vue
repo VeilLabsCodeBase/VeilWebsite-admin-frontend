@@ -51,12 +51,12 @@
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
                         <el-table-column prop="dailyRewardUsdt" label="USDT收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardUsdt?.toFixed(4) || '0.0000' }}
+                                {{ row.dailyRewardUsdt?.toFixed(8) || '0.00000000' }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="dailyRewardToken" label="Token收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardToken?.toFixed(4) || '0.0000' }}
+                                {{ row.dailyRewardToken?.toFixed(8) || '0.00000000' }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="failureReason" label="失败原因" width="250" show-overflow-tooltip />
