@@ -12,10 +12,10 @@
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item label="状态">
-                    <el-select v-model="formValue.status" placeholder="请选择状态" clearable>
+                    <el-select v-model="formValue.status" placeholder="请选择状态" clearable style="width: 200px">
                         <el-option label="进行中" value="ACTIVE" />
-                        <el-option label="已到期" value="EXPIRED" />
-                        <el-option label="已封顶" value="CAPPED" />
+                        <el-option label="已完成" value="COMPLETED" />
+                        <el-option label="已取消" value="CANCELLED" />
                     </el-select>
                 </el-form-item>
                 <el-form-item>
@@ -34,19 +34,19 @@
                         <el-table-column prop="userId" label="用户ID" width="100" />
                         <el-table-column prop="username" label="用户名" width="120" />
                         <el-table-column prop="depositId" label="充值ID" width="100" />
-                        <el-table-column prop="stakingAmount" label="质押金额(USDT)" width="140">
+                        <el-table-column prop="totalAmount" label="质押金额(USDT)" width="140">
                             <template #default="{ row }">
-                                {{ row.stakingAmount?.toFixed(2) }}
+                                {{ row.totalAmount?.toFixed(2) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="usdtAmount" label="USDT金额" width="120">
+                        <el-table-column prop="amountUsdt" label="USDT金额" width="120">
                             <template #default="{ row }">
-                                {{ row.usdtAmount?.toFixed(2) }}
+                                {{ row.amountUsdt?.toFixed(2) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="tokenAmount" label="Token金额" width="120">
+                        <el-table-column prop="amountToken" label="Token金额" width="120">
                             <template #default="{ row }">
-                                {{ row.tokenAmount?.toFixed(2) }}
+                                {{ row.amountToken?.toFixed(2) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="periodDays" label="质押周期(天)" width="120" />
@@ -61,8 +61,16 @@
                                 {{ getWithdrawRuleDesc(row.withdrawRule) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="startDate" label="开始日期" width="120" />
-                        <el-table-column prop="endDate" label="到期日期" width="120" />
+                        <el-table-column prop="startDate" label="开始日期" width="120">
+                            <template #default="{ row }">
+                                {{ formatDate(row.startDate) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="endDate" label="到期日期" width="120">
+                            <template #default="{ row }">
+                                {{ formatDate(row.endDate) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="状态" width="100">
                             <template #default="{ row }">
                                 <el-tag :type="getStatusType(row.status)">
@@ -80,7 +88,25 @@
                                 {{ row.totalRewardToken?.toFixed(4) || '0.0000' }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="180" />
+                        <el-table-column prop="principalWithdrawn" label="本金是否已提取" width="130">
+                            <template #default="{ row }">
+                                <el-tag :type="row.principalWithdrawn ? 'success' : 'info'">
+                                    {{ row.principalWithdrawn ? '是' : '否' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="isRewardCapped" label="是否已达到收益倍数封顶" width="180">
+                            <template #default="{ row }">
+                                <el-tag :type="row.isRewardCapped ? 'warning' : 'success'">
+                                    {{ row.isRewardCapped ? '是' : '否' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="createdAt" label="创建时间" width="180">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.createdAt) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column fixed="right" label="操作" min-width="120">
                             <template #default="scope">
                                 <el-button link type="primary" @click="viewDetail(scope.row)" size="small">
@@ -105,24 +131,39 @@
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="充值ID">{{ detailData.depositId }}</el-descriptions-item>
-                    <el-descriptions-item label="质押金额(USDT)">{{ detailData.stakingAmount?.toFixed(2) }}</el-descriptions-item>
-                    <el-descriptions-item label="USDT金额">{{ detailData.usdtAmount?.toFixed(2) }}</el-descriptions-item>
-                    <el-descriptions-item label="Token金额">{{ detailData.tokenAmount?.toFixed(2) }}</el-descriptions-item>
+                    <el-descriptions-item label="质押金额(USDT)">{{ detailData.totalAmount?.toFixed(2)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="USDT金额">{{ detailData.amountUsdt?.toFixed(2) }}</el-descriptions-item>
+                    <el-descriptions-item label="Token金额">{{ detailData.amountToken?.toFixed(2)
+                        }}</el-descriptions-item>
                     <el-descriptions-item label="质押周期(天)">{{ detailData.periodDays }}</el-descriptions-item>
                     <el-descriptions-item label="日算力倍率(‰)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
-                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule) }}</el-descriptions-item>
-                    <el-descriptions-item label="开始日期">{{ detailData.startDate }}</el-descriptions-item>
-                    <el-descriptions-item label="到期日期">{{ detailData.endDate }}</el-descriptions-item>
+                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule)
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="开始日期">{{ formatDate(detailData.startDate) }}</el-descriptions-item>
+                    <el-descriptions-item label="到期日期">{{ formatDate(detailData.endDate) }}</el-descriptions-item>
                     <el-descriptions-item label="状态">
                         <el-tag :type="getStatusType(detailData.status)">
                             {{ getStatusText(detailData.status) }}
                         </el-tag>
                     </el-descriptions-item>
-                    <el-descriptions-item label="累计USDT收益">{{ detailData.totalRewardUsdt?.toFixed(4) || '0.0000' }}</el-descriptions-item>
-                    <el-descriptions-item label="累计Token收益">{{ detailData.totalRewardToken?.toFixed(4) || '0.0000' }}</el-descriptions-item>
-                    <el-descriptions-item label="创建时间">{{ detailData.createdAt }}</el-descriptions-item>
-                    <el-descriptions-item label="更新时间">{{ detailData.updatedAt }}</el-descriptions-item>
+                    <el-descriptions-item label="累计USDT收益">{{ detailData.totalRewardUsdt?.toFixed(4) || '0.0000'
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="累计Token收益">{{ detailData.totalRewardToken?.toFixed(4) || '0.0000'
+                        }}</el-descriptions-item>
+                    <el-descriptions-item label="本金是否已提取">
+                        <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
+                            {{ detailData.principalWithdrawn ? '是' : '否' }}
+                        </el-tag>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="是否已达到收益倍数封顶">
+                        <el-tag :type="detailData.isRewardCapped ? 'warning' : 'success'">
+                            {{ detailData.isRewardCapped ? '是' : '否' }}
+                        </el-tag>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="创建时间">{{ formatDateTime(detailData.createdAt) }}</el-descriptions-item>
+                    <el-descriptions-item label="更新时间">{{ formatDateTime(detailData.updatedAt) }}</el-descriptions-item>
                 </el-descriptions>
             </div>
             <template #footer>
@@ -159,7 +200,7 @@ const getTableData = async (page) => {
     if (formValue.userId) params.userId = formValue.userId
     if (formValue.username) params.username = formValue.username
     if (formValue.status) params.status = formValue.status
-    
+
     const res = await _Api._stakingRecordsList(params)
     if (res) {
         tableData.value = res
@@ -195,8 +236,8 @@ const getWithdrawRuleDesc = (rule) => {
 const getStatusText = (status) => {
     const statusMap = {
         'ACTIVE': '进行中',
-        'EXPIRED': '已到期',
-        'CAPPED': '已封顶'
+        'COMPLETED': '已完成',
+        'CANCELLED': '已取消'
     }
     return statusMap[status] || status
 }
@@ -204,8 +245,8 @@ const getStatusText = (status) => {
 const getStatusType = (status) => {
     const typeMap = {
         'ACTIVE': 'success',
-        'EXPIRED': 'info',
-        'CAPPED': 'warning'
+        'COMPLETED': 'info',
+        'CANCELLED': 'warning'
     }
     return typeMap[status] || ''
 }
@@ -213,6 +254,53 @@ const getStatusType = (status) => {
 const viewDetail = async (row) => {
     detailData.value = row
     detailDialogVisible.value = true
+}
+
+// 格式化日期为 yyyy-MM-dd
+const formatDate = (dateStr) => {
+    if (!dateStr) return '-'
+    try {
+        const date = new Date(dateStr)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    } catch (e) {
+        // 如果已经是 yyyy-MM-dd 格式，直接返回
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+            return dateStr.substring(0, 10)
+        }
+        return dateStr
+    }
+}
+
+// 格式化日期时间为 yyyy-MM-dd HH:mm:ss
+const formatDateTime = (dateStr) => {
+    if (!dateStr) return '-'
+    try {
+        const date = new Date(dateStr)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        const seconds = String(date.getSeconds()).padStart(2, '0')
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    } catch (e) {
+        // 如果已经是日期时间格式，尝试解析
+        if (typeof dateStr === 'string') {
+            // 尝试匹配 yyyy-MM-dd HH:mm:ss 或类似格式
+            const match = dateStr.match(/(\d{4}-\d{2}-\d{2})[\sT](\d{2}):(\d{2}):(\d{2})/)
+            if (match) {
+                return `${match[1]} ${match[2]}:${match[3]}:${match[4]}`
+            }
+            // 如果只有日期部分，返回日期
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+                return dateStr.substring(0, 10) + ' 00:00:00'
+            }
+        }
+        return dateStr
+    }
 }
 </script>
 <style lang="scss" scoped>
@@ -260,4 +348,3 @@ const viewDetail = async (row) => {
     }
 }
 </style>
-

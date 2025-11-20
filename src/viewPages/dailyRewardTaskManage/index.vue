@@ -31,14 +31,32 @@
                 </div>
 
                 <div class="actionArea">
-                    <el-button 
-                        type="primary" 
-                        size="large" 
-                        @click="executeTask"
-                        :loading="executing">
-                        <el-icon v-if="!executing"><CaretRight /></el-icon>
-                        {{ executing ? '执行中...' : '手动执行任务' }}
-                    </el-button>
+                    <el-form :model="executeForm" label-width="120px" inline>
+                        <el-form-item label="计算日期">
+                            <el-date-picker
+                                v-model="executeForm.targetDate"
+                                type="date"
+                                placeholder="选择日期（不选则计算昨天的收益）"
+                                format="YYYY-MM-DD"
+                                value-format="YYYY-MM-DD"
+                                :disabled-date="disabledDate"
+                                style="width: 200px"
+                            />
+                            <el-text type="info" style="margin-left: 12px; font-size: 12px;">
+                                不选择日期则使用T+1机制（计算昨天的收益），日期不能超过今天
+                            </el-text>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button 
+                                type="primary" 
+                                size="large" 
+                                @click="executeTask"
+                                :loading="executing">
+                                <el-icon v-if="!executing"><CaretRight /></el-icon>
+                                {{ executing ? '执行中...' : '手动执行任务' }}
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
                 </div>
 
                 <div v-if="lastExecuteResult" class="executeResult">
@@ -81,11 +99,38 @@ import { ref, inject } from 'vue'
 const _Api = inject('$api')
 const executing = ref(false)
 const lastExecuteResult = ref(null)
+const executeForm = ref({
+    targetDate: null
+})
+
+// 禁用超过今天的日期
+const disabledDate = (time) => {
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    return time.getTime() > today.getTime()
+}
 
 const executeTask = async () => {
     try {
+        // 验证日期不能超过今天
+        if (executeForm.value.targetDate) {
+            const selectedDate = new Date(executeForm.value.targetDate)
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            selectedDate.setHours(0, 0, 0, 0)
+            
+            if (selectedDate > today) {
+                ElMessage.warning('计算日期不能超过今天')
+                return
+            }
+        }
+        
+        const dateText = executeForm.value.targetDate 
+            ? `计算日期：${executeForm.value.targetDate}` 
+            : '使用T+1机制（计算昨天的收益）'
+        
         await ElMessageBox.confirm(
-            '确定要手动执行每日收益计算任务吗？此操作会立即触发任务执行。',
+            `确定要手动执行每日收益计算任务吗？\n${dateText}\n此操作会立即触发任务执行。`,
             '确认执行',
             {
                 confirmButtonText: '确定执行',
@@ -95,7 +140,7 @@ const executeTask = async () => {
         )
         
         executing.value = true
-        const res = await _Api._executeDailyRewardCalculation()
+        const res = await _Api._executeDailyRewardCalculation(executeForm.value.targetDate)
         
         if (res) {
             lastExecuteResult.value = {

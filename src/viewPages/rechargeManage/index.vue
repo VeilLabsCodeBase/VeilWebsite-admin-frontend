@@ -31,6 +31,11 @@
                         <el-table-column prop="email" label="邮箱" width="150" />
                         <el-table-column prop="amount" label="充值金额" width="100" />
                         <el-table-column prop="currency" label="充值币种" width="100" />
+                        <el-table-column prop="periodDays" label="质押周期" width="100">
+                            <template #default="{ row }">
+                                {{ row.periodDays ? row.periodDays + '天' : '-' }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="fromAddr" label="交易哈希" width="300" />
                         <el-table-column prop="status" label="状态" width="100">
                             <template #default="{ row }">
@@ -64,18 +69,6 @@
                             <el-radio value="FAILED" size="large">失败</el-radio>
                         </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="质押周期（天）" v-if="radio1 === 'COMPLETED'">
-                        <el-select v-model="dialogForm.periodDays" placeholder="请选择质押周期（新机制）" clearable>
-                            <el-option label="15天" :value="15" />
-                            <el-option label="30天" :value="30" />
-                            <el-option label="90天" :value="90" />
-                            <el-option label="180天" :value="180" />
-                            <el-option label="360天" :value="360" />
-                        </el-select>
-                        <div style="margin-top: 8px; color: #909399; font-size: 12px;">
-                            <p>提示：如果选择质押周期，将使用新质押机制V2处理；如果不选择，将使用旧机制处理</p>
-                        </div>
-                    </el-form-item>
                 </el-form>
             </div>
             <template #footer>
@@ -103,14 +96,11 @@ const formValue = reactive({
 const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
-const dialogForm = reactive({
-    periodDays: null
-})
+const dialogForm = reactive({})
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
     radio1.value = rowData.value?.status
-    dialogForm.periodDays = null // 重置周期选择
 }
 const _Api = inject('$api')
 const pageSize = ref(8)
@@ -150,10 +140,7 @@ const handConfirm = async () => {
         depositId: rowData.value.id,
         status: radio1.value
     }
-    // 如果状态为已完成且选择了周期，添加周期参数（使用新机制）
-    if (radio1.value === 'COMPLETED' && dialogForm.periodDays) {
-        updateData.periodDays = dialogForm.periodDays
-    }
+    // 不再传递 periodDays，后端会从 user_deposits 表中读取已保存的周期
     const res = await _Api._depositUpdate(updateData)
     if (res) {
         dialogVisible.value = false;

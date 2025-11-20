@@ -10,7 +10,10 @@ export const _dailyRewardsList = data => _Request('/admin/deposit/daily-rewards'
 export const _distributionFailuresList = data => _Request('/admin/deposit/distribution-failures', data, 'get') //失败记录列表
 export const _retryFailedDistribution = id => _Request(`/admin/deposit/distribution-failures/${id}/retry`, {}, 'post') //重试失败的收益发放
 export const _batchRetryFailedDistributions = data => _Request('/admin/deposit/distribution-failures/batch-retry', data, 'post') //批量重试失败的收益发放
-export const _executeDailyRewardCalculation = () => _Request('/admin/deposit/daily-reward-calculation/execute', {}, 'post') //手动执行每日收益计算任务
+export const _executeDailyRewardCalculation = (targetDate) => {
+    const params = targetDate ? { targetDate } : null
+    return _Request('/admin/deposit/daily-reward-calculation/execute', params, 'post') //手动执行每日收益计算任务
+}
 export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树

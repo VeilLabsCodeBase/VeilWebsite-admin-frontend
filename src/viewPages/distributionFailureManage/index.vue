@@ -15,10 +15,11 @@
                     <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable />
                 </el-form-item>
                 <el-form-item label="重试状态">
-                    <el-select v-model="formValue.retryStatus" placeholder="请选择状态" clearable>
-                        <el-option label="待重试" value="PENDING" />
-                        <el-option label="重试成功" value="SUCCESS" />
-                        <el-option label="重试失败" value="FAILED" />
+                    <el-select v-model="formValue.retryStatus" placeholder="请选择状态" clearable style="width: 200px">
+                        <el-option label="待处理" value="PENDING" />
+                        <el-option label="重试中" value="RETRYING" />
+                        <el-option label="已成功" value="SUCCESS" />
+                        <el-option label="最终失败" value="FAILED" />
                     </el-select>
                 </el-form-item>
                 <el-form-item>
@@ -147,9 +148,10 @@ const handleSelectionChange = (selection) => {
 
 const getRetryStatusText = (status) => {
     const statusMap = {
-        'PENDING': '待重试',
-        'SUCCESS': '重试成功',
-        'FAILED': '重试失败'
+        'PENDING': '待处理',
+        'RETRYING': '重试中',
+        'SUCCESS': '已成功',
+        'FAILED': '最终失败'
     }
     return statusMap[status] || status
 }
@@ -157,6 +159,7 @@ const getRetryStatusText = (status) => {
 const getRetryStatusType = (status) => {
     const typeMap = {
         'PENDING': 'warning',
+        'RETRYING': 'info',
         'SUCCESS': 'success',
         'FAILED': 'danger'
     }

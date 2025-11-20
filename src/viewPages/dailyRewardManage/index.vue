@@ -25,9 +25,10 @@
                     />
                 </el-form-item>
                 <el-form-item label="发放状态">
-                    <el-select v-model="formValue.distributionStatus" placeholder="请选择状态" clearable>
+                    <el-select v-model="formValue.distributionStatus" placeholder="请选择状态" clearable style="width: 200px">
                         <el-option label="待发放" value="PENDING" />
-                        <el-option label="已发放" value="SUCCESS" />
+                        <el-option label="已发放" value="PAID" />
+                        <el-option label="已取消" value="CANCELLED" />
                         <el-option label="发放失败" value="FAILED" />
                     </el-select>
                 </el-form-item>
@@ -145,7 +146,8 @@ const onSearch = () => {
 const getDistributionStatusText = (status) => {
     const statusMap = {
         'PENDING': '待发放',
-        'SUCCESS': '已发放',
+        'PAID': '已发放',
+        'CANCELLED': '已取消',
         'FAILED': '发放失败'
     }
     return statusMap[status] || status
@@ -154,7 +156,8 @@ const getDistributionStatusText = (status) => {
 const getDistributionStatusType = (status) => {
     const typeMap = {
         'PENDING': 'warning',
-        'SUCCESS': 'success',
+        'PAID': 'success',
+        'CANCELLED': 'info',
         'FAILED': 'danger'
     }
     return typeMap[status] || ''
