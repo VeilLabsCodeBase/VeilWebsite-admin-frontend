@@ -164,7 +164,7 @@ const loadingLogs = ref(false)
 const executeForm = ref({
     targetDate: null
 })
-const pageSize = ref(10)
+const pageSize = ref(5)
 const currentPage = ref(1)
 
 // 禁用超过今天的日期

@@ -1,6 +1,7 @@
 /**
  * 格式化工具函数
  */
+import Decimal from 'decimal.js';
 
 /**
  * 格式化USDT金额（8位精度，去除后缀0）
@@ -12,16 +13,16 @@ export function formatUsdt(amount) {
     return '0';
   }
   
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
-  if (isNaN(numAmount)) {
+  try {
+    // 使用Decimal.js进行精确计算，避免浮点数精度问题
+    const decimal = new Decimal(amount);
+    // 使用8位精度，然后去除后缀0
+    const fixed = decimal.toFixed(8);
+    // 去除后缀0和小数点（如果小数部分全为0）
+    return fixed.replace(/\.?0+$/, '');
+  } catch (e) {
     return '0';
   }
-  
-  // 使用8位精度，然后去除后缀0
-  const fixed = numAmount.toFixed(8);
-  // 去除后缀0和小数点（如果小数部分全为0）
-  return fixed.replace(/\.?0+$/, '');
 }
 
 /**
@@ -34,15 +35,15 @@ export function formatToken(amount) {
     return '0';
   }
   
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
-  if (isNaN(numAmount)) {
+  try {
+    // 使用Decimal.js进行精确计算，避免浮点数精度问题
+    const decimal = new Decimal(amount);
+    // 使用18位精度，然后去除后缀0
+    const fixed = decimal.toFixed(18);
+    // 去除后缀0和小数点（如果小数部分全为0）
+    return fixed.replace(/\.?0+$/, '');
+  } catch (e) {
     return '0';
   }
-  
-  // 使用18位精度，然后去除后缀0
-  const fixed = numAmount.toFixed(18);
-  // 去除后缀0和小数点（如果小数部分全为0）
-  return fixed.replace(/\.?0+$/, '');
 }
 
