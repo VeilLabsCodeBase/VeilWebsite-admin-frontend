@@ -80,12 +80,12 @@
                         </el-table-column>
                         <el-table-column prop="totalRewardUsdt" label="累计USDT收益" width="130">
                             <template #default="{ row }">
-                                {{ row.totalRewardUsdt?.toFixed(8) || '0.00000000' }}
+                                {{ formatUsdt(row.totalRewardUsdt) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="totalRewardToken" label="累计Token收益" width="130">
                             <template #default="{ row }">
-                                {{ row.totalRewardToken?.toFixed(8) || '0.00000000' }}
+                                {{ formatToken(row.totalRewardToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="principalWithdrawn" label="本金是否已提取" width="130">
@@ -148,9 +148,9 @@
                             {{ getStatusText(detailData.status) }}
                         </el-tag>
                     </el-descriptions-item>
-                    <el-descriptions-item label="累计USDT收益">{{ detailData.totalRewardUsdt?.toFixed(8) || '0.00000000'
+                    <el-descriptions-item label="累计USDT收益">{{ formatUsdt(detailData.totalRewardUsdt)
                     }}</el-descriptions-item>
-                    <el-descriptions-item label="累计Token收益">{{ detailData.totalRewardToken?.toFixed(8) || '0.00000000'
+                    <el-descriptions-item label="累计Token收益">{{ formatToken(detailData.totalRewardToken)
                     }}</el-descriptions-item>
                     <el-descriptions-item label="本金是否已提取">
                         <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
@@ -177,6 +177,7 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
+import { formatUsdt, formatToken } from '@/utils/format'
 
 const formValue = reactive({
     stakingId: "",

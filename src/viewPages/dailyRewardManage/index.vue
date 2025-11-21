@@ -51,12 +51,12 @@
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
                         <el-table-column prop="dailyRewardUsdt" label="USDT收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardUsdt?.toFixed(8) || '0.00000000' }}
+                                {{ formatUsdt(row.dailyRewardUsdt) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="dailyRewardToken" label="Token收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardToken?.toFixed(8) || '0.00000000' }}
+                                {{ formatToken(row.dailyRewardToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="发放状态" width="120">
@@ -111,8 +111,8 @@
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="收益日期">{{ detailData.rewardDate }}</el-descriptions-item>
-                    <el-descriptions-item label="USDT收益">{{ detailData.dailyRewardUsdt?.toFixed(8) || '0.00000000' }}</el-descriptions-item>
-                    <el-descriptions-item label="Token收益">{{ detailData.dailyRewardToken?.toFixed(8) || '0.00000000' }}</el-descriptions-item>
+                    <el-descriptions-item label="USDT收益">{{ formatUsdt(detailData.dailyRewardUsdt) }}</el-descriptions-item>
+                    <el-descriptions-item label="Token收益">{{ formatToken(detailData.dailyRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="发放状态">
                         <el-tag :type="getDistributionStatusType(detailData.status)">
                             {{ getDistributionStatusText(detailData.status) }}
@@ -134,6 +134,7 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
+import { formatUsdt, formatToken } from '@/utils/format'
 
 const formValue = reactive({
     rewardId: "",

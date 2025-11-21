@@ -51,12 +51,12 @@
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
                         <el-table-column prop="dailyRewardUsdt" label="USDT收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardUsdt?.toFixed(8) || '0.00000000' }}
+                                {{ formatUsdt(row.dailyRewardUsdt) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="dailyRewardToken" label="Token收益" width="120">
                             <template #default="{ row }">
-                                {{ row.dailyRewardToken?.toFixed(8) || '0.00000000' }}
+                                {{ formatToken(row.dailyRewardToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="failureReason" label="失败原因" width="250" show-overflow-tooltip />
@@ -94,6 +94,7 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
+import { formatUsdt, formatToken } from '@/utils/format'
 
 const formValue = reactive({
     failureId: "",
