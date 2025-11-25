@@ -88,7 +88,7 @@
                                 {{ formatToken(row.totalRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="principalWithdrawn" label="本金是否已提取" width="130">
+                        <el-table-column prop="principalWithdrawn" label="本金是否已返还" width="130">
                             <template #default="{ row }">
                                 <el-tag :type="row.principalWithdrawn ? 'success' : 'info'">
                                     {{ row.principalWithdrawn ? '是' : '否' }}
@@ -160,7 +160,7 @@
                     }}</el-descriptions-item>
                     <el-descriptions-item label="累计Token收益">{{ formatToken(detailData.totalRewardToken)
                     }}</el-descriptions-item>
-                    <el-descriptions-item label="本金是否已提取">
+                    <el-descriptions-item label="本金是否已返还">
                         <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
                             {{ detailData.principalWithdrawn ? '是' : '否' }}
                         </el-tag>
@@ -205,6 +205,13 @@
                         value-format="YYYY-MM-DDTHH:mm:ss"
                         style="width: 100%" />
                 </el-form-item>
+                <el-form-item label="状态" prop="status">
+                    <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
+                        <el-option label="进行中" value="ACTIVE" />
+                        <el-option label="已完成" value="COMPLETED" />
+                        <el-option label="已取消" value="CANCELLED" />
+                    </el-select>
+                </el-form-item>
             </el-form>
             <template #footer>
                 <div class="dialog-footer">
@@ -232,7 +239,8 @@ const editDialogVisible = ref(false)
 const editForm = ref({
     id: null,
     startDate: null,
-    endDate: null
+    endDate: null,
+    status: null
 })
 const editFormRef = ref(null)
 const updateLoading = ref(false)
@@ -264,6 +272,9 @@ const editRules = {
             },
             trigger: 'change'
         }
+    ],
+    status: [
+        { required: true, message: '请选择状态', trigger: 'change' }
     ]
 }
 
@@ -344,7 +355,8 @@ const showEditDialog = (row) => {
     editForm.value = {
         id: row.id,
         startDate: row.startDate ? new Date(row.startDate).toISOString().slice(0, 19) : null,
-        endDate: row.endDate ? new Date(row.endDate).toISOString().slice(0, 19) : null
+        endDate: row.endDate ? new Date(row.endDate).toISOString().slice(0, 19) : null,
+        status: row.status || null
     }
     editDialogVisible.value = true
 }
@@ -359,7 +371,8 @@ const handleUpdate = async () => {
         const res = await _Api._stakingRecordUpdate({
             id: editForm.value.id,
             startDate: editForm.value.startDate,
-            endDate: editForm.value.endDate
+            endDate: editForm.value.endDate,
+            status: editForm.value.status
         })
         
         if (res) {
