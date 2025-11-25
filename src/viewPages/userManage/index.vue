@@ -45,31 +45,34 @@
                         </el-table-column>
                         <el-table-column prop="opCenterName" label="运营中心" width="200" />
                         <el-table-column prop="workshopName" label="节点" width="180" />
-
-                        <el-table-column prop="userModelling.rebateUsdtBalance" label="推荐返利-USDT释放余额" width="200" />
-                        <el-table-column prop="userModelling.rebateReleasedUsdtAmount"
-                            label="推荐返利-USDT已释放数量" width="200" />
-                        <el-table-column prop="userModelling.rebateDirectEarned" label="累计推荐直推返利" width="180" />
-                        <el-table-column prop="userModelling.rebateGapEarned" label="累计推荐级差返利" width="180" />
-                        <el-table-column prop="userModelling.bonusUsdtBalance" label="团队分红-USDT余额" width="180" />
-                        <el-table-column prop="userModelling.bonusReleasedUsdtAmount" label="团队分红-USDT已释放额度"
-                            width="200" />
-                        <el-table-column prop="userModelling.bonusEarned" label="累计团队推广分红" width="200" />
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
-                        <el-table-column prop="userModelling.tokenReleaseBalance" label="token释放余额"
-                            width="120" />
-                        <el-table-column prop="userModelling.tokenReleasedAmount" label="已发放token数量" width="120" />
-                        <el-table-column prop="userModelling.directReferralCount" label="直推人数" width="100" />
-                        <el-table-column prop="userModelling.teamRole" label="团队角色" width="100">
+                        <el-table-column prop="ambassadorIncentiveFundUsdt" label="大使激励基金奖励(USDT)" width="200">
                             <template #default="{ row }">
-                                {{ statius[row.userModelling.teamRole] }}
+                                {{ formatUsdt(row.ambassadorIncentiveFundUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.tokenReleaseRate" label="Token日释放比例(%)" width="100" />
-                        <el-table-column prop="userModelling.maxTokenLimit" label="Token释放上限" width="100" />
-                        <el-table-column prop="userModelling.lastReleaseTime" label="上次释放时间" width="100" />
-                        <el-table-column prop="userModelling.lastDepositTime" label="最近真实充值时间" width="200" />
-                        <el-table-column prop="userModelling.userLevel" label="用户等级" width="200" />
+                        <el-table-column prop="communityAmbassadorFundingUsdt" label="社区大使资助奖励(USDT)" width="200">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.communityAmbassadorFundingUsdt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="communityAmbassadorPlanUsdt" label="社区大使计划奖励(USDT)" width="200">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.communityAmbassadorPlanUsdt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="withdrawableUsdt" label="可提现USDT" width="150">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.withdrawableUsdt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" width="150" />
+                        <el-table-column prop="smallZonePerformance" label="小区业绩" width="150">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.smallZonePerformance) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="communityRoleDisplayName" label="社区角色" width="150" />
                         <el-table-column prop="status" label="用户状态" width="180" />
                         <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200" />
                         <el-table-column prop="userModelling.createdAt" label="创建时间" width="200" />
@@ -297,6 +300,29 @@ const bindNodeConfirm = async () => {
     bindNodeDialog.value = false
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+// 格式化USDT金额（最低保留两位小数，最大8位）
+const formatUsdt = (value) => {
+    if (value == null || value === undefined || value === '') {
+        return '0.00'
+    }
+    const num = typeof value === 'string' ? parseFloat(value) : value
+    if (isNaN(num)) {
+        return '0.00'
+    }
+    // 保留2-8位小数，但至少保留2位
+    const str = num.toFixed(8)
+    // 移除末尾的0，但至少保留2位小数
+    const parts = str.split('.')
+    if (parts.length === 2) {
+        let decimals = parts[1].replace(/0+$/, '')
+        if (decimals.length < 2) {
+            decimals = decimals.padEnd(2, '0')
+        }
+        return parts[0] + '.' + decimals
+    }
+    return num.toFixed(2)
 }
 </script>
 <style lang="scss" scoped>

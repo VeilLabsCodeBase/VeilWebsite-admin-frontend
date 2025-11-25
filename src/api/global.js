@@ -6,6 +6,8 @@ export const _userList = data => _Request('/admin/user/list', data) //用户列�
 export const _depositList = data => _Request('/admin/deposit/list', data, 'get') //充值列表
 export const _depositUpdate = data => _Request('/admin/deposit/update', data) //更新充值信息
 export const _stakingRecordsList = data => _Request('/admin/deposit/staking-records', data, 'get') //质押记录列表
+export const _stakingRecordDetail = id => _Request(`/admin/deposit/staking-records/${id}`, {}, 'get') //质押记录详情
+export const _stakingRecordUpdate = data => _Request('/admin/deposit/staking-records/update', data, 'post') //修改质押记录
 export const _dailyRewardsList = data => _Request('/admin/deposit/daily-rewards', data, 'get') //每日收益列表
 export const _distributionFailuresList = data => _Request('/admin/deposit/distribution-failures', data, 'get') //失败记录列表
 export const _retryFailedDistribution = id => _Request(`/admin/deposit/distribution-failures/${id}/retry`, {}, 'post') //重试失败的收益发放
@@ -40,6 +42,8 @@ export const _GlobalApi = {
     _depositList,
     _depositUpdate,
     _stakingRecordsList,
+    _stakingRecordDetail,
+    _stakingRecordUpdate,
     _dailyRewardsList,
     _distributionFailuresList,
     _retryFailedDistribution,

@@ -107,10 +107,13 @@
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" min-width="120">
+                        <el-table-column fixed="right" label="操作" min-width="200">
                             <template #default="scope">
                                 <el-button link type="primary" @click="viewDetail(scope.row)" size="small">
                                     查看详情
+                                </el-button>
+                                <el-button link type="primary" @click="showEditDialog(scope.row)" size="small">
+                                    修改
                                 </el-button>
                             </template>
                         </el-table-column>
@@ -139,6 +142,11 @@
                     <el-descriptions-item label="质押周期(天)">{{ detailData.periodDays }}</el-descriptions-item>
                     <el-descriptions-item label="日算力倍率(%)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
+                    <el-descriptions-item label="收益封顶金额(USDT)" :span="2">
+                        <span style="color: #409eff; font-weight: bold; font-size: 16px;">
+                            {{ formatUsdt(detailData.rewardCapacity) }}
+                        </span>
+                    </el-descriptions-item>
                     <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule)
                         }}</el-descriptions-item>
                     <el-descriptions-item label="开始日期">{{ formatDate(detailData.startDate) }}</el-descriptions-item>
@@ -172,6 +180,39 @@
                 </div>
             </template>
         </el-dialog>
+        
+        <!-- 修改对话框 -->
+        <el-dialog v-model="editDialogVisible" title="修改质押记录" width="600" destroy-on-close>
+            <el-form :model="editForm" label-width="120px" :rules="editRules" ref="editFormRef">
+                <el-form-item label="质押记录ID">
+                    <el-input v-model="editForm.id" disabled />
+                </el-form-item>
+                <el-form-item label="开始日期" prop="startDate">
+                    <el-date-picker
+                        v-model="editForm.startDate"
+                        type="datetime"
+                        placeholder="选择开始日期"
+                        format="YYYY-MM-DD HH:mm:ss"
+                        value-format="YYYY-MM-DDTHH:mm:ss"
+                        style="width: 100%" />
+                </el-form-item>
+                <el-form-item label="到期日期" prop="endDate">
+                    <el-date-picker
+                        v-model="editForm.endDate"
+                        type="datetime"
+                        placeholder="选择到期日期"
+                        format="YYYY-MM-DD HH:mm:ss"
+                        value-format="YYYY-MM-DDTHH:mm:ss"
+                        style="width: 100%" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="editDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handleUpdate" :loading="updateLoading">确定</el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -187,10 +228,44 @@ const formValue = reactive({
 })
 const detailDialogVisible = ref(false)
 const detailData = ref(null)
+const editDialogVisible = ref(false)
+const editForm = ref({
+    id: null,
+    startDate: null,
+    endDate: null
+})
+const editFormRef = ref(null)
+const updateLoading = ref(false)
 const tableData = ref()
 const _Api = inject('$api')
 const pageSize = ref(10)
 const currentPage = ref(1)
+
+// 表单验证规则
+const editRules = {
+    startDate: [
+        { required: true, message: '请选择开始日期', trigger: 'change' }
+    ],
+    endDate: [
+        { required: true, message: '请选择到期日期', trigger: 'change' },
+        {
+            validator: (rule, value, callback) => {
+                if (editForm.value.startDate && value) {
+                    const start = new Date(editForm.value.startDate)
+                    const end = new Date(value)
+                    if (end <= start) {
+                        callback(new Error('到期日期必须晚于开始日期'))
+                    } else {
+                        callback()
+                    }
+                } else {
+                    callback()
+                }
+            },
+            trigger: 'change'
+        }
+    ]
+}
 
 const getTableData = async (page) => {
     const params = {
@@ -253,8 +328,53 @@ const getStatusType = (status) => {
 }
 
 const viewDetail = async (row) => {
-    detailData.value = row
-    detailDialogVisible.value = true
+    try {
+        // 调用接口获取详情（包含收益封顶金额）
+        const res = await _Api._stakingRecordDetail(row.id)
+        if (res) {
+            detailData.value = res
+            detailDialogVisible.value = true
+        }
+    } catch (error) {
+        ElMessage.error('获取详情失败: ' + (error.message || '未知错误'))
+    }
+}
+
+const showEditDialog = (row) => {
+    editForm.value = {
+        id: row.id,
+        startDate: row.startDate ? new Date(row.startDate).toISOString().slice(0, 19) : null,
+        endDate: row.endDate ? new Date(row.endDate).toISOString().slice(0, 19) : null
+    }
+    editDialogVisible.value = true
+}
+
+const handleUpdate = async () => {
+    if (!editFormRef.value) return
+    
+    try {
+        await editFormRef.value.validate()
+        updateLoading.value = true
+        
+        const res = await _Api._stakingRecordUpdate({
+            id: editForm.value.id,
+            startDate: editForm.value.startDate,
+            endDate: editForm.value.endDate
+        })
+        
+        if (res) {
+            ElMessage.success('修改成功')
+            editDialogVisible.value = false
+            // 刷新列表
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        if (error !== false) { // 表单验证失败会返回false，不需要显示错误
+            ElMessage.error('修改失败: ' + (error.message || '未知错误'))
+        }
+    } finally {
+        updateLoading.value = false
+    }
 }
 
 // 格式化日期为 yyyy-MM-dd
