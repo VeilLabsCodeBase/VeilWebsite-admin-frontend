@@ -102,6 +102,16 @@
                                 </el-tag>
                             </template>
                         </el-table-column>
+                        <el-table-column prop="nextRewardTime" label="下次收益产生时间" width="180">
+                            <template #default="{ row }">
+                                {{ row.nextRewardTime ? formatDateTime(row.nextRewardTime) : '-' }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="rewardSequence" label="已产生收益笔数" width="130">
+                            <template #default="{ row }">
+                                {{ row.rewardSequence || 0 }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="createdAt" label="创建时间" width="180">
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
@@ -128,8 +138,8 @@
         </div>
         <!-- 详情对话框 -->
         <el-dialog v-model="detailDialogVisible" title="质押记录详情" width="800" destroy-on-close>
-            <div v-if="detailData" class="detail-content">
-                <el-descriptions :column="2" border>
+            <div class="detail-content" v-loading="loadingDetail">
+                <el-descriptions v-if="detailData" :column="2" border>
                     <el-descriptions-item label="质押记录ID">{{ detailData.id }}</el-descriptions-item>
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
@@ -170,6 +180,12 @@
                             {{ detailData.isRewardCapped ? '是' : '否' }}
                         </el-tag>
                     </el-descriptions-item>
+                    <el-descriptions-item label="下次收益产生时间">
+                        {{ detailData.nextRewardTime ? formatDateTime(detailData.nextRewardTime) : '-' }}
+                    </el-descriptions-item>
+                    <el-descriptions-item label="已产生收益笔数">
+                        {{ detailData.rewardSequence || 0 }}
+                    </el-descriptions-item>
                     <el-descriptions-item label="创建时间">{{ formatDateTime(detailData.createdAt) }}</el-descriptions-item>
                     <el-descriptions-item label="更新时间">{{ formatDateTime(detailData.updatedAt) }}</el-descriptions-item>
                 </el-descriptions>
@@ -183,27 +199,40 @@
         
         <!-- 修改对话框 -->
         <el-dialog v-model="editDialogVisible" title="修改质押记录" width="600" destroy-on-close>
-            <el-form :model="editForm" label-width="120px" :rules="editRules" ref="editFormRef">
+            <el-config-provider :locale="zhCn">
+                <el-form :model="editForm" label-width="120px" :rules="editRules" ref="editFormRef">
                 <el-form-item label="质押记录ID">
                     <el-input v-model="editForm.id" disabled />
+                </el-form-item>
+                <el-form-item label="质押周期(天)">
+                    <el-input :value="editForm.periodDays" disabled>
+                        <template #suffix>
+                            <span style="color: #909399; margin-right: 8px;">天</span>
+                        </template>
+                    </el-input>
+                    <el-text type="info" style="margin-left: 12px; font-size: 12px;">
+                        到期日期将根据开始日期和质押周期自动计算
+                    </el-text>
                 </el-form-item>
                 <el-form-item label="开始日期" prop="startDate">
                     <el-date-picker
                         v-model="editForm.startDate"
                         type="datetime"
                         placeholder="选择开始日期"
-                        format="YYYY-MM-DD HH:mm:ss"
+                        format="YYYY年MM月DD日 HH:mm:ss"
                         value-format="YYYY-MM-DDTHH:mm:ss"
-                        style="width: 100%" />
+                        style="width: 100%"
+                        @change="handleStartDateChange" />
                 </el-form-item>
-                <el-form-item label="到期日期" prop="endDate">
-                    <el-date-picker
-                        v-model="editForm.endDate"
-                        type="datetime"
-                        placeholder="选择到期日期"
-                        format="YYYY-MM-DD HH:mm:ss"
-                        value-format="YYYY-MM-DDTHH:mm:ss"
-                        style="width: 100%" />
+                <el-form-item label="到期日期">
+                    <el-input :value="editForm.endDate ? formatDateTime(editForm.endDate) : '-'" disabled>
+                        <template #prefix>
+                            <el-icon style="margin-right: 8px;"><Calendar /></el-icon>
+                        </template>
+                    </el-input>
+                    <el-text type="info" style="margin-left: 12px; font-size: 12px;">
+                        自动计算：开始日期 + {{ editForm.periodDays }} 天
+                    </el-text>
                 </el-form-item>
                 <el-form-item label="状态" prop="status">
                     <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
@@ -213,6 +242,7 @@
                     </el-select>
                 </el-form-item>
             </el-form>
+            </el-config-provider>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="editDialogVisible = false">取消</el-button>
@@ -223,8 +253,11 @@
     </div>
 </template>
 <script setup>
-import { ElMessage } from 'element-plus'
-import { reactive, ref, inject } from 'vue'
+import { ElMessage, ElConfigProvider } from 'element-plus'
+import { reactive, ref, inject, watch } from 'vue'
+import { Calendar } from '@element-plus/icons-vue'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import dayjs from 'dayjs'
 import { formatUsdt, formatToken } from '@/utils/format'
 
 const formValue = reactive({
@@ -235,12 +268,14 @@ const formValue = reactive({
 })
 const detailDialogVisible = ref(false)
 const detailData = ref(null)
+const loadingDetail = ref(false)
 const editDialogVisible = ref(false)
 const editForm = ref({
     id: null,
     startDate: null,
     endDate: null,
-    status: null
+    status: null,
+    periodDays: null
 })
 const editFormRef = ref(null)
 const updateLoading = ref(false)
@@ -254,28 +289,23 @@ const editRules = {
     startDate: [
         { required: true, message: '请选择开始日期', trigger: 'change' }
     ],
-    endDate: [
-        { required: true, message: '请选择到期日期', trigger: 'change' },
-        {
-            validator: (rule, value, callback) => {
-                if (editForm.value.startDate && value) {
-                    const start = new Date(editForm.value.startDate)
-                    const end = new Date(value)
-                    if (end <= start) {
-                        callback(new Error('到期日期必须晚于开始日期'))
-                    } else {
-                        callback()
-                    }
-                } else {
-                    callback()
-                }
-            },
-            trigger: 'change'
-        }
-    ],
     status: [
         { required: true, message: '请选择状态', trigger: 'change' }
     ]
+}
+
+// 处理开始日期变化，自动计算到期日期
+const handleStartDateChange = (value) => {
+    if (value && editForm.value.periodDays) {
+        // 使用dayjs解析开始日期，保持时分秒不变
+        const startDate = dayjs(value)
+        // 计算到期日期：开始日期 + 质押周期（天），保持时分秒不变
+        const endDate = startDate.add(editForm.value.periodDays, 'day')
+        // 格式化为 YYYY-MM-DDTHH:mm:ss 格式
+        editForm.value.endDate = endDate.format('YYYY-MM-DDTHH:mm:ss')
+    } else {
+        editForm.value.endDate = null
+    }
 }
 
 const getTableData = async (page) => {
@@ -339,24 +369,34 @@ const getStatusType = (status) => {
 }
 
 const viewDetail = async (row) => {
+    // 先打开对话框并显示loading
+    detailDialogVisible.value = true
+    loadingDetail.value = true
+    // 清空之前的数据，避免显示旧数据
+    detailData.value = null
+    
     try {
         // 调用接口获取详情（包含收益封顶金额）
         const res = await _Api._stakingRecordDetail(row.id)
         if (res) {
             detailData.value = res
-            detailDialogVisible.value = true
         }
     } catch (error) {
         ElMessage.error('获取详情失败: ' + (error.message || '未知错误'))
+        detailDialogVisible.value = false
+    } finally {
+        loadingDetail.value = false
     }
 }
 
 const showEditDialog = (row) => {
+    const startDate = row.startDate ? new Date(row.startDate).toISOString().slice(0, 19) : null
     editForm.value = {
         id: row.id,
-        startDate: row.startDate ? new Date(row.startDate).toISOString().slice(0, 19) : null,
+        startDate: startDate,
         endDate: row.endDate ? new Date(row.endDate).toISOString().slice(0, 19) : null,
-        status: row.status || null
+        status: row.status || null,
+        periodDays: row.periodDays || null
     }
     editDialogVisible.value = true
 }

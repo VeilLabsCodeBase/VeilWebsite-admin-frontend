@@ -13,8 +13,8 @@ export const _getTeamRewardDetails = id => _Request(`/admin/deposit/daily-reward
 export const _distributionFailuresList = data => _Request('/admin/deposit/distribution-failures', data, 'get') //失败记录列表
 export const _retryFailedDistribution = id => _Request(`/admin/deposit/distribution-failures/${id}/retry`, {}, 'post') //重试失败的收益发放
 export const _batchRetryFailedDistributions = data => _Request('/admin/deposit/distribution-failures/batch-retry', data, 'post') //批量重试失败的收益发放
-export const _executeDailyRewardCalculation = (targetDate) => {
-    const params = targetDate ? { targetDate } : null
+export const _executeDailyRewardCalculation = (params) => {
+    // params: { stakingRecordId, executionCount } 或 { targetDate } (已废弃)
     return _Request('/admin/deposit/daily-reward-calculation/execute', params, 'post') //手动执行每日收益计算任务
 }
 export const _getTaskLogs = data => _Request('/admin/deposit/daily-reward-calculation/logs', data, 'get') //查询任务执行日志列表
