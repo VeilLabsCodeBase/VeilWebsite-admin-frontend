@@ -11,7 +11,7 @@
                     :closable="false"
                     show-icon>
                     <template #default>
-                        <p>每日收益计算任务采用24小时制，每1分钟自动执行一次，计算并发放用户的质押收益。</p>
+                        <p>每日收益计算任务采用24小时制，每5分钟自动执行一次，计算并发放用户的质押收益。</p>
                         <p>如果需要手动触发单条质押记录的收益计算，可以点击下方按钮选择质押记录并执行。</p>
                         <p><strong>注意：</strong>手动执行会立即触发任务，请确保在合适的时间执行。执行次数表示对该质押记录执行多少次收益计算。</p>
                     </template>
@@ -22,10 +22,10 @@
                         <el-descriptions-item label="任务名称">每日收益计算与发放任务（24小时制）</el-descriptions-item>
                         <el-descriptions-item label="执行频率">每1分钟自动执行一次</el-descriptions-item>
                         <el-descriptions-item label="任务功能">
-                            计算所有活跃质押记录的每日收益（基于next_reward_time），并发放到用户账户
+                            计算所有活跃质押记录的每日收益（基于下一笔收益产生的时间），并发放到用户账户
                         </el-descriptions-item>
                         <el-descriptions-item label="并发控制">
-                            使用SELECT ... FOR UPDATE SKIP LOCKED，确保多实例环境下不会重复处理同一条记录
+                            使用数据库悲观锁，确保多实例环境下不会重复处理同一条记录
                         </el-descriptions-item>
                     </el-descriptions>
                 </div>
