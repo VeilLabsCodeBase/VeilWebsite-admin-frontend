@@ -20,7 +20,7 @@
                 <div class="taskInfo">
                     <el-descriptions title="任务信息" :column="2" border>
                         <el-descriptions-item label="任务名称">每日收益计算与发放任务（24小时制）</el-descriptions-item>
-                        <el-descriptions-item label="执行频率">每1分钟自动执行一次</el-descriptions-item>
+                        <el-descriptions-item label="执行频率">每5分钟自动执行一次</el-descriptions-item>
                         <el-descriptions-item label="任务功能">
                             计算所有活跃质押记录的每日收益（基于下一笔收益产生的时间），并发放到用户账户
                         </el-descriptions-item>
@@ -43,29 +43,17 @@
 
                 <div class="taskLogsArea">
                     <div class="logsHeader">
-                        <h3>执行历史记录</h3>
+                        <h3>手动执行历史记录</h3>
                         <el-button type="primary" :icon="Refresh" @click="refreshLogs" :loading="loadingLogs">
                             刷新
                         </el-button>
                     </div>
                     <el-table :data="taskLogs?.records" border style="width: 100%" v-loading="loadingLogs">
                         <el-table-column prop="id" label="ID" width="80" />
-                        <el-table-column prop="executionType" label="执行类型" width="120">
-                            <template #default="{ row }">
-                                <el-tag :type="row.executionType === 'MANUAL' ? 'primary' : 'info'">
-                                    {{ row.executionType === 'MANUAL' ? '手动执行' : '定时任务' }}
-                                </el-tag>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="targetDate" label="目标日期" width="120">
-                            <template #default="{ row }">
-                                {{ row.targetDate || '单条触发' }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="executionStatus" label="执行状态" width="100">
                             <template #default="{ row }">
-                                <el-tag :type="getStatusType(row.executionStatus)">
-                                    {{ getStatusText(row.executionStatus) }}
+                                <el-tag :type="getExecutionStatusType(row.executionStatus)">
+                                    {{ getExecutionStatusText(row.executionStatus) }}
                                 </el-tag>
                             </template>
                         </el-table-column>
@@ -495,6 +483,25 @@ const getWithdrawRuleDesc = (rule) => {
     return ruleMap[rule] || rule
 }
 
+// 执行状态文本和类型（任务执行日志）
+const getExecutionStatusText = (status) => {
+    const statusMap = {
+        'RUNNING': '执行中',
+        'SUCCESS': '成功',
+        'FAILED': '失败'
+    }
+    return statusMap[status] || status
+}
+
+const getExecutionStatusType = (status) => {
+    const typeMap = {
+        'RUNNING': 'warning',
+        'SUCCESS': 'success',
+        'FAILED': 'danger'
+    }
+    return typeMap[status] || ''
+}
+
 // 状态文本和类型（质押记录）
 const getStatusText = (status) => {
     const statusMap = {
@@ -509,10 +516,7 @@ const getStatusType = (status) => {
     const typeMap = {
         'ACTIVE': 'success',
         'COMPLETED': 'info',
-        'CANCELLED': 'warning',
-        'RUNNING': 'warning',
-        'SUCCESS': 'success',
-        'FAILED': 'danger'
+        'CANCELLED': 'warning'
     }
     return typeMap[status] || ''
 }
