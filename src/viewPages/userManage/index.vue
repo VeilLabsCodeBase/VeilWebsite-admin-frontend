@@ -46,19 +46,19 @@
                         <el-table-column prop="opCenterName" label="运营中心" width="200" />
                         <el-table-column prop="workshopName" label="节点" width="180" />
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
-                        <el-table-column prop="ambassadorIncentiveFundUsdt" label="大使激励基金奖励(USDT)" width="200">
+                        <el-table-column prop="stakingRewardUsdt" label="质押收益(USDT)" width="200">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.ambassadorIncentiveFundUsdt) }}
+                                {{ formatUsdt(row.stakingRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityAmbassadorFundingUsdt" label="社区大使资助奖励(USDT)" width="200">
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励(USDT)" width="200">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.communityAmbassadorFundingUsdt) }}
+                                {{ formatUsdt(row.communityShareRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityAmbassadorPlanUsdt" label="社区大使计划奖励(USDT)" width="200">
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励(USDT)" width="200">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.communityAmbassadorPlanUsdt) }}
+                                {{ formatUsdt(row.communityRoleRewardUsdt) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="withdrawableUsdt" label="可提现USDT" width="150">
