@@ -38,13 +38,48 @@
                         <el-table-column prop="email" label="邮箱" width="150" />
                         <el-table-column prop="createdAt" label="申请时间" width="200" />
                         <el-table-column prop="amount" label="提现金额" width="100" />
-                        <el-table-column prop="balanceBefore" label="提现前余额" width="100" />
-                        <el-table-column prop="balanceAfter" label="提现后余额" width="100" />
+                        <el-table-column prop="usdtBalanceBefore" label="提现前USDT" width="120">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.usdtBalanceBefore) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="tokenBalanceBefore" label="提现前VEILX" width="120">
+                            <template #default="{ row }">
+                                {{ formatToken(row.tokenBalanceBefore) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="usdtBalanceAfter" label="提现后USDT" width="120">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.usdtBalanceAfter) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="tokenBalanceAfter" label="提现后VEILX" width="120">
+                            <template #default="{ row }">
+                                {{ formatToken(row.tokenBalanceAfter) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="address" label="提现地址" width="300" />
                         <el-table-column prop="network" label="提现网络" width="100" />
                         <el-table-column prop="fee" label="手续费" width="100" />
                         <el-table-column prop="actualAmount" label="到账金额" width="100" />
-                        <el-table-column prop="withdrawTypeName" label="提现类型" width="100" />
+                        <el-table-column prop="actualUsdtAmount" label="到账USDT" width="120">
+                            <template #default="{ row }">
+                                {{ formatUsdt(row.actualUsdtAmount) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="actualTokenAmount" label="到账VEILX" width="120">
+                            <template #default="{ row }">
+                                {{ formatToken(row.actualTokenAmount) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="withdrawTypeName" label="提现方式" width="100" />
+                        <el-table-column prop="withdrawCategory" label="提取类型" width="100">
+                            <template #default="{ row }">
+                                <span v-if="row.withdrawCategory === 'PRINCIPAL'">本金</span>
+                                <span v-else-if="row.withdrawCategory === 'REWARD'">收益</span>
+                                <span v-else>-</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="提现状态" width="100">
                             <template #default="{ row }">
                                 {{ status[row.status] }}
@@ -98,6 +133,7 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive } from 'vue'
+import { formatUsdt, formatToken } from '@/utils/format'
 const formValue = reactive({
     userId: "",
     address: "",
