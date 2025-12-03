@@ -5,9 +5,6 @@
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable />
                 </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
-                </el-form-item>
                 <el-form-item label="释放类型">
                     <el-select v-model="formValue.releaseType" placeholder="请选择" style="width: 240px" clearable>
                         <el-option label="全部" value="" />
@@ -31,7 +28,7 @@
                     <span>Z资产包释放记录</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%">
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" fit>
                         <el-table-column prop="id" label="ID" width="80" />
                         <el-table-column prop="userId" label="用户ID" width="120" />
                         <el-table-column prop="username" label="用户名" width="150" />
@@ -63,7 +60,7 @@
                                 {{ row.sourceStakingRecordId || '-' }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="180">
+                        <el-table-column prop="createdAt" label="创建时间" min-width="180">
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
@@ -90,7 +87,6 @@ import { reactive, ref, inject } from 'vue'
 const tableData = ref()
 const formValue = reactive({
     userId: "",
-    username: "",
     releaseType: "",
     sourceUserId: "",
 })
@@ -105,9 +101,6 @@ const getTableData = async (page) => {
     }
     if (formValue.userId) {
         params.userId = Number(formValue.userId)
-    }
-    if (formValue.username) {
-        params.username = formValue.username
     }
     if (formValue.releaseType) {
         params.releaseType = formValue.releaseType
@@ -141,7 +134,6 @@ const onSearch = () => {
 
 const resetSearch = () => {
     formValue.userId = ""
-    formValue.username = ""
     formValue.releaseType = ""
     formValue.sourceUserId = ""
     currentPage.value = 1
