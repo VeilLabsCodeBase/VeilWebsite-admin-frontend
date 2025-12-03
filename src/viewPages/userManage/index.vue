@@ -31,7 +31,7 @@
                     <span>用户管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%">
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中...">
                         <el-table-column prop="userModelling.id" label="id" />
                         <el-table-column prop="userModelling.userId" label="用户id" />
                         <el-table-column prop="username" label="用户名" width="180" />
@@ -46,24 +46,24 @@
                         <el-table-column prop="opCenterName" label="运营中心" width="200" />
                         <el-table-column prop="workshopName" label="节点" width="180" />
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
-                        <el-table-column prop="stakingRewardUsdt" label="质押收益(USDT)" width="200">
+                        <el-table-column prop="stakingRewardUsdt" label="质押收益" width="250">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.stakingRewardUsdt) }}
+                                {{ formatUsdtAndToken(row.stakingRewardUsdt, row.stakingRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励(USDT)" width="200">
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" width="250">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.communityShareRewardUsdt) }}
+                                {{ formatUsdtAndToken(row.communityShareRewardUsdt, row.communityShareRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励(USDT)" width="200">
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" width="250">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.communityRoleRewardUsdt) }}
+                                {{ formatUsdtAndToken(row.communityRoleRewardUsdt, row.communityRoleRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawableUsdt" label="可提现USDT" width="150">
+                        <el-table-column prop="withdrawableUsdt" label="生态财库" width="250">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.withdrawableUsdt) }}
+                                {{ formatUsdtAndToken(row.withdrawableUsdt, row.withdrawableToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="subordinateReferrals" label="下级贡献者人数" width="150" />
@@ -73,10 +73,25 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="communityRoleDisplayName" label="社区角色" width="150" />
+                        <el-table-column label="Z资产包额度" width="150">
+                            <template #default="{ row, $index }">
+                                <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small">
+                                    {{ formatUsdt(row.userModelling?.zAssetPackageAmount) }}
+                                </el-button>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="用户状态" width="180" />
-                        <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200" />
-                        <el-table-column prop="userModelling.createdAt" label="创建时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="200">
+                        <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.userModelling?.updatedAt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="userModelling.createdAt" label="创建时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.userModelling?.createdAt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" label="操作" min-width="250">
                             <template #default="scope">
                                 <el-button link type="primary" v-if="!scope.row.isBindNode"
                                     @click="showBindDialog(scope.$index, scope.row)" size="small">绑定节点</el-button>
@@ -170,6 +185,53 @@
                 </div>
             </template>
         </el-dialog>
+        <!-- Z资产包详情弹框 -->
+        <el-dialog v-model="zAssetPackageDialog" title="Z资产包详情" width="600" :before-close="beforeCloseZAssetPackage" destroy-on-close>
+            <div class="z-asset-package-content" v-if="currentZAssetPackageRow">
+                <el-descriptions :column="1" border>
+                    <el-descriptions-item label="用户ID">{{ currentZAssetPackageRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户名">{{ currentZAssetPackageRow.username }}</el-descriptions-item>
+                    <el-descriptions-item label="Z资产包额度">
+                        {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageAmount) }} USDT
+                    </el-descriptions-item>
+                    <el-descriptions-item label="已释放额度">
+                        {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageReleased) }} USDT
+                    </el-descriptions-item>
+                    <el-descriptions-item label="已使用额度">
+                        {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageUsed) }} USDT
+                    </el-descriptions-item>
+                    <el-descriptions-item label="可用额度">
+                        <span style="color: #67C23A; font-weight: bold;">
+                            {{ formatUsdt(
+                                (currentZAssetPackageRow.userModelling?.zAssetPackageReleased || 0) - 
+                                (currentZAssetPackageRow.userModelling?.zAssetPackageUsed || 0)
+                            ) }} USDT
+                        </span>
+                    </el-descriptions-item>
+                </el-descriptions>
+                <el-divider content-position="left">更新额度</el-divider>
+                <el-form :model="zAssetPackageForm" label-width="100px" class="z-asset-package-form">
+                    <el-form-item label="新额度">
+                        <el-input-number 
+                            v-model="zAssetPackageForm.zAssetPackageAmount" 
+                            :precision="2" 
+                            :step="100" 
+                            :min="0"
+                            style="width: 300px"
+                            placeholder="请输入新的Z资产包额度" />
+                        <span style="margin-left: 10px; color: #909399; font-size: 14px;">USDT</span>
+                    </el-form-item>
+                </el-form>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeCloseZAssetPackage">取消</el-button>
+                    <el-button type="primary" @click="updateZAssetPackageConfirm">
+                        更新额度
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
@@ -177,8 +239,10 @@ import { ElMessage } from 'element-plus'
 import {
     _SessionCache
 } from '@/utils/cache'
-import { reactive } from 'vue'
+import { reactive, ref, inject } from 'vue'
+import { _FormatDate } from '@/utils/commonFn'
 const tableData = ref()
+const tableLoading = ref(false)
 const formValue = reactive({
     userId: "",
     email: "",
@@ -197,13 +261,20 @@ const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
 const getTableData = async (page) => {
-    const res = await _Api._userList({
-        pageNo: page,
-        pageSize: pageSize.value,
-        ...formValue
-    })
-    if (res) {
-        tableData.value = res
+    tableLoading.value = true
+    try {
+        const res = await _Api._userList({
+            pageNo: page,
+            pageSize: pageSize.value,
+            ...formValue
+        })
+        if (res) {
+            tableData.value = res
+        }
+    } catch (error) {
+        ElMessage.error('查询失败: ' + (error.message || '未知错误'))
+    } finally {
+        tableLoading.value = false
     }
 }
 getTableData(currentPage.value)
@@ -302,6 +373,44 @@ const bindNodeConfirm = async () => {
     getTableData(currentPage.value)
 }
 
+// Z资产包相关
+const zAssetPackageDialog = ref(false)
+const currentZAssetPackageRow = ref(null)
+const zAssetPackageForm = reactive({
+    zAssetPackageAmount: 0
+})
+
+const showZAssetPackageDialog = (index, row) => {
+    currentZAssetPackageRow.value = row
+    zAssetPackageForm.zAssetPackageAmount = row.userModelling?.zAssetPackageAmount || 0
+    zAssetPackageDialog.value = true
+}
+
+const beforeCloseZAssetPackage = () => {
+    zAssetPackageDialog.value = false
+    currentZAssetPackageRow.value = null
+    zAssetPackageForm.zAssetPackageAmount = 0
+}
+
+const updateZAssetPackageConfirm = async () => {
+    if (!currentZAssetPackageRow.value) {
+        return
+    }
+    try {
+        const res = await _Api._updateZAssetPackage({
+            userId: currentZAssetPackageRow.value.userModelling?.userId,
+            zAssetPackageAmount: zAssetPackageForm.zAssetPackageAmount
+        })
+        if (res) {
+            ElMessage.success('更新成功')
+            beforeCloseZAssetPackage()
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+    }
+}
+
 // 格式化USDT金额（最低保留两位小数，最大8位）
 const formatUsdt = (value) => {
     if (value == null || value === undefined || value === '') {
@@ -323,6 +432,31 @@ const formatUsdt = (value) => {
         return parts[0] + '.' + decimals
     }
     return num.toFixed(2)
+}
+
+// 格式化USDT和VEILX显示（格式：xxx USDT + xxx VEILX）
+const formatUsdtAndToken = (usdtValue, tokenValue) => {
+    const usdt = formatUsdt(usdtValue)
+    const token = formatUsdt(tokenValue) // 复用formatUsdt格式化token
+    const parts = []
+    if (usdt !== '0.00' || token === '0.00') {
+        parts.push(`${usdt} USDT`)
+    }
+    if (token !== '0.00') {
+        parts.push(`${token} VEILX`)
+    }
+    if (parts.length === 0) {
+        return '0.00 USDT'
+    }
+    return parts.join(' + ')
+}
+
+// 格式化日期时间为 yyyy-MM-dd HH:mm:ss（使用已有的工具方法）
+const formatDateTime = (dateStr) => {
+    if (!dateStr) return '-'
+    // _FormatDate 使用小写 h 表示小时，但输出格式为 24 小时制（0-23）
+    const formatted = _FormatDate(dateStr, 'yyyy-MM-dd hh:mm:ss')
+    return formatted || '-'
 }
 </script>
 <style lang="scss" scoped>
@@ -504,6 +638,12 @@ const formatUsdt = (value) => {
 
     .contentBox.passive {
         background-color: rgb(248 250 252)
+    }
+
+    .z-asset-package-content {
+        .z-asset-package-form {
+            margin-top: 10px;
+        }
     }
 }
 </style>

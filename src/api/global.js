@@ -36,6 +36,8 @@ export const _BizNodeChangeApply = data => _Request('/nodeBind/bizNodeChangeAppl
 export const _RequestPage = data => _Request('/admin/request/page', data) //节点转移申请列表
 export const _ChangeBizUserNode = data => _Request('/admin/request/changeBizUserNode', data) //更改申请转移用户绑定节点
 export const _BindBizUserNode= data => _Request('/nodeBind/bindBizUserNode', data) //绑定节点
+export const _updateZAssetPackage = data => _Request('/admin/user/update-z-asset-package', data) //更新用户Z资产包额度
+export const _zAssetPackageReleaseRecords = data => _Request('/admin/user/z-asset-package-release-records', data) //Z资产包释放记录分页查询
 
 export const _GlobalApi = {
     _upLogin,
@@ -70,4 +72,6 @@ export const _GlobalApi = {
     _RequestPage,
     _ChangeBizUserNode,
     _BindBizUserNode,
+    _updateZAssetPackage,
+    _zAssetPackageReleaseRecords,
 }

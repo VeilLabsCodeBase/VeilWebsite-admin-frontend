@@ -58,6 +58,11 @@ export default [
                 name: 'dailyRewardTaskManage',
                 component: () => import('@/viewPages/dailyRewardTaskManage/index.vue'),
             },
+            {
+                path: '/zAssetPackageReleaseManage',
+                name: 'zAssetPackageReleaseManage',
+                component: () => import('@/viewPages/zAssetPackageReleaseManage/index.vue'),
+            },
         ],
     },
     {
