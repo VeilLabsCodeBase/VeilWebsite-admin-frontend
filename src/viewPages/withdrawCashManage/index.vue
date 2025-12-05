@@ -31,7 +31,7 @@
                     <span>提现管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%">
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
                         <el-table-column prop="id" label="id" width="50" />
                         <el-table-column prop="userId" label="用户id" width="80" />
                         <el-table-column prop="username" label="用户名" width="100" />
@@ -132,7 +132,7 @@ import { ElMessage } from 'element-plus'
 import {
     _SessionCache
 } from '@/utils/cache'
-import { reactive } from 'vue'
+import { reactive, ref, inject } from 'vue'
 import { formatUsdt, formatToken } from '@/utils/format'
 const formValue = reactive({
     userId: "",
@@ -158,14 +158,24 @@ const showDialog = (index, row) => {
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
+const loading = ref(false)
+
 const getTableData = async (page) => {
-    const res = await _Api._WithdrawList({
-        pageNo: page,
-        pageSize: pageSize.value,
-        ...formValue
-    })
-    if (res) {
-        tableData.value = res
+    loading.value = true
+    try {
+        const res = await _Api._WithdrawList({
+            pageNo: page,
+            pageSize: pageSize.value,
+            ...formValue
+        })
+        if (res) {
+            tableData.value = res
+        }
+    } catch (error) {
+        console.error('获取数据失败:', error)
+        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+    } finally {
+        loading.value = false
     }
 }
 getTableData(currentPage.value)

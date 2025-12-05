@@ -28,7 +28,7 @@
                     <span>Z资产包释放记录</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" fit>
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" fit v-loading="loading">
                         <el-table-column prop="id" label="ID" width="80" />
                         <el-table-column prop="userId" label="用户ID" width="120" />
                         <el-table-column prop="username" label="用户名" width="150" />
@@ -93,25 +93,34 @@ const formValue = reactive({
 const _Api = inject('$api')
 const pageSize = ref(10)
 const currentPage = ref(1)
+const loading = ref(false)
 
 const getTableData = async (page) => {
-    const params = {
-        pageNo: page,
-        pageSize: pageSize.value,
-    }
-    if (formValue.userId) {
-        params.userId = Number(formValue.userId)
-    }
-    if (formValue.releaseType) {
-        params.releaseType = formValue.releaseType
-    }
-    if (formValue.sourceUserId) {
-        params.sourceUserId = Number(formValue.sourceUserId)
-    }
-    
-    const res = await _Api._zAssetPackageReleaseRecords(params)
-    if (res) {
-        tableData.value = res
+    loading.value = true
+    try {
+        const params = {
+            pageNo: page,
+            pageSize: pageSize.value,
+        }
+        if (formValue.userId) {
+            params.userId = Number(formValue.userId)
+        }
+        if (formValue.releaseType) {
+            params.releaseType = formValue.releaseType
+        }
+        if (formValue.sourceUserId) {
+            params.sourceUserId = Number(formValue.sourceUserId)
+        }
+        
+        const res = await _Api._zAssetPackageReleaseRecords(params)
+        if (res) {
+            tableData.value = res
+        }
+    } catch (error) {
+        console.error('获取数据失败:', error)
+        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+    } finally {
+        loading.value = false
     }
 }
 

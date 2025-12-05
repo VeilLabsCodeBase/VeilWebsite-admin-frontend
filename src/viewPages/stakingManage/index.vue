@@ -29,7 +29,7 @@
                     <span>质押记录管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%">
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
                         <el-table-column prop="id" label="ID" width="80" />
                         <el-table-column prop="userId" label="用户ID" width="100" />
                         <el-table-column prop="username" label="用户名" width="120" />
@@ -283,6 +283,7 @@ const tableData = ref()
 const _Api = inject('$api')
 const pageSize = ref(10)
 const currentPage = ref(1)
+const loading = ref(false)
 
 // 表单验证规则
 const editRules = {
@@ -309,18 +310,26 @@ const handleStartDateChange = (value) => {
 }
 
 const getTableData = async (page) => {
-    const params = {
-        pageNo: page,
-        pageSize: pageSize.value,
-    }
-    if (formValue.stakingId) params.stakingId = formValue.stakingId
-    if (formValue.userId) params.userId = formValue.userId
-    if (formValue.username) params.username = formValue.username
-    if (formValue.status) params.status = formValue.status
+    loading.value = true
+    try {
+        const params = {
+            pageNo: page,
+            pageSize: pageSize.value,
+        }
+        if (formValue.stakingId) params.stakingId = formValue.stakingId
+        if (formValue.userId) params.userId = formValue.userId
+        if (formValue.username) params.username = formValue.username
+        if (formValue.status) params.status = formValue.status
 
-    const res = await _Api._stakingRecordsList(params)
-    if (res) {
-        tableData.value = res
+        const res = await _Api._stakingRecordsList(params)
+        if (res) {
+            tableData.value = res
+        }
+    } catch (error) {
+        console.error('获取数据失败:', error)
+        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+    } finally {
+        loading.value = false
     }
 }
 
