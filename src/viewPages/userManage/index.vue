@@ -79,7 +79,13 @@
                                 {{ formatUsdt(row.smallZonePerformance) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleDisplayName" label="社区角色" width="150" />
+                        <el-table-column label="社区角色" width="150">
+                            <template #default="{ row, $index }">
+                                <el-button link type="primary" @click="showCommunityRoleDialog($index, row)" size="small">
+                                    {{ row.communityRoleDisplayName || '无等级' }}
+                                </el-button>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" width="150">
                             <template #default="{ row }">
                                 <el-tag :type="row.isCollaboratorNode ? 'success' : 'info'">
@@ -266,6 +272,42 @@
                 <div class="dialog-footer">
                     <el-button @click="cancelAddCollaboratorNode">取消</el-button>
                     <el-button type="primary" @click="confirmAddCollaboratorNode">确定</el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 修改社区角色对话框 -->
+        <el-dialog v-model="communityRoleDialogVisible" title="修改社区角色" width="600" :before-close="beforeCloseCommunityRole" destroy-on-close>
+            <div class="community-role-content" v-if="currentCommunityRoleRow">
+                <el-descriptions :column="1" border>
+                    <el-descriptions-item label="用户ID">{{ currentCommunityRoleRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户名">{{ currentCommunityRoleRow.username }}</el-descriptions-item>
+                    <el-descriptions-item label="当前社区角色">
+                        {{ currentCommunityRoleRow.communityRoleDisplayName || '无等级' }}
+                    </el-descriptions-item>
+                </el-descriptions>
+                <el-divider content-position="left">选择新角色</el-divider>
+                <el-form :model="communityRoleForm" label-width="120px" class="community-role-form">
+                    <el-form-item label="社区角色">
+                        <el-select 
+                            v-model="communityRoleForm.communityRoleLevel" 
+                            placeholder="请选择社区角色"
+                            style="width: 100%">
+                            <el-option 
+                                v-for="role in communityRoleOptions" 
+                                :key="role.value" 
+                                :label="role.label" 
+                                :value="role.value" />
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeCloseCommunityRole">取消</el-button>
+                    <el-button type="primary" @click="updateCommunityRoleConfirm">
+                        确定修改
+                    </el-button>
                 </div>
             </template>
         </el-dialog>
@@ -479,6 +521,62 @@ const confirmAddCollaboratorNode = async () => {
 const cancelAddCollaboratorNode = () => {
     addCollaboratorNodeDialogVisible.value = false
     currentAddCollaboratorNodeRow.value = null
+}
+
+// 社区角色相关
+const communityRoleDialogVisible = ref(false)
+const currentCommunityRoleRow = ref(null)
+const communityRoleForm = reactive({
+    communityRoleLevel: ''
+})
+
+// 社区角色选项列表
+const communityRoleOptions = [
+    { label: '无等级', value: 'NONE' },
+    { label: 'V1社区贡献者', value: 'V1_CONTRIBUTOR' },
+    { label: 'V2社区贡献者', value: 'V2_CONTRIBUTOR' },
+    { label: 'V3社区贡献者', value: 'V3_CONTRIBUTOR' },
+    { label: '社区大使长', value: 'AMBASSADOR' },
+    { label: '社区公会长', value: 'GUILD_LEADER' },
+    { label: '节点共谋人', value: 'NODE_CONSPIRATOR' },
+    { label: '社区运营中心', value: 'OPERATION_CENTER' },
+    { label: '社区合伙人', value: 'PARTNER' }
+]
+
+const showCommunityRoleDialog = (index, row) => {
+    currentCommunityRoleRow.value = row
+    // 设置当前选中的角色（如果有）
+    communityRoleForm.communityRoleLevel = row.communityRoleLevel || 'NONE'
+    communityRoleDialogVisible.value = true
+}
+
+const beforeCloseCommunityRole = () => {
+    communityRoleDialogVisible.value = false
+    currentCommunityRoleRow.value = null
+    communityRoleForm.communityRoleLevel = ''
+}
+
+const updateCommunityRoleConfirm = async () => {
+    if (!currentCommunityRoleRow.value) {
+        return
+    }
+    if (!communityRoleForm.communityRoleLevel) {
+        ElMessage.warning('请选择社区角色')
+        return
+    }
+    try {
+        const res = await _Api._updateCommunityRoleLevel({
+            userId: currentCommunityRoleRow.value.userModelling?.userId,
+            communityRoleLevel: communityRoleForm.communityRoleLevel
+        })
+        if (res) {
+            ElMessage.success('更新成功')
+            beforeCloseCommunityRole()
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+    }
 }
 
 // 格式化USDT金额（最低保留两位小数，最大8位）
