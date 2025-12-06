@@ -22,7 +22,7 @@
                     <span>充值管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%">
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
                         <el-table-column prop="id" label="id" width="50" />
                         <el-table-column prop="userId" label="用户id" width="80" />
                         <el-table-column prop="username" label="用户名" width="100" />
@@ -42,9 +42,17 @@
                                 {{ statius[row.status] }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="200" />
-                        <el-table-column prop="updatedAt" label="更新时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="120">
+                        <el-table-column prop="createdAt" label="创建时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.createdAt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="updatedAt" label="更新时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.updatedAt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" label="操作" min-width="120">
                             <template #default="scope">
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">修改充值状态</el-button>
@@ -87,7 +95,8 @@ import { ElMessage } from 'element-plus'
 import {
     _SessionCache
 } from '@/utils/cache'
-import { reactive } from 'vue'
+import { reactive, ref, inject } from 'vue'
+import { formatDateTime } from '@/utils/format'
 const formValue = reactive({
     userId: "",
     fromAddr: "",
@@ -105,14 +114,24 @@ const showDialog = (index, row) => {
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
+const loading = ref(false)
+
 const getTableData = async (page) => {
-    const res = await _Api._depositList({
-        pageNo: page,
-        pageSize: pageSize.value,
-        ...formValue
-    })
-    if (res) {
-        tableData.value = res
+    loading.value = true
+    try {
+        const res = await _Api._depositList({
+            pageNo: page,
+            pageSize: pageSize.value,
+            ...formValue
+        })
+        if (res) {
+            tableData.value = res
+        }
+    } catch (error) {
+        console.error('获取数据失败:', error)
+        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+    } finally {
+        loading.value = false
     }
 }
 getTableData(currentPage.value)
@@ -141,11 +160,16 @@ const handConfirm = async () => {
         status: radio1.value
     }
     // 不再传递 periodDays，后端会从 user_deposits 表中读取已保存的周期
-    const res = await _Api._depositUpdate(updateData)
-    if (res) {
-        dialogVisible.value = false;
-        ElMessage('修改成功')
-        getTableData(currentPage.value)
+    try {
+        const res = await _Api._depositUpdate(updateData)
+        if (res) {
+            dialogVisible.value = false;
+            ElMessage.success('修改成功')
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        console.error('修改失败:', error)
+        ElMessage.error('修改失败: ' + (error.message || '未知错误'))
     }
 }
 const onSearch = () => {

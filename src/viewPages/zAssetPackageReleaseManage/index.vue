@@ -1,5 +1,5 @@
 <template>
-    <div class="z-asset-package-release-manage">
+    <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="用户ID">
@@ -83,6 +83,7 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
+import { formatUsdt, formatDateTime } from '@/utils/format'
 
 const tableData = ref()
 const formValue = reactive({
@@ -148,55 +149,10 @@ const resetSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
 }
-
-// 格式化USDT金额（最低保留两位小数，最大8位）
-const formatUsdt = (value) => {
-    if (value == null || value === undefined || value === '') {
-        return '0.00'
-    }
-    const num = typeof value === 'string' ? parseFloat(value) : value
-    if (isNaN(num)) {
-        return '0.00'
-    }
-    // 保留2-8位小数，但至少保留2位
-    const str = num.toFixed(8)
-    // 移除末尾的0，但至少保留2位小数
-    const parts = str.split('.')
-    if (parts.length === 2) {
-        let decimals = parts[1].replace(/0+$/, '')
-        if (decimals.length < 2) {
-            decimals = decimals.padEnd(2, '0')
-        }
-        return parts[0] + '.' + decimals
-    }
-    return num.toFixed(2)
-}
-
-// 格式化日期时间
-const formatDateTime = (value) => {
-    if (!value) {
-        return '-'
-    }
-    const date = new Date(value)
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    const seconds = String(date.getSeconds()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-}
 </script>
 <style lang="scss" scoped>
-.z-asset-package-release-manage {
+.batchUpload {
     padding-bottom: 40px;
-
-    .filter {
-        padding: 20px;
-        background: #fff;
-        border-radius: 4px;
-        margin-bottom: 20px;
-    }
 
     .uploadList {
         display: flex;
@@ -210,9 +166,6 @@ const formatDateTime = (value) => {
             height: 100%;
             display: flex;
             flex-direction: column;
-            background: #fff;
-            border-radius: 4px;
-            padding: 20px;
 
             .title {
                 font-size: 0.2rem;
@@ -220,8 +173,6 @@ const formatDateTime = (value) => {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
-                font-weight: bold;
             }
 
             .list {
@@ -235,7 +186,6 @@ const formatDateTime = (value) => {
                 display: flex;
                 justify-content: center;
                 width: 100%;
-                margin-top: 20px;
             }
         }
     }

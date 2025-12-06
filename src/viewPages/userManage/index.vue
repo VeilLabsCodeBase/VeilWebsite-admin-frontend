@@ -32,7 +32,6 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中...">
-                        <el-table-column prop="userModelling.id" label="id" />
                         <el-table-column prop="userModelling.userId" label="用户id" />
                         <el-table-column prop="username" label="用户名" width="180" />
                         <el-table-column prop="role" label="用户角色" width="180" />
@@ -43,8 +42,16 @@
                                 {{ row.countryCode ? row.countryCode + ' ' + row.phoneNumber : row.phoneNumber || '-' }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="opCenterName" label="运营中心" width="200" />
-                        <el-table-column prop="workshopName" label="节点" width="180" />
+                        <el-table-column prop="opCenterName" label="运营中心" width="200">
+                            <template #default="{ row }">
+                                {{ row.opCenterName || '-' }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="workshopName" label="节点" width="180">
+                            <template #default="{ row }">
+                                {{ row.workshopName || '-' }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
                         <el-table-column prop="stakingRewardUsdt" label="质押收益" width="250">
                             <template #default="{ row }">
@@ -73,6 +80,13 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="communityRoleDisplayName" label="社区角色" width="150" />
+                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" width="150">
+                            <template #default="{ row }">
+                                <el-tag :type="row.isCollaboratorNode ? 'success' : 'info'">
+                                    {{ row.isCollaboratorNode ? '是' : '否' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="Z资产包额度" width="150">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small">
@@ -97,6 +111,8 @@
                                     @click="showBindDialog(scope.$index, scope.row)" size="small">绑定节点</el-button>
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">查看经济模型树</el-button>
+                                <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
+                                    @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)" size="small">添加共谋者节点</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -229,6 +245,27 @@
                     <el-button type="primary" @click="updateZAssetPackageConfirm">
                         更新额度
                     </el-button>
+                </div>
+            </template>
+        </el-dialog>
+        
+        <!-- 添加共谋者节点确认对话框 -->
+        <el-dialog v-model="addCollaboratorNodeDialogVisible" title="添加共谋者节点" width="500" destroy-on-close>
+            <div v-if="currentAddCollaboratorNodeRow" class="add-collaborator-node-content">
+                <el-alert
+                    title="确认操作"
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                        <p>确定要给用户 <strong>{{ currentAddCollaboratorNodeRow.username }}</strong> (ID: {{ currentAddCollaboratorNodeRow.userModelling?.userId }}) 添加"共谋者节点"角色吗？</p>
+                    </template>
+                </el-alert>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="cancelAddCollaboratorNode">取消</el-button>
+                    <el-button type="primary" @click="confirmAddCollaboratorNode">确定</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -409,6 +446,39 @@ const updateZAssetPackageConfirm = async () => {
     } catch (error) {
         ElMessage.error('更新失败: ' + (error.message || '未知错误'))
     }
+}
+
+// 添加共谋者节点相关
+const addCollaboratorNodeDialogVisible = ref(false)
+const currentAddCollaboratorNodeRow = ref(null)
+
+const showAddCollaboratorNodeDialog = (index, row) => {
+    currentAddCollaboratorNodeRow.value = row
+    addCollaboratorNodeDialogVisible.value = true
+}
+
+const confirmAddCollaboratorNode = async () => {
+    if (!currentAddCollaboratorNodeRow.value) {
+        return
+    }
+    try {
+        const res = await _Api._addCollaboratorNodeRole({
+            userId: currentAddCollaboratorNodeRow.value.userModelling?.userId
+        })
+        if (res) {
+            ElMessage.success('添加成功')
+            addCollaboratorNodeDialogVisible.value = false
+            currentAddCollaboratorNodeRow.value = null
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        ElMessage.error('添加失败: ' + (error.message || '未知错误'))
+    }
+}
+
+const cancelAddCollaboratorNode = () => {
+    addCollaboratorNodeDialogVisible.value = false
+    currentAddCollaboratorNodeRow.value = null
 }
 
 // 格式化USDT金额（最低保留两位小数，最大8位）

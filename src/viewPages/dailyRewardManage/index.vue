@@ -74,7 +74,7 @@
                                 {{ formatUsdt(row.dailyRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="dailyRewardToken" label="Token收益" width="120">
+                        <el-table-column prop="dailyRewardToken" label="VEILX收益" width="120">
                             <template #default="{ row }">
                                 {{ formatToken(row.dailyRewardToken) }}
                             </template>
@@ -138,7 +138,7 @@
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="收益日期">{{ detailData.rewardDate }}</el-descriptions-item>
                     <el-descriptions-item label="USDT收益">{{ formatUsdt(detailData.dailyRewardUsdt) }}</el-descriptions-item>
-                    <el-descriptions-item label="Token收益">{{ formatToken(detailData.dailyRewardToken) }}</el-descriptions-item>
+                    <el-descriptions-item label="VEILX收益">{{ formatToken(detailData.dailyRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="发放状态">
                         <el-tag :type="getDistributionStatusType(detailData.status)">
                             {{ getDistributionStatusText(detailData.status) }}
@@ -173,7 +173,7 @@
                                 {{ formatUsdt(row.usdtAmount) }} USDT
                             </span>
                             <span v-if="row.tokenAmount && row.tokenAmount > 0" style="color: #409eff;">
-                                {{ formatToken(row.tokenAmount) }} TOKEN
+                                {{ formatToken(row.tokenAmount) }} VEILX
                             </span>
                             <span v-if="(!row.usdtAmount || row.usdtAmount <= 0) && (!row.tokenAmount || row.tokenAmount <= 0)">
                                 -
@@ -196,7 +196,7 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
-import { formatUsdt, formatToken } from '@/utils/format'
+import { formatUsdt, formatToken, formatDateTime } from '@/utils/format'
 
 const formValue = reactive({
     rewardId: "",
@@ -327,35 +327,6 @@ const retryDistribution = async (row) => {
         if (error !== 'cancel') {
             console.error('重试失败:', error)
         }
-    }
-}
-
-// 格式化日期时间为 yyyy-MM-dd HH:mm:ss
-const formatDateTime = (dateStr) => {
-    if (!dateStr) return '-'
-    try {
-        const date = new Date(dateStr)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        const seconds = String(date.getSeconds()).padStart(2, '0')
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    } catch (e) {
-        // 如果已经是日期时间格式，尝试解析
-        if (typeof dateStr === 'string') {
-            // 尝试匹配 yyyy-MM-dd HH:mm:ss 或类似格式
-            const match = dateStr.match(/(\d{4}-\d{2}-\d{2})[\sT](\d{2}):(\d{2}):(\d{2})/)
-            if (match) {
-                return `${match[1]} ${match[2]}:${match[3]}:${match[4]}`
-            }
-            // 如果只有日期部分，返回日期
-            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-                return dateStr.substring(0, 10) + ' 00:00:00'
-            }
-        }
-        return dateStr
     }
 }
 </script>

@@ -36,7 +36,11 @@
                         <el-table-column prop="userId" label="用户id" width="80" />
                         <el-table-column prop="username" label="用户名" width="100" />
                         <el-table-column prop="email" label="邮箱" width="150" />
-                        <el-table-column prop="createdAt" label="申请时间" width="200" />
+                        <el-table-column prop="createdAt" label="申请时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.createdAt) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="amount" label="提现金额" width="100" />
                         <el-table-column prop="usdtBalanceBefore" label="提现前USDT" width="120">
                             <template #default="{ row }">
@@ -86,8 +90,12 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="reason" label="备注" width="200" />
-                        <el-table-column prop="approvedAt" label="审核通过时间" width="200" />
-                        <el-table-column fixed="right" label="Operations" min-width="120">
+                        <el-table-column prop="approvedAt" label="审核通过时间" width="200">
+                            <template #default="{ row }">
+                                {{ formatDateTime(row.approvedAt) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" label="操作" min-width="120">
                             <template #default="scope">
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">审核</el-button>
@@ -133,7 +141,7 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive, ref, inject } from 'vue'
-import { formatUsdt, formatToken } from '@/utils/format'
+import { formatUsdt, formatToken, formatDateTime } from '@/utils/format'
 const formValue = reactive({
     userId: "",
     address: "",

@@ -44,9 +44,14 @@
                                 {{ row.amountUsdt?.toFixed(2) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amountToken" label="Token金额" width="120">
+                        <el-table-column prop="amountToken" label="VEILX金额" width="120">
                             <template #default="{ row }">
                                 {{ row.amountToken?.toFixed(2) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="stakingType" label="质押类型" width="150">
+                            <template #default="{ row }">
+                                {{ getStakingTypeDesc(row.stakingType, row.stakingTypeDesc) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="periodDays" label="质押周期(天)" width="120" />
@@ -83,7 +88,7 @@
                                 {{ formatUsdt(row.totalRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="totalRewardToken" label="累计Token收益" width="130">
+                        <el-table-column prop="totalRewardToken" label="累计VEILX收益" width="130">
                             <template #default="{ row }">
                                 {{ formatToken(row.totalRewardToken) }}
                             </template>
@@ -147,8 +152,9 @@
                     <el-descriptions-item label="质押金额(USDT)">{{ detailData.totalAmount?.toFixed(2)
                         }}</el-descriptions-item>
                     <el-descriptions-item label="USDT金额">{{ detailData.amountUsdt?.toFixed(2) }}</el-descriptions-item>
-                    <el-descriptions-item label="Token金额">{{ detailData.amountToken?.toFixed(2)
+                    <el-descriptions-item label="VEILX金额">{{ detailData.amountToken?.toFixed(2)
                         }}</el-descriptions-item>
+                    <el-descriptions-item label="质押类型">{{ getStakingTypeDesc(detailData.stakingType, detailData.stakingTypeDesc) }}</el-descriptions-item>
                     <el-descriptions-item label="质押周期(天)">{{ detailData.periodDays }}</el-descriptions-item>
                     <el-descriptions-item label="日算力倍率(%)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
@@ -168,7 +174,7 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="累计USDT收益">{{ formatUsdt(detailData.totalRewardUsdt)
                     }}</el-descriptions-item>
-                    <el-descriptions-item label="累计Token收益">{{ formatToken(detailData.totalRewardToken)
+                    <el-descriptions-item label="累计VEILX收益">{{ formatToken(detailData.totalRewardToken)
                     }}</el-descriptions-item>
                     <el-descriptions-item label="本金是否已返还">
                         <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
@@ -357,6 +363,20 @@ const getWithdrawRuleDesc = (rule) => {
         'DAILY_REWARD_NO_PRINCIPAL': '每日收益；本金锁定'
     }
     return ruleMap[rule] || rule
+}
+
+const getStakingTypeDesc = (stakingType, stakingTypeDesc) => {
+    // 如果后端返回了stakingTypeDesc，直接使用
+    if (stakingTypeDesc) {
+        return stakingTypeDesc
+    }
+    // 否则根据枚举值转换
+    if (!stakingType) return '-'
+    const typeMap = {
+        'DIRECT_DEPOSIT': '直接充值',
+        'Z_ASSET_PACKAGE': '资产包质押'
+    }
+    return typeMap[stakingType] || stakingType
 }
 
 const getStatusText = (status) => {

@@ -47,3 +47,43 @@ export function formatToken(amount) {
   }
 }
 
+/**
+ * 格式化日期时间为 yyyy-MM-dd HH:mm:ss
+ * @param {string|Date|null|undefined} dateStr 日期时间字符串或Date对象
+ * @returns {string} 格式化后的日期时间字符串，如果为空则返回 '-'
+ */
+export function formatDateTime(dateStr) {
+  if (!dateStr) return '-';
+  
+  try {
+    const date = new Date(dateStr);
+    // 检查日期是否有效
+    if (isNaN(date.getTime())) {
+      return '-';
+    }
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch (e) {
+    // 如果已经是日期时间格式，尝试解析
+    if (typeof dateStr === 'string') {
+      // 尝试匹配 yyyy-MM-dd HH:mm:ss 或类似格式
+      const match = dateStr.match(/(\d{4}-\d{2}-\d{2})[\sT](\d{2}):(\d{2}):(\d{2})/);
+      if (match) {
+        return `${match[1]} ${match[2]}:${match[3]}:${match[4]}`;
+      }
+      // 如果只有日期部分，返回日期
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+        return dateStr.substring(0, 10) + ' 00:00:00';
+      }
+    }
+    return '-';
+  }
+}
+
