@@ -66,6 +66,11 @@ export default [
         ],
     },
     {
+        path: '/modelTree/:userId',
+        name: 'modelTree',
+        component: () => import('@/viewPages/modelTree/index.vue'),
+    },
+    {
         path: '/login',
         component: () => import('@/viewPages/login.vue'),
     },

@@ -79,13 +79,16 @@ const loginIn = () => {
     height: 100%;
 
     .header {
-        height: 10%;
+        height: 60px;
+        min-height: 60px;
+        max-height: 60px;
         background: #409EFF;
         padding: 0 0.4rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
         width: 100%;
+        flex-shrink: 0;
 
         .left {
             font-size: 0.3rem;

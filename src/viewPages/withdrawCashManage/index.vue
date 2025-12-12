@@ -63,6 +63,15 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="address" label="提现地址" width="300" />
+                        <el-table-column prop="txHash" label="交易Hash" width="300" show-overflow-tooltip>
+                            <template #default="{ row }">
+                                <span v-if="row.txHash" style="font-family: monospace; color: #409EFF; cursor: pointer;" 
+                                      @click="copyTxHash(row.txHash)" :title="row.txHash">
+                                    {{ row.txHash }}
+                                </span>
+                                <span v-else style="color: #909399;">-</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="network" label="提现网络" width="100" />
                         <el-table-column prop="fee" label="手续费" width="100" />
                         <el-table-column prop="actualAmount" label="到账金额" width="100" />
@@ -110,25 +119,115 @@
                 </div>
             </div>
         </div>
-        <el-dialog v-model="dialogVisible" title="修改状态" width="800" :before-close="beforeClose" destroy-on-close>
-            <div class="diaContent">
-                <el-radio-group v-model="radio1">
-                    <el-radio value="APPROVAL" size="large">{{ status.APPROVAL }}</el-radio>
-                    <el-radio value="FAILED" size="large">{{ status.FAILED }}</el-radio>
-                    <el-radio value="SUCCESSFULLY" size="large">{{ status.SUCCESSFULLY }}</el-radio>
-                    <el-radio value="CANCELED" size="large">{{ status.CANCELED }}</el-radio>
-                </el-radio-group>
+        <el-dialog v-model="dialogVisible" title="提现审核" width="600" :before-close="beforeClose" destroy-on-close>
+            <div class="audit-dialog-content" v-if="rowData">
+                <!-- 用户信息展示 -->
+                <el-descriptions :column="1" border class="user-info">
+                    <el-descriptions-item label="用户名">
+                        <span class="info-value">{{ rowData.username || '-' }}</span>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="实际到账金额">
+                        <div class="amount-info">
+                            <span class="amount-usdt" v-if="rowData.actualUsdtAmount">
+                                {{ formatUsdt(rowData.actualUsdtAmount) }} USDT
+                            </span>
+                            <span class="amount-token" v-if="rowData.actualTokenAmount">
+                                {{ formatToken(rowData.actualTokenAmount) }} VEILX
+                            </span>
+                            <span v-if="!rowData.actualUsdtAmount && !rowData.actualTokenAmount" class="no-amount">
+                                {{ formatUsdt(rowData.actualAmount) || '-' }}
+                            </span>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="到账金额">
+                        <div class="amount-info">
+                            <span class="amount-usdt">
+                                {{ formatUsdt(rowData.actualAmount) || '0.00' }} USDT
+                            </span>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="提现地址">
+                        <div class="address-container">
+                            <span class="address-text">{{ rowData.address || '-' }}</span>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="当前状态">
+                        <el-tag :type="getStatusType(rowData.status)">
+                            {{ status[rowData.status] || '-' }}
+                        </el-tag>
+                    </el-descriptions-item>
+                </el-descriptions>
 
-                <el-form-item label="理由">
-                    <el-input v-model="reason" style="width: 440px" :rows="2" type="textarea"
-                        placeholder="Please input" />
-                </el-form-item>
+                <el-divider content-position="left">审核操作</el-divider>
+
+                <!-- 状态选择 -->
+                <el-form :model="auditForm" label-width="100px" class="audit-form">
+                    <el-form-item label="审核状态" required>
+                        <el-radio-group v-model="auditForm.status" class="status-radio-group">
+                            <el-radio value="APPROVAL" size="large">
+                                <span class="status-label">{{ status.APPROVAL }}</span>
+                            </el-radio>
+                            <el-radio value="FAILED" size="large">
+                                <span class="status-label">{{ status.FAILED }}</span>
+                            </el-radio>
+                            <el-radio value="SUCCESSFULLY" size="large">
+                                <span class="status-label">{{ status.SUCCESSFULLY }}</span>
+                            </el-radio>
+                            <el-radio value="CANCELED" size="large">
+                                <span class="status-label">{{ status.CANCELED }}</span>
+                            </el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+
+                    <el-form-item label="审核备注">
+                        <el-input 
+                            v-model="auditForm.reason" 
+                            type="textarea" 
+                            :rows="4"
+                            placeholder="请输入审核备注（选填）"
+                            maxlength="200"
+                            show-word-limit />
+                    </el-form-item>
+                </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button @click="beforeClose">取消</el-button>
-                    <el-button type="primary" @click="handConfirm">
-                        确定修改
+                    <el-button @click="beforeClose" :disabled="submitLoading">取消</el-button>
+                    <el-button type="primary" @click="handleConfirmClick" :disabled="!auditForm.status || submitLoading" :loading="submitLoading">
+                        确定审核
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 二次确认弹框 -->
+        <el-dialog v-model="confirmDialogVisible" title="确认审核" width="500" destroy-on-close>
+            <div class="confirm-dialog-content">
+                <el-alert
+                    :title="getConfirmTitle()"
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                </el-alert>
+                <div class="confirm-info" v-if="rowData">
+                    <p><strong>用户名：</strong>{{ rowData.username }}</p>
+                    <div class="confirm-amount-row">
+                        <strong>到账金额：</strong>
+                        <div class="confirm-amount-info">
+                            <span class="confirm-amount-usdt">
+                                {{ formatUsdt(rowData.actualAmount) || '0.00' }} USDT
+                            </span>
+                        </div>
+                    </div>
+                    <p><strong>审核状态：</strong><el-tag :type="getStatusType(auditForm.status)">{{ status[auditForm.status] }}</el-tag></p>
+                    <p v-if="auditForm.reason"><strong>审核备注：</strong>{{ auditForm.reason }}</p>
+                </div>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="confirmDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handConfirm" :loading="confirmLoading">
+                        确认提交
                     </el-button>
                 </div>
             </template>
@@ -136,7 +235,7 @@
     </div>
 </template>
 <script setup>
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
     _SessionCache
 } from '@/utils/cache'
@@ -156,12 +255,21 @@ const formValue = reactive({
     { label: '运营基金提现', value: 'OP_NODE' },
   ])
 const dialogVisible = ref(false)
+const confirmDialogVisible = ref(false)
+const confirmLoading = ref(false)
+const submitLoading = ref(false)
 const tableData = ref()
-const rowData = ref('')
+const rowData = ref(null)
+const auditForm = reactive({
+    status: '',
+    reason: ''
+})
+
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
-    radio1.value = rowData.value?.status
+    auditForm.status = row?.status || ''
+    auditForm.reason = ''
 }
 const _Api = inject('$api')
 const pageSize = ref(8)
@@ -199,26 +307,85 @@ const handleCurrentChange = (val) => {
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
+    rowData.value = null
+    auditForm.status = ''
+    auditForm.reason = ''
 }
+
 const status = reactive({
     APPROVAL: '待审核',
     FAILED: '失败',
     SUCCESSFULLY: '成功',
     CANCELED: '已取消',
 })
-const radio1 = ref('')
-const reason = ref('')
-const handConfirm = async () => {
-    const res = await _Api._WithdrawAudit({
-        userWithdrawId: rowData.value.id,
-        status: radio1.value,
-        reason: reason.value
-    })
-    if (res) {
-        dialogVisible.value = false;
-        ElMessage('修改成功')
-        getTableData(currentPage.value)
+
+// 获取状态标签类型
+const getStatusType = (statusValue) => {
+    const typeMap = {
+        'APPROVAL': 'warning',
+        'FAILED': 'danger',
+        'SUCCESSFULLY': 'success',
+        'CANCELED': 'info'
     }
+    return typeMap[statusValue] || ''
+}
+
+// 点击确定按钮，显示二次确认
+const handleConfirmClick = () => {
+    if (!auditForm.status) {
+        ElMessage.warning('请选择审核状态')
+        return
+    }
+    confirmDialogVisible.value = true
+}
+
+// 最终确认提交
+const handConfirm = async () => {
+    if (!rowData.value) {
+        return
+    }
+    
+    submitLoading.value = true
+    confirmLoading.value = true
+    try {
+        const res = await _Api._WithdrawAudit({
+            userWithdrawId: rowData.value.id,
+            status: auditForm.status,
+            reason: auditForm.reason
+        })
+        if (res) {
+            confirmDialogVisible.value = false
+            dialogVisible.value = false
+            ElMessage.success('审核成功')
+            getTableData(currentPage.value)
+            // 重置表单
+            rowData.value = null
+            auditForm.status = ''
+            auditForm.reason = ''
+        }
+    } catch (error) {
+        ElMessage.error('审核失败: ' + (error.message || '未知错误'))
+    } finally {
+        submitLoading.value = false
+        confirmLoading.value = false
+    }
+}
+
+// 复制交易Hash
+const copyTxHash = (txHash) => {
+    if (!txHash) return
+    navigator.clipboard.writeText(txHash).then(() => {
+        ElMessage.success('交易Hash已复制到剪贴板')
+    }).catch(() => {
+        ElMessage.error('复制失败')
+    })
+}
+
+// 获取确认弹框标题
+const getConfirmTitle = () => {
+    const username = rowData.value?.username || ''
+    const statusText = status[auditForm.status] || ''
+    return `确定要将用户 ${username} 的提现审核状态修改为"${statusText}"吗？`
 }
 const onSearch = () => {
     currentPage.value = 1
@@ -321,6 +488,140 @@ const onSearch = () => {
         .title {
             font-size: 0.16rem;
             color: #67C23A;
+        }
+    }
+
+    .audit-dialog-content {
+        .user-info {
+            margin-bottom: 20px;
+
+            :deep() {
+                .el-descriptions__label {
+                    font-weight: 600;
+                    color: #606266;
+                    width: 120px;
+                }
+
+                .el-descriptions__content {
+                    color: #303133;
+                }
+            }
+
+            .info-value {
+                font-size: 14px;
+                color: #303133;
+            }
+
+            .address-container {
+                max-width: 100%;
+                word-break: break-all;
+                
+                .address-text {
+                    font-family: 'Courier New', monospace;
+                    font-size: 13px;
+                    color: #303133;
+                    background: #f5f7fa;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    border: 1px solid #e4e7ed;
+                    line-height: 1.6;
+                }
+            }
+
+            .amount-info {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                .amount-usdt {
+                    color: #409EFF;
+                    font-weight: 600;
+                    font-size: 16px;
+                }
+
+                .amount-token {
+                    color: #67C23A;
+                    font-weight: 600;
+                    font-size: 16px;
+                }
+
+                .no-amount {
+                    color: #909399;
+                }
+            }
+        }
+
+        .audit-form {
+            .status-radio-group {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+
+                :deep() {
+                    .el-radio {
+                        margin-right: 0;
+                        margin-bottom: 8px;
+                        height: auto;
+                        line-height: 1.8;
+                    }
+
+                    .el-radio__label {
+                        padding-left: 8px;
+                    }
+                }
+
+                .status-label {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+
+    .confirm-dialog-content {
+        .confirm-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f7fa;
+            border-radius: 4px;
+
+            p {
+                margin: 10px 0;
+                line-height: 1.8;
+                color: #606266;
+
+                strong {
+                    color: #303133;
+                    margin-right: 8px;
+                }
+            }
+
+            .confirm-amount-row {
+                margin: 10px 0;
+                line-height: 1.8;
+                color: #606266;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                strong {
+                    color: #303133;
+                    flex-shrink: 0;
+                }
+            }
+
+            .confirm-amount-info {
+                display: inline-block;
+
+                .confirm-amount-usdt {
+                    color: #409EFF;
+                    font-weight: 600;
+                    font-size: 16px;
+                    padding: 4px 8px;
+                    background: #ecf5ff;
+                    border-radius: 4px;
+                }
+            }
         }
     }
 }

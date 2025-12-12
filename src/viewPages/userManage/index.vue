@@ -319,7 +319,9 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive, ref, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { _FormatDate } from '@/utils/commonFn'
+const router = useRouter()
 const tableData = ref()
 const tableLoading = ref(false)
 const formValue = reactive({
@@ -389,20 +391,24 @@ const handConfirm = async () => {
     // }
 }
 const showDialog = (index, row) => {
-    dialogVisible.value = true;
-    // rowData.value = row
-    // radio1.value = rowData.value?.status
-    getUserModellingTree(row?.userModelling?.userId)
-}
+    const userId = row?.userModelling?.userId
+    if (!userId) {
+        ElMessage.error('用户ID不存在')
+        return
+    }
 
-const modelTreeData = ref('')
-const getUserModellingTree = async (userId) => {
-    const res = await _Api._UserModellingTree({
-        userId: userId,
+    // 生成新标签页的URL
+    const routeData = router.resolve({
+        name: 'modelTree',
+        params: { userId: userId }
     })
-    if (res) {
-        modelTreeData.value = res
-
+    
+    // 直接打开新标签页，让新标签页自己去调用接口
+    const newWindow = window.open(routeData.href, '_blank')
+    
+    // 如果新窗口被阻止，提示用户
+    if (!newWindow) {
+        ElMessage.warning('请允许弹出窗口以查看经济模型树')
     }
 }
 const selectUserId = ref('')

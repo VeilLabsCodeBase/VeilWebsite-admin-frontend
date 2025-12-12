@@ -106,7 +106,7 @@ const formValue = reactive({
 const tableData = ref()
 const selectedRows = ref([])
 const _Api = inject('$api')
-const pageSize = ref(10)
+const pageSize = ref(8)
 const currentPage = ref(1)
 
 const getTableData = async (page) => {

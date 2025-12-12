@@ -277,7 +277,7 @@ const _Api = inject('$api')
 const executing = ref(false)
 const taskLogs = ref(null)
 const loadingLogs = ref(false)
-const pageSize = ref(5)
+const pageSize = ref(8)
 const currentPage = ref(1)
 
 // 质押记录相关
