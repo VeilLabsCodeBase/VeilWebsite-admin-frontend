@@ -37,21 +37,6 @@
                         <el-table-column prop="role" label="用户角色" width="180" />
                         <el-table-column prop="referredUserId" label="推荐人Id" />
                         <el-table-column prop="email" label="email" width="180" />
-                        <el-table-column label="手机号码" width="180">
-                            <template #default="{ row }">
-                                {{ row.countryCode ? row.countryCode + ' ' + row.phoneNumber : row.phoneNumber || '-' }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="opCenterName" label="运营中心" width="200">
-                            <template #default="{ row }">
-                                {{ row.opCenterName || '-' }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="workshopName" label="节点" width="180">
-                            <template #default="{ row }">
-                                {{ row.workshopName || '-' }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
                         <el-table-column prop="stakingRewardUsdt" label="质押收益" width="250">
                             <template #default="{ row }">
@@ -100,6 +85,13 @@
                                 </el-button>
                             </template>
                         </el-table-column>
+                        <el-table-column label="资产包额度" width="150">
+                            <template #default="{ row, $index }">
+                                <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small">
+                                    {{ formatUsdt(row.userModelling?.assetPackageAmount) }}
+                                </el-button>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="用户状态" width="180" />
                         <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200">
                             <template #default="{ row }">
@@ -113,12 +105,12 @@
                         </el-table-column>
                         <el-table-column fixed="right" label="操作" min-width="250">
                             <template #default="scope">
-                                <el-button link type="primary" v-if="!scope.row.isBindNode"
-                                    @click="showBindDialog(scope.$index, scope.row)" size="small">绑定节点</el-button>
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">查看经济模型树</el-button>
                                 <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
                                     @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)" size="small">添加共谋者节点</el-button>
+                                <el-button link type="danger" v-if="scope.row.isCollaboratorNode"
+                                    @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)" size="small">解除共谋者节点</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -184,25 +176,46 @@
                 </div>
             </el-dialog>
         </div>
-        <el-dialog v-model="bindNodeDialog" title="绑定节点" width="800" :before-close="beforeClose" destroy-on-close>
-            <div class="diaContent">
-                <el-form-item label="运营中心">
-                    <el-select v-model="nodeValue1" placeholder="请选择" @change="changeNodeValue1">
-                        <el-option v-for="item in nodeList" :key="item.value" :label="item.nodeName" :value="item.id" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="工作室" v-if="nodeValue1">
-                    <el-select v-model="nodeValue2" placeholder="请选择">
-                        <el-option v-for="item in nodeTwoList" :key="item.value" :label="item.nodeName"
-                            :value="item.id" />
-                    </el-select>
-                </el-form-item>
+        <!-- 资产包详情弹框 -->
+        <el-dialog v-model="assetPackageDialog" title="资产包详情" width="600" :before-close="beforeCloseAssetPackage" destroy-on-close>
+            <div class="asset-package-content" v-if="currentAssetPackageRow">
+                <el-descriptions :column="1" border>
+                    <el-descriptions-item label="用户ID">{{ currentAssetPackageRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户名">{{ currentAssetPackageRow.username }}</el-descriptions-item>
+                    <el-descriptions-item label="资产包额度">
+                        {{ formatUsdt(currentAssetPackageRow.userModelling?.assetPackageAmount) }} USDT
+                    </el-descriptions-item>
+                    <el-descriptions-item label="已使用额度">
+                        {{ formatUsdt(currentAssetPackageRow.userModelling?.assetPackageUsed) }} USDT
+                    </el-descriptions-item>
+                    <el-descriptions-item label="可用额度">
+                        <span style="color: #67C23A; font-weight: bold;">
+                            {{ formatUsdt(
+                                (currentAssetPackageRow.userModelling?.assetPackageAmount || 0) - 
+                                (currentAssetPackageRow.userModelling?.assetPackageUsed || 0)
+                            ) }} USDT
+                        </span>
+                    </el-descriptions-item>
+                </el-descriptions>
+                <el-divider content-position="left">更新额度</el-divider>
+                <el-form :model="assetPackageForm" label-width="100px" class="asset-package-form">
+                    <el-form-item label="新额度">
+                        <el-input-number 
+                            v-model="assetPackageForm.assetPackageAmount" 
+                            :precision="2" 
+                            :step="100" 
+                            :min="0"
+                            style="width: 300px"
+                            placeholder="请输入新的资产包额度" />
+                        <span style="margin-left: 10px; color: #909399; font-size: 14px;">USDT</span>
+                    </el-form-item>
+                </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
-                    <el-button @click="beforeClose">取消</el-button>
-                    <el-button type="primary" @click="bindNodeConfirm">
-                        确定绑定
+                    <el-button @click="beforeCloseAssetPackage">取消</el-button>
+                    <el-button type="primary" @click="updateAssetPackageConfirm">
+                        更新额度
                     </el-button>
                 </div>
             </template>
@@ -272,6 +285,27 @@
                 <div class="dialog-footer">
                     <el-button @click="cancelAddCollaboratorNode">取消</el-button>
                     <el-button type="primary" @click="confirmAddCollaboratorNode">确定</el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 解除共谋者节点确认对话框 -->
+        <el-dialog v-model="removeCollaboratorNodeDialogVisible" title="解除共谋者节点" width="500" destroy-on-close>
+            <div v-if="currentRemoveCollaboratorNodeRow" class="remove-collaborator-node-content">
+                <el-alert
+                    title="确认操作"
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                        <p>确定要解除用户 <strong>{{ currentRemoveCollaboratorNodeRow.username }}</strong> (ID: {{ currentRemoveCollaboratorNodeRow.userModelling?.userId }}) 的"共谋者节点"角色吗？</p>
+                    </template>
+                </el-alert>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="cancelRemoveCollaboratorNode">取消</el-button>
+                    <el-button type="danger" @click="confirmRemoveCollaboratorNode">确定解除</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -372,12 +406,11 @@ const onSearch = () => {
     getTableData(currentPage.value)
 }
 const dialogVisible = ref(false)
-const bindNodeDialog = ref(false)
+const modelTreeData = ref(null)
 //关闭前回调
 const beforeClose = () => {
     dialogVisible.value = false
-    bindNodeDialog.value = false
-    modelTreeData.value = ''
+    modelTreeData.value = null
 }
 const handConfirm = async () => {
     // const res = await _Api._depositUpdate({
@@ -411,51 +444,52 @@ const showDialog = (index, row) => {
         ElMessage.warning('请允许弹出窗口以查看经济模型树')
     }
 }
-const selectUserId = ref('')
+// 资产包相关
+const assetPackageDialog = ref(false)
+const currentAssetPackageRow = ref(null)
+const assetPackageForm = reactive({
+    assetPackageAmount: 0
+})
 
-const showBindDialog = (index, row) => {
-    bindNodeDialog.value = true
-    selectUserId.value = row.userModelling.userId
+const showAssetPackageDialog = (index, row) => {
+    currentAssetPackageRow.value = row
+    assetPackageForm.assetPackageAmount = row.userModelling?.assetPackageAmount || 0
+    assetPackageDialog.value = true
 }
-const nodeValue1 = ref('')
-const nodeValue2 = ref('')
-//获取节点列表
-const nodeList = ref([])
-const getNodeList = async () => {
-    const response = await _Api._NodePage({
-        pageNo: 1,
-        pageSize: 1000000,
-        type: 'LEVEL_ONE_OP_CENTER'
-    });
-    nodeList.value = response.records
 
+const beforeCloseAssetPackage = () => {
+    assetPackageDialog.value = false
+    currentAssetPackageRow.value = null
+    assetPackageForm.assetPackageAmount = 0
 }
-getNodeList()
-//获取二级节点列表
-const nodeTwoList = ref([])
-const getNodeTwoList = async (id) => {
-    const response = await _Api._NodeList({
-        pageNo: 1,
-        pageSize: 10000,
-        bizParentNodeId: nodeValue1.value
-    });
-    nodeTwoList.value = response
 
-}
-//第一级节点选择狂改变时
-const changeNodeValue1 = () => {
-    nodeValue2.value = ''
-    getNodeTwoList()
-}
-const bindNodeConfirm = async () => {
-    const response = await _Api._BindBizUserNode({
-        userId: selectUserId.value,
-        bizNodeId: nodeValue2.value,
-    });
-    ElMessage('绑定成功')
-    bindNodeDialog.value = false
-    currentPage.value = 1
-    getTableData(currentPage.value)
+const updateAssetPackageConfirm = async () => {
+    if (!currentAssetPackageRow.value) {
+        return
+    }
+    if (assetPackageForm.assetPackageAmount < 0) {
+        ElMessage.warning('资产包额度不能为负数')
+        return
+    }
+    // 验证新额度不能低于已使用额度
+    const usedAmount = currentAssetPackageRow.value.userModelling?.assetPackageUsed || 0
+    if (assetPackageForm.assetPackageAmount < usedAmount) {
+        ElMessage.warning(`资产包额度不能低于已使用额度，当前已使用: ${formatUsdt(usedAmount)} USDT`)
+        return
+    }
+    try {
+        const res = await _Api._updateAssetPackage({
+            userId: currentAssetPackageRow.value.userModelling?.userId,
+            assetPackageAmount: assetPackageForm.assetPackageAmount
+        })
+        if (res) {
+            ElMessage.success('更新成功')
+            beforeCloseAssetPackage()
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+    }
 }
 
 // Z资产包相关
@@ -527,6 +561,39 @@ const confirmAddCollaboratorNode = async () => {
 const cancelAddCollaboratorNode = () => {
     addCollaboratorNodeDialogVisible.value = false
     currentAddCollaboratorNodeRow.value = null
+}
+
+// 解除共谋者节点相关
+const removeCollaboratorNodeDialogVisible = ref(false)
+const currentRemoveCollaboratorNodeRow = ref(null)
+
+const showRemoveCollaboratorNodeDialog = (index, row) => {
+    currentRemoveCollaboratorNodeRow.value = row
+    removeCollaboratorNodeDialogVisible.value = true
+}
+
+const confirmRemoveCollaboratorNode = async () => {
+    if (!currentRemoveCollaboratorNodeRow.value) {
+        return
+    }
+    try {
+        const res = await _Api._removeCollaboratorNodeRole({
+            userId: currentRemoveCollaboratorNodeRow.value.userModelling?.userId
+        })
+        if (res) {
+            ElMessage.success('解除成功')
+            removeCollaboratorNodeDialogVisible.value = false
+            currentRemoveCollaboratorNodeRow.value = null
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        ElMessage.error('解除失败: ' + (error.message || '未知错误'))
+    }
+}
+
+const cancelRemoveCollaboratorNode = () => {
+    removeCollaboratorNodeDialogVisible.value = false
+    currentRemoveCollaboratorNodeRow.value = null
 }
 
 // 社区角色相关
@@ -816,6 +883,12 @@ const formatDateTime = (dateStr) => {
 
     .z-asset-package-content {
         .z-asset-package-form {
+            margin-top: 10px;
+        }
+    }
+
+    .asset-package-content {
+        .asset-package-form {
             margin-top: 10px;
         }
     }
