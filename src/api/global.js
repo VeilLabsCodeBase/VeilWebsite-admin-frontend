@@ -39,7 +39,9 @@ export const _BindBizUserNode= data => _Request('/nodeBind/bindBizUserNode', dat
 export const _updateZAssetPackage = data => _Request('/admin/user/update-z-asset-package', data) //更新用户Z资产包额度
 export const _zAssetPackageReleaseRecords = data => _Request('/admin/user/z-asset-package-release-records', data) //Z资产包释放记录分页查询
 export const _addCollaboratorNodeRole = data => _Request('/admin/user/add-collaborator-node-role', data) //给用户添加共谋者节点角色
+export const _removeCollaboratorNodeRole = data => _Request('/admin/user/remove-collaborator-node-role', data) //解除用户共谋者节点角色
 export const _updateCommunityRoleLevel = data => _Request('/admin/user/update-community-role-level', data) //更新用户社区角色等级
+export const _updateAssetPackage = data => _Request('/admin/user/update-asset-package', data) //更新用户资产包额度
 
 export const _GlobalApi = {
     _upLogin,
@@ -77,5 +79,7 @@ export const _GlobalApi = {
     _updateZAssetPackage,
     _zAssetPackageReleaseRecords,
     _addCollaboratorNodeRole,
+    _removeCollaboratorNodeRole,
     _updateCommunityRoleLevel,
+    _updateAssetPackage,
 }
