@@ -10,10 +10,10 @@
                     <p class="system-subtitle">管理后台</p>
                 </div>
                 <el-form :model="form" :rules="rules" ref="formRef" class="login-form">
-                    <el-form-item prop="email">
+                    <el-form-item prop="username">
                         <el-input 
-                            v-model="form.email" 
-                            placeholder="请输入账号（邮箱）"
+                            v-model="form.username" 
+                            placeholder="请输入用户名"
                             size="large"
                             :prefix-icon="User"
                             clearable
@@ -55,7 +55,7 @@ import { User, Lock } from '@element-plus/icons-vue'
 import { TOKEN } from '@/utils/constants'
 
 const form = reactive({
-    email: "",
+    username: "",
     password: ''
 })
 
@@ -66,9 +66,9 @@ const _Api = inject('$api')
 const router = useRouter()
 
 const rules = {
-    email: [
-        { required: true, message: '请输入账号（邮箱）', trigger: 'blur' },
-        { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+    username: [
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 3, max: 50, message: '用户名长度需在3-50位之间', trigger: 'blur' }
     ],
     password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
@@ -98,7 +98,7 @@ const onSubmit = async () => {
     } catch (error) {
         if (error !== false) { // 表单验证失败会返回false，不需要显示错误
             console.error('登录失败:', error)
-            ElMessage.error('登录失败: ' + (error.message || '账号或密码错误'))
+            ElMessage.error('登录失败: ' + (error.message || '用户名或密码错误'))
         }
     } finally {
         loading.value = false
