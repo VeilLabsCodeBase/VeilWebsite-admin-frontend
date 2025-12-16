@@ -26,8 +26,12 @@
                                 <div class="value">{{ item.referralCode }}</div>
                             </div>
                             <div class="item">
-                                <div class="label">角色：</div>
-                                <div class="value">{{ item.teamRole }}</div>
+                                <div class="label">社区等级角色：</div>
+                                <div class="value">{{ item.communityRoleLevelDesc }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="label">小区业绩：</div>
+                                <div class="value">{{ item?.userModelling?.smallZonePerformance }}</div>
                             </div>
                             <div class="item">
                                 <div class="label">用户等级：</div>
@@ -37,13 +41,19 @@
                                 <div class="label">直推人数：</div>
                                 <div class="value">{{ item.directReferrals }}</div>
                             </div>
-                            <div class="item">
-                                <div class="label">充值金额：</div>
+                            <div class="item item-right">
+                                <div class="label">质押金额：</div>
                                 <div class="value">{{ item?.userModelling?.realDepositAmount }}</div>
                             </div>
-                            <div class="item">
-                                <div class="label">可提现金额：</div>
-                                <div class="value">{{ item?.userModelling?.withdrawableUsdt }}</div>
+                            <div class="withdraw-row">
+                                <div class="item">
+                                    <div class="label">可提现USDT：</div>
+                                    <div class="value">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">可提现VEILX：</div>
+                                    <div class="value">{{ formatCrypto(item?.userModelling?.maxTokenLimit) }}</div>
+                                </div>
                             </div>
                         </div>
                         <div class="btnBox">
@@ -63,7 +73,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { inject } from 'vue'
-import { ElMessage } from 'element-plus'
+import { formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 
 const route = useRoute()
 const _Api = inject('$api')
@@ -73,7 +84,7 @@ const modelTreeData = ref(null)
 const loadModelTree = async () => {
     const userId = route.params.userId
     if (!userId) {
-        ElMessage.error('用户ID不存在')
+        handleApiError(null, '用户ID不存在')
         loading.value = false
         return
     }
@@ -87,7 +98,7 @@ const loadModelTree = async () => {
             modelTreeData.value = res
         }
     } catch (error) {
-        ElMessage.error('获取经济模型树失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取经济模型树失败')
     } finally {
         loading.value = false
     }
@@ -178,6 +189,24 @@ onMounted(() => {
             .value {
                 flex-shrink: 0;
             }
+
+            &.item-right {
+                justify-content: flex-end;
+            }
+        }
+
+        .withdraw-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 0;
+
+            .item {
+                width: 50%;
+                display: flex;
+                align-items: center;
+            }
         }
     }
 
@@ -214,4 +243,3 @@ onMounted(() => {
     }
 }
 </style>
-
