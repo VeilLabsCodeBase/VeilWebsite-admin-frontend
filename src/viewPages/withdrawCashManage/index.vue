@@ -3,7 +3,8 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
@@ -14,14 +15,9 @@
                 <el-form-item label="邮箱">
                     <el-input v-model="formValue.email" placeholder="请输入邮箱" clearable />
                 </el-form-item>
-                <el-form-item label="提现类型">
-                    <el-select v-model="formValue.withdrawType" placeholder="请选择提现类型" style="width: 240px">
-                        <el-option v-for="item in withdrawTypeList" :key="item.value" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
+                    <el-button @click="onReset">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -32,42 +28,42 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
-                        <el-table-column prop="id" label="id" width="50" />
-                        <el-table-column prop="userId" label="用户id" width="80" />
-                        <el-table-column prop="username" label="用户名" width="100" />
-                        <el-table-column prop="email" label="邮箱" width="150" />
-                        <el-table-column prop="createdAt" label="申请时间" width="200">
+                        <el-table-column prop="id" label="id" min-width="70" show-overflow-tooltip />
+                        <el-table-column prop="userId" label="用户id" min-width="90" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="email" label="邮箱" min-width="220" show-overflow-tooltip />
+                        <el-table-column prop="createdAt" label="申请时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amount" label="提现金额" width="100">
+                        <el-table-column prop="amount" label="提现金额" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.amount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="usdtBalanceBefore" label="提现前USDT" width="120">
+                        <el-table-column prop="usdtBalanceBefore" label="提现前USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.usdtBalanceBefore) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="tokenBalanceBefore" label="提现前VEILX" width="120">
+                        <el-table-column prop="tokenBalanceBefore" label="提现前VEILX" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.tokenBalanceBefore) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="usdtBalanceAfter" label="提现后USDT" width="120">
+                        <el-table-column prop="usdtBalanceAfter" label="提现后USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.usdtBalanceAfter) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="tokenBalanceAfter" label="提现后VEILX" width="120">
+                        <el-table-column prop="tokenBalanceAfter" label="提现后VEILX" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.tokenBalanceAfter) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="address" label="提现地址" width="300" />
-                        <el-table-column prop="txHash" label="交易Hash" width="300" show-overflow-tooltip>
+                        <el-table-column prop="address" label="提现地址" min-width="350" show-overflow-tooltip />
+                        <el-table-column prop="txHash" label="交易Hash" min-width="350" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span v-if="row.txHash" style="font-family: monospace; color: #409EFF; cursor: pointer;" 
                                       @click="copyTxHash(row.txHash)" :title="row.txHash">
@@ -76,42 +72,42 @@
                                 <span v-else style="color: #909399;">-</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="network" label="提现网络" width="100" />
-                        <el-table-column prop="fee" label="手续费" width="100">
+                        <el-table-column prop="network" label="提现网络" min-width="110" show-overflow-tooltip />
+                        <el-table-column prop="fee" label="手续费" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.fee) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="actualAmount" label="到账金额" width="100">
+                        <el-table-column prop="actualAmount" label="到账金额" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.actualAmount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="actualUsdtAmount" label="到账USDT" width="120">
+                        <el-table-column prop="actualUsdtAmount" label="到账USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.actualUsdtAmount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="actualTokenAmount" label="到账VEILX" width="120">
+                        <el-table-column prop="actualTokenAmount" label="到账VEILX" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.actualTokenAmount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawTypeName" label="提现方式" width="100" />
-                        <el-table-column prop="withdrawCategory" label="提取类型" width="100">
+                        <el-table-column prop="withdrawTypeName" label="提现方式" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="withdrawCategory" label="提取类型" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span v-if="row.withdrawCategory === 'PRINCIPAL'">本金</span>
                                 <span v-else-if="row.withdrawCategory === 'REWARD'">收益</span>
                                 <span v-else>-</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="status" label="提现状态" width="100">
+                        <el-table-column prop="status" label="提现状态" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ status[row.status] }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="reason" label="备注" width="200" />
-                        <el-table-column prop="approvedAt" label="审核通过时间" width="200">
+                        <el-table-column prop="reason" label="备注" min-width="180" show-overflow-tooltip />
+                        <el-table-column prop="approvedAt" label="审核通过时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.approvedAt) }}
                             </template>
@@ -259,14 +255,7 @@ const formValue = reactive({
     address: "",
     username: "",
     email: "",
-    withdrawType:"",
 })
-  const withdrawTypeList = reactive([
-    { label: '全部', value: '' },
-    { label: '个人基金提现', value: 'USER' },
-    { label: '节点基金提现', value: 'WORK_NODE' },
-    { label: '运营基金提现', value: 'OP_NODE' },
-  ])
 const dialogVisible = ref(false)
 const confirmDialogVisible = ref(false)
 const confirmLoading = ref(false)
@@ -377,7 +366,7 @@ const handConfirm = async () => {
             auditForm.reason = ''
         }
     } catch (error) {
-        handleApiError(error, '审核失败')
+        handleApiError(error, '审核失败: '+error?.response?.data?.message)
     } finally {
         submitLoading.value = false
         confirmLoading.value = false
@@ -403,6 +392,21 @@ const getConfirmTitle = () => {
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+const onReset = () => {
+    formValue.userId = ""
+    formValue.address = ""
+    formValue.username = ""
+    formValue.email = ""
+    currentPage.value = 1
+    getTableData(currentPage.value)
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
 }
 </script>
 <style lang="scss" scoped>

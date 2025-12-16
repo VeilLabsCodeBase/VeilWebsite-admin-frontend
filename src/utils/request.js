@@ -40,9 +40,9 @@ export const _Request = async (url, param, method = 'post') => {
         }
     } catch (error) {
         console.log(error);
-        // 如果是 500 错误，拦截器已经准备了消息，这里不再显示
+        // 如果是 500|400 错误，拦截器已经准备了消息，这里不再显示
         // 不标记 _handledByBusiness，让业务层决定是否处理
-        if (error?.response?.status === 500) {
+        if (error?.response?.status === 500 || error?.response?.status === 400) {
             return Promise.reject(error)
         }
         // 其他错误，如果有 message 则显示，并标记已处理（因为 _Request 已经处理了）

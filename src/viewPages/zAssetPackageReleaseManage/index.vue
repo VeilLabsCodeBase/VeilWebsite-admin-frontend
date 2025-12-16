@@ -3,7 +3,8 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="用户ID">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="释放类型">
                     <el-select v-model="formValue.releaseType" placeholder="请选择" style="width: 240px" clearable>
@@ -14,7 +15,8 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="来源用户ID">
-                    <el-input v-model="formValue.sourceUserId" placeholder="请输入来源用户ID" clearable />
+                    <el-input v-model="formValue.sourceUserId" placeholder="请输入来源用户ID" clearable 
+                              @input="handleSourceUserIdInput" />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -149,6 +151,18 @@ const resetSearch = () => {
     formValue.sourceUserId = ""
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
+}
+
+// 限制来源用户ID只能输入数字
+const handleSourceUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.sourceUserId = value.replace(/\D/g, '')
 }
 </script>
 <style lang="scss" scoped>

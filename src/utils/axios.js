@@ -49,9 +49,9 @@ service.interceptors.response.use(
             router.push('/login')
             return Promise.reject(error)
         }
-        
-        // 处理 500 服务器错误
-        if (error.response?.status === 500) {
+
+        // 处理 500|400 服务器错误
+        if (error.response?.status === 500 || error.response?.status === 400) {
             // 在错误对象上添加标记，表示拦截器准备处理这个错误
             error._interceptorMessage = '服务异常，请联系运维人员'
             // 延迟显示，给业务层机会先处理
@@ -64,7 +64,7 @@ service.interceptors.response.use(
             }, 0)
             return Promise.reject(error)
         }
-        
+
         // 其他错误继续抛出
         return Promise.reject(error)
     }

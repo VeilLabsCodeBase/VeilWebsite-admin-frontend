@@ -3,10 +3,12 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="质押记录ID">
-                    <el-input v-model="formValue.stakingId" placeholder="请输入质押记录ID" clearable />
+                    <el-input v-model="formValue.stakingId" placeholder="请输入质押记录ID" clearable 
+                              @input="handleStakingIdInput" />
                 </el-form-item>
                 <el-form-item label="用户ID">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
@@ -20,6 +22,7 @@
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
+                    <el-button @click="onReset">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -163,11 +166,6 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="累计USDT收益">{{ formatCrypto(detailData.totalRewardUsdt) }}</el-descriptions-item>
                     <el-descriptions-item label="累计VEILX收益">{{ formatCrypto(detailData.totalRewardToken) }}</el-descriptions-item>
-                    <el-descriptions-item label="本金是否已返还">
-                        <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
-                            {{ detailData.principalWithdrawn ? '是' : '否' }}
-                        </el-tag>
-                    </el-descriptions-item>
                     <el-descriptions-item label="是否已达到收益倍数封顶">
                         <el-tag :type="detailData.isRewardCapped ? 'warning' : 'success'">
                             {{ detailData.isRewardCapped ? '是' : '否' }}
@@ -331,6 +329,27 @@ const handleCurrentChange = (val) => {
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+const onReset = () => {
+    formValue.stakingId = ""
+    formValue.userId = ""
+    formValue.username = ""
+    formValue.status = ""
+    currentPage.value = 1
+    getTableData(currentPage.value)
+}
+
+// 限制质押记录ID只能输入数字
+const handleStakingIdInput = (value) => {
+    // 只保留数字字符
+    formValue.stakingId = value.replace(/\D/g, '')
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
 }
 
 const getWithdrawRuleDesc = (rule) => {

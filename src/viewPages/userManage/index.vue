@@ -3,7 +3,8 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="email">
                     <el-input v-model="formValue.email" placeholder="请输入email" clearable />
@@ -402,6 +403,12 @@ const onReset = () => {
     formValue.username = ""
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
 }
 const dialogVisible = ref(false)
 const modelTreeData = ref(null)

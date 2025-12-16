@@ -133,6 +133,7 @@
                                 placeholder="请输入质押记录ID"
                                 clearable
                                 style="width: 200px;"
+                                @input="handleStakingIdInput"
                                 @clear="handleFilterChange"
                                 @keyup.enter="handleFilterChange" />
                         </el-form-item>
@@ -142,6 +143,7 @@
                                 placeholder="请输入用户ID"
                                 clearable
                                 style="width: 200px;"
+                                @input="handleUserIdInput"
                                 @clear="handleFilterChange"
                                 @keyup.enter="handleFilterChange" />
                         </el-form-item>
@@ -371,6 +373,18 @@ const handleResetFilter = () => {
     }
     stakingRecordPage.value = 1
     getStakingRecords(1)
+}
+
+// 限制质押记录ID只能输入数字
+const handleStakingIdInput = (value) => {
+    // 只保留数字字符
+    stakingRecordFilter.value.stakingId = value.replace(/\D/g, '')
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    stakingRecordFilter.value.userId = value.replace(/\D/g, '')
 }
 
 // 质押记录分页处理

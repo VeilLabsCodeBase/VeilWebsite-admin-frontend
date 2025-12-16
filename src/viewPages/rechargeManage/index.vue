@@ -3,7 +3,8 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
@@ -13,6 +14,7 @@
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
+                    <el-button @click="onReset">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -175,6 +177,20 @@ const handConfirm = async () => {
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+const onReset = () => {
+    formValue.userId = ""
+    formValue.fromAddr = ""
+    formValue.username = ""
+    currentPage.value = 1
+    getTableData(currentPage.value)
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
 }
 </script>
 <style lang="scss" scoped>

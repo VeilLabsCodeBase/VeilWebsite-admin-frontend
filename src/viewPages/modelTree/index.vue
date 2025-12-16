@@ -4,55 +4,58 @@
             <h2>经济模型树</h2>
             <el-button @click="closePage">关闭</el-button>
         </div>
-        <div class="content" v-loading="loading" element-loading-text="加载中...">
+        <div class="content" v-loading="loading" element-loading-text="加载中..." 
+             @mousedown="handleMouseDown"
+             @dragstart="handleDragStart">
             <div v-if="!loading && modelTreeData" class="tree-container">
                 <vue3-org-chart :data="modelTreeData">
                     <template #node="{ item, children, open, toggleChildren }">
-                        <div class="contentBox" :class="{ 'active': open, 'passive': !open }">
-                            <div class="item">
-                                <div class="label">用户id：</div>
-                                <div class="value">{{ item.id }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">用户名：</div>
-                                <div class="value">{{ item.username }}</div>
-                            </div>
-                            <div class="item" v-if="item.parentId">
-                                <div class="label">上级id：</div>
-                                <div class="value">{{ item.parentId }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">推荐码：</div>
-                                <div class="value">{{ item.referralCode }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">社区等级角色：</div>
-                                <div class="value">{{ item.communityRoleLevelDesc }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">小区业绩：</div>
-                                <div class="value">{{ item?.userModelling?.smallZonePerformance }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">用户等级：</div>
-                                <div class="value">{{ item.userLevel }}</div>
-                            </div>
-                            <div class="item">
-                                <div class="label">直推人数：</div>
-                                <div class="value">{{ item.directReferrals }}</div>
-                            </div>
-                            <div class="item item-right">
-                                <div class="label">质押金额：</div>
-                                <div class="value">{{ item?.userModelling?.realDepositAmount }}</div>
+                        <div class="contentBox" :class="{ 'active': open, 'passive': !open }"
+                             @mousedown.stop
+                             @dragstart.prevent
+                             @selectstart.stop>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">用户id：</span>
+                                    <span class="value selectable">{{ item.id }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">用户名：</span>
+                                    <span class="value selectable">{{ item.username }}</span>
+                                </div>
+                                <div class="info-item" v-if="item.parentId">
+                                    <span class="label">上级id：</span>
+                                    <span class="value selectable">{{ item.parentId }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">推荐码：</span>
+                                    <span class="value selectable">{{ item.referralCode }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">社区等级角色：</span>
+                                    <span class="value selectable">{{ item.communityRoleLevelDesc || '-' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">小区业绩：</span>
+                                    <span class="value selectable">{{ item?.userModelling?.smallZonePerformance || '0' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">直推人数：</span>
+                                    <span class="value selectable">{{ item.directReferrals || '0' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">质押金额：</span>
+                                    <span class="value selectable">{{ item?.userModelling?.realDepositAmount || '0' }}</span>
+                                </div>
                             </div>
                             <div class="withdraw-row">
-                                <div class="item">
-                                    <div class="label">可提现USDT：</div>
-                                    <div class="value">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</div>
+                                <div class="withdraw-item">
+                                    <span class="label">可提现USDT：</span>
+                                    <span class="value selectable">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</span>
                                 </div>
-                                <div class="item">
-                                    <div class="label">可提现VEILX：</div>
-                                    <div class="value">{{ formatCrypto(item?.userModelling?.maxTokenLimit) }}</div>
+                                <div class="withdraw-item">
+                                    <span class="label">可提现VEILX：</span>
+                                    <span class="value selectable">{{ formatCrypto(item?.userModelling?.maxTokenLimit) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -108,6 +111,21 @@ const closePage = () => {
     window.close()
 }
 
+// 阻止拖拽，允许文本选择
+const handleMouseDown = (e) => {
+    // 如果是在文本上点击，允许选择
+    const target = e.target
+    if (target.tagName === 'SPAN' || target.tagName === 'DIV' || target.classList.contains('value') || target.classList.contains('label')) {
+        e.stopPropagation()
+    }
+}
+
+const handleDragStart = (e) => {
+    // 阻止拖拽
+    e.preventDefault()
+    return false
+}
+
 onMounted(() => {
     loadModelTree()
 })
@@ -149,10 +167,26 @@ onMounted(() => {
             :deep() {
                 .vue3-org-chart {
                     height: 100%;
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
                 }
 
                 .vue3-org-chart .vue3-org-chart-container {
                     height: 100%;
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
+                }
+
+                // 禁用拖拽功能，允许文本选择
+                .vue3-org-chart-container * {
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
                 }
             }
         }
@@ -168,30 +202,77 @@ onMounted(() => {
     }
 
     .contentBox {
-        display: flex;
-        align-items: center;
-        width: 500px;
-        height: 200px;
-        flex-wrap: wrap;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
+        width: 520px;
+        min-height: 240px;
+        padding: 16px;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        user-select: text !important; // 允许选择文本
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        // 禁用拖拽
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        // 允许文本选择
+        cursor: default;
+        
+        // 阻止拖拽事件
+        * {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+        }
 
-        .item {
-            display: flex;
-            align-items: center;
-            width: 33.33%;
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 16px;
+            margin-bottom: 12px;
 
-            .label {
-                flex-shrink: 0;
-            }
+            .info-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                min-height: 28px;
+                padding: 4px 0;
 
-            .value {
-                flex-shrink: 0;
-            }
+                .label {
+                    flex-shrink: 0;
+                    font-size: 13px;
+                    color: #606266;
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
 
-            &.item-right {
-                justify-content: flex-end;
+                .value {
+                    flex: 1;
+                    font-size: 13px;
+                    color: #303133;
+                    font-weight: 600;
+                    word-break: break-all;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    &.selectable {
+                        user-select: text;
+                        -webkit-user-select: text;
+                        -moz-user-select: text;
+                        -ms-user-select: text;
+                        cursor: text;
+                    }
+                }
             }
         }
 
@@ -199,13 +280,45 @@ onMounted(() => {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
-            margin-top: 0;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e4e7ed;
 
-            .item {
-                width: 50%;
+            .withdraw-item {
+                flex: 1;
                 display: flex;
-                align-items: center;
+                flex-direction: column;
+                gap: 4px;
+                padding: 8px 12px;
+                background: #f5f7fa;
+                border-radius: 6px;
+                min-width: 0;
+
+                .label {
+                    font-size: 12px;
+                    color: #909399;
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
+
+                .value {
+                    font-size: 14px;
+                    color: #409EFF;
+                    font-weight: 700;
+                    word-break: break-all;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    &.selectable {
+                        user-select: text;
+                        -webkit-user-select: text;
+                        -moz-user-select: text;
+                        -ms-user-select: text;
+                        cursor: text;
+                    }
+                }
             }
         }
     }
@@ -234,12 +347,19 @@ onMounted(() => {
     }
 
     .contentBox.active {
-        border-color: rgb(165 180 252);
-        background-color: rgb(224 231 255);
+        border-color: #409EFF;
+        background: linear-gradient(135deg, #ecf5ff 0%, #e1f3ff 100%);
+        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+        transform: translateY(-2px);
     }
 
     .contentBox.passive {
-        background-color: rgb(248 250 252);
+        background-color: #fff;
+    }
+
+    .contentBox:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transform: translateY(-1px);
     }
 }
 </style>

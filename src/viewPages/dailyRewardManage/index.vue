@@ -3,13 +3,16 @@
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
                 <el-form-item label="收益记录ID">
-                    <el-input v-model="formValue.rewardId" placeholder="请输入收益记录ID" clearable />
+                    <el-input v-model="formValue.rewardId" placeholder="请输入收益记录ID" clearable 
+                              @input="handleRewardIdInput" />
                 </el-form-item>
                 <el-form-item label="质押记录ID">
-                    <el-input v-model="formValue.stakingRecordId" placeholder="请输入质押记录ID" clearable />
+                    <el-input v-model="formValue.stakingRecordId" placeholder="请输入质押记录ID" clearable 
+                              @input="handleStakingRecordIdInput" />
                 </el-form-item>
                 <el-form-item label="用户ID">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable />
+                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable 
+                              @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
@@ -44,16 +47,9 @@
                         clearable
                     />
                 </el-form-item>
-                <el-form-item label="发放状态">
-                    <el-select v-model="formValue.status" placeholder="请选择状态" clearable style="width: 200px">
-                        <el-option label="待发放" value="PENDING" />
-                        <el-option label="已发放" value="PAID" />
-                        <el-option label="已取消" value="CANCELLED" />
-                        <el-option label="发放失败" value="FAILED" />
-                    </el-select>
-                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
+                    <el-button @click="onReset">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -69,12 +65,12 @@
                         <el-table-column prop="userId" label="用户ID" width="100" />
                         <el-table-column prop="username" label="用户名" width="120" />
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
-                        <el-table-column prop="dailyRewardUsdt" label="USDT收益" width="120">
+                        <el-table-column prop="dailyRewardUsdt" label="USDT收益" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.dailyRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="dailyRewardToken" label="VEILX收益" width="120">
+                        <el-table-column prop="dailyRewardToken" label="VEILX收益" min-width="160" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.dailyRewardToken) }}
                             </template>
@@ -258,6 +254,37 @@ const handleCurrentChange = (val) => {
 const onSearch = () => {
     currentPage.value = 1
     getTableData(currentPage.value)
+}
+
+const onReset = () => {
+    formValue.rewardId = ""
+    formValue.stakingRecordId = ""
+    formValue.userId = ""
+    formValue.username = ""
+    formValue.rewardDate = ""
+    formValue.rewardDateFrom = ""
+    formValue.rewardDateTo = ""
+    formValue.status = ""
+    currentPage.value = 1
+    getTableData(currentPage.value)
+}
+
+// 限制收益记录ID只能输入数字
+const handleRewardIdInput = (value) => {
+    // 只保留数字字符
+    formValue.rewardId = value.replace(/\D/g, '')
+}
+
+// 限制质押记录ID只能输入数字
+const handleStakingRecordIdInput = (value) => {
+    // 只保留数字字符
+    formValue.stakingRecordId = value.replace(/\D/g, '')
+}
+
+// 限制用户ID只能输入数字
+const handleUserIdInput = (value) => {
+    // 只保留数字字符
+    formValue.userId = value.replace(/\D/g, '')
 }
 
 const getDistributionStatusText = (status) => {
