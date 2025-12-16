@@ -30,94 +30,88 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
-                        <el-table-column prop="id" label="ID" width="80" />
-                        <el-table-column prop="userId" label="用户ID" width="100" />
-                        <el-table-column prop="username" label="用户名" width="120" />
-                        <el-table-column prop="depositId" label="充值ID" width="100" />
-                        <el-table-column prop="totalAmount" label="质押金额(USDT)" width="140">
+                        <el-table-column prop="id" label="ID" min-width="80" show-overflow-tooltip />
+                        <el-table-column prop="userId" label="用户ID" min-width="100" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="depositId" label="充值ID" min-width="100" show-overflow-tooltip />
+                        <el-table-column prop="totalAmount" label="质押金额(USDT)" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ row.totalAmount?.toFixed(2) }}
+                                {{ formatCrypto(row.totalAmount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amountUsdt" label="USDT金额" width="120">
+                        <el-table-column prop="amountUsdt" label="USDT金额" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ row.amountUsdt?.toFixed(2) }}
+                                {{ formatCrypto(row.amountUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amountToken" label="VEILX金额" width="120">
+                        <el-table-column prop="amountToken" label="VEILX金额" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ row.amountToken?.toFixed(2) }}
+                                {{ formatCrypto(row.amountToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="stakingType" label="质押类型" width="150">
+                        <el-table-column prop="stakingType" label="质押类型" min-width="150" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ getStakingTypeDesc(row.stakingType, row.stakingTypeDesc) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="periodDays" label="质押周期(天)" width="120" />
-                        <el-table-column prop="dailyRate" label="日算力倍率(%)" width="130">
+                        <el-table-column prop="dailyRate" label="日算力倍率(%)" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ row.dailyRate }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="rewardMultiple" label="收益倍数" width="100" />
-                        <el-table-column prop="withdrawRule" label="提现规则" width="150">
+                        <el-table-column prop="rewardMultiple" label="收益倍数" min-width="100" show-overflow-tooltip />
+                        <el-table-column prop="withdrawRule" label="提现规则" min-width="150" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ getWithdrawRuleDesc(row.withdrawRule) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="startDate" label="开始日期" width="120">
+                        <el-table-column prop="startDate" label="开始日期" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDate(row.startDate) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="endDate" label="到期日期" width="120">
-                            <template #default="{ row }">
-                                {{ formatDate(row.endDate) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="status" label="状态" width="100">
+                        <el-table-column prop="status" label="状态" min-width="100" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="getStatusType(row.status)">
                                     {{ getStatusText(row.status) }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="totalRewardUsdt" label="累计USDT收益" width="130">
+                        <el-table-column prop="totalRewardUsdt" label="累计USDT收益" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdt(row.totalRewardUsdt) }}
+                                {{ formatCrypto(row.totalRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="totalRewardToken" label="累计VEILX收益" width="130">
+                        <el-table-column prop="totalRewardToken" label="累计VEILX收益" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatToken(row.totalRewardToken) }}
+                                {{ formatCrypto(row.totalRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="principalWithdrawn" label="本金是否已返还" width="130">
+                        <el-table-column prop="principalWithdrawn" label="本金是否已返还" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.principalWithdrawn ? 'success' : 'info'">
                                     {{ row.principalWithdrawn ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="isRewardCapped" label="是否已达到收益倍数封顶" width="180">
+                        <el-table-column prop="isRewardCapped" label="是否已达到收益倍数封顶" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.isRewardCapped ? 'warning' : 'success'">
                                     {{ row.isRewardCapped ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="nextRewardTime" label="下次收益产生时间" width="180">
+                        <el-table-column prop="nextRewardTime" label="下次收益产生时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ row.nextRewardTime ? formatDateTime(row.nextRewardTime) : '-' }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="rewardSequence" label="已产生收益笔数" width="130">
+                        <el-table-column prop="rewardSequence" label="已产生收益笔数" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ row.rewardSequence || 0 }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="180">
+                        <el-table-column prop="createdAt" label="创建时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
@@ -149,33 +143,26 @@
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="充值ID">{{ detailData.depositId }}</el-descriptions-item>
-                    <el-descriptions-item label="质押金额(USDT)">{{ detailData.totalAmount?.toFixed(2)
-                        }}</el-descriptions-item>
-                    <el-descriptions-item label="USDT金额">{{ detailData.amountUsdt?.toFixed(2) }}</el-descriptions-item>
-                    <el-descriptions-item label="VEILX金额">{{ detailData.amountToken?.toFixed(2)
-                        }}</el-descriptions-item>
+                    <el-descriptions-item label="质押金额(USDT)">{{ formatCrypto(detailData.totalAmount) }}</el-descriptions-item>
+                    <el-descriptions-item label="USDT金额">{{ formatCrypto(detailData.amountUsdt) }}</el-descriptions-item>
+                    <el-descriptions-item label="VEILX金额">{{ formatCrypto(detailData.amountToken) }}</el-descriptions-item>
                     <el-descriptions-item label="质押类型">{{ getStakingTypeDesc(detailData.stakingType, detailData.stakingTypeDesc) }}</el-descriptions-item>
-                    <el-descriptions-item label="质押周期(天)">{{ detailData.periodDays }}</el-descriptions-item>
                     <el-descriptions-item label="日算力倍率(%)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
                     <el-descriptions-item label="收益封顶金额(USDT)" :span="2">
                         <span style="color: #409eff; font-weight: bold; font-size: 16px;">
-                            {{ formatUsdt(detailData.rewardCapacity) }}
+                            {{ formatCrypto(detailData.rewardCapacity) }}
                         </span>
                     </el-descriptions-item>
-                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule)
-                        }}</el-descriptions-item>
+                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule) }}</el-descriptions-item>
                     <el-descriptions-item label="开始日期">{{ formatDate(detailData.startDate) }}</el-descriptions-item>
-                    <el-descriptions-item label="到期日期">{{ formatDate(detailData.endDate) }}</el-descriptions-item>
                     <el-descriptions-item label="状态">
                         <el-tag :type="getStatusType(detailData.status)">
                             {{ getStatusText(detailData.status) }}
                         </el-tag>
                     </el-descriptions-item>
-                    <el-descriptions-item label="累计USDT收益">{{ formatUsdt(detailData.totalRewardUsdt)
-                    }}</el-descriptions-item>
-                    <el-descriptions-item label="累计VEILX收益">{{ formatToken(detailData.totalRewardToken)
-                    }}</el-descriptions-item>
+                    <el-descriptions-item label="累计USDT收益">{{ formatCrypto(detailData.totalRewardUsdt) }}</el-descriptions-item>
+                    <el-descriptions-item label="累计VEILX收益">{{ formatCrypto(detailData.totalRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="本金是否已返还">
                         <el-tag :type="detailData.principalWithdrawn ? 'success' : 'info'">
                             {{ detailData.principalWithdrawn ? '是' : '否' }}
@@ -206,19 +193,9 @@
         <!-- 修改对话框 -->
         <el-dialog v-model="editDialogVisible" title="修改质押记录" width="600" destroy-on-close>
             <el-config-provider :locale="zhCn">
-                <el-form :model="editForm" label-width="120px" :rules="editRules" ref="editFormRef">
+                <el-form :model="editForm" label-width="140px" :rules="editRules" ref="editFormRef" class="edit-form">
                 <el-form-item label="质押记录ID">
                     <el-input v-model="editForm.id" disabled />
-                </el-form-item>
-                <el-form-item label="质押周期(天)">
-                    <el-input :value="editForm.periodDays" disabled>
-                        <template #suffix>
-                            <span style="color: #909399; margin-right: 8px;">天</span>
-                        </template>
-                    </el-input>
-                    <el-text type="info" style="margin-left: 12px; font-size: 12px;">
-                        到期日期将根据开始日期和质押周期自动计算
-                    </el-text>
                 </el-form-item>
                 <el-form-item label="开始日期" prop="startDate">
                     <el-date-picker
@@ -230,14 +207,14 @@
                         style="width: 100%"
                         @change="handleStartDateChange" />
                 </el-form-item>
-                <el-form-item label="到期日期">
-                    <el-input :value="editForm.endDate ? formatDateTime(editForm.endDate) : '-'" disabled>
+                <el-form-item label="下次收益产生时间">
+                    <el-input :value="editForm.nextRewardTime ? formatDateTime(editForm.nextRewardTime) : '-'" disabled>
                         <template #prefix>
                             <el-icon style="margin-right: 8px;"><Calendar /></el-icon>
                         </template>
                     </el-input>
                     <el-text type="info" style="margin-left: 12px; font-size: 12px;">
-                        自动计算：开始日期 + {{ editForm.periodDays }} 天
+                        自动计算：开始日期 + 24小时
                     </el-text>
                 </el-form-item>
                 <el-form-item label="状态" prop="status">
@@ -264,7 +241,8 @@ import { reactive, ref, inject, watch } from 'vue'
 import { Calendar } from '@element-plus/icons-vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import dayjs from 'dayjs'
-import { formatUsdt, formatToken } from '@/utils/format'
+import { formatUsdt, formatToken, formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 
 const formValue = reactive({
     stakingId: "",
@@ -279,9 +257,8 @@ const editDialogVisible = ref(false)
 const editForm = ref({
     id: null,
     startDate: null,
-    endDate: null,
-    status: null,
-    periodDays: null
+    nextRewardTime: null,
+    status: null
 })
 const editFormRef = ref(null)
 const updateLoading = ref(false)
@@ -301,17 +278,17 @@ const editRules = {
     ]
 }
 
-// 处理开始日期变化，自动计算到期日期
+// 处理开始日期变化，自动计算下次收益产生时间（开始日期+24小时）
 const handleStartDateChange = (value) => {
-    if (value && editForm.value.periodDays) {
-        // 使用dayjs解析开始日期，保持时分秒不变
+    if (value) {
+        // 使用dayjs解析开始日期，保持原始时间不变（不进行时区转换）
         const startDate = dayjs(value)
-        // 计算到期日期：开始日期 + 质押周期（天），保持时分秒不变
-        const endDate = startDate.add(editForm.value.periodDays, 'day')
+        // 计算下次收益产生时间：开始日期 + 24小时
+        const nextRewardTime = startDate.add(24, 'hour')
         // 格式化为 YYYY-MM-DDTHH:mm:ss 格式
-        editForm.value.endDate = endDate.format('YYYY-MM-DDTHH:mm:ss')
+        editForm.value.nextRewardTime = nextRewardTime.format('YYYY-MM-DDTHH:mm:ss')
     } else {
-        editForm.value.endDate = null
+        editForm.value.nextRewardTime = null
     }
 }
 
@@ -333,7 +310,7 @@ const getTableData = async (page) => {
         }
     } catch (error) {
         console.error('获取数据失败:', error)
-        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取数据失败')
     } finally {
         loading.value = false
     }
@@ -411,7 +388,7 @@ const viewDetail = async (row) => {
             detailData.value = res
         }
     } catch (error) {
-        ElMessage.error('获取详情失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取详情失败')
         detailDialogVisible.value = false
     } finally {
         loadingDetail.value = false
@@ -419,13 +396,29 @@ const viewDetail = async (row) => {
 }
 
 const showEditDialog = (row) => {
-    const startDate = row.startDate ? new Date(row.startDate).toISOString().slice(0, 19) : null
+    // 直接使用后端返回的时间字符串，避免时区转换问题
+    // 如果后端返回的是 ISO 格式（如 "2025-12-15T17:43:02"），直接使用
+    // 使用 dayjs 解析并格式化为 el-date-picker 需要的格式
+    let startDate = null
+    if (row.startDate) {
+        // 使用 dayjs 解析，保持原始时间不变（不进行时区转换）
+        const date = dayjs(row.startDate)
+        startDate = date.format('YYYY-MM-DDTHH:mm:ss')
+    }
+    
+    // 直接使用列表数据中的 nextRewardTime，不重新计算
+    let nextRewardTime = null
+    if (row.nextRewardTime) {
+        // 使用 dayjs 解析，保持原始时间不变
+        const date = dayjs(row.nextRewardTime)
+        nextRewardTime = date.format('YYYY-MM-DDTHH:mm:ss')
+    }
+    
     editForm.value = {
         id: row.id,
         startDate: startDate,
-        endDate: row.endDate ? new Date(row.endDate).toISOString().slice(0, 19) : null,
-        status: row.status || null,
-        periodDays: row.periodDays || null
+        nextRewardTime: nextRewardTime,
+        status: row.status || null
     }
     editDialogVisible.value = true
 }
@@ -437,10 +430,10 @@ const handleUpdate = async () => {
         await editFormRef.value.validate()
         updateLoading.value = true
         
+        // 只传startDate和status，后端会自动根据startDate+24小时计算nextRewardTime
         const res = await _Api._stakingRecordUpdate({
             id: editForm.value.id,
             startDate: editForm.value.startDate,
-            endDate: editForm.value.endDate,
             status: editForm.value.status
         })
         
@@ -452,7 +445,7 @@ const handleUpdate = async () => {
         }
     } catch (error) {
         if (error !== false) { // 表单验证失败会返回false，不需要显示错误
-            ElMessage.error('修改失败: ' + (error.message || '未知错误'))
+            handleApiError(error, '修改失败')
         }
     } finally {
         updateLoading.value = false
@@ -477,20 +470,18 @@ const formatDate = (dateStr) => {
     }
 }
 
-// 格式化日期时间为 yyyy-MM-dd HH:mm:ss
+// 格式化日期时间为 yyyy-MM-dd HH:mm:ss（使用 dayjs 避免时区问题）
 const formatDateTime = (dateStr) => {
     if (!dateStr) return '-'
     try {
-        const date = new Date(dateStr)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        const seconds = String(date.getSeconds()).padStart(2, '0')
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        // 使用 dayjs 解析，保持原始时间不变（不进行时区转换）
+        const date = dayjs(dateStr)
+        if (!date.isValid()) {
+            return '-'
+        }
+        return date.format('YYYY-MM-DD HH:mm:ss')
     } catch (e) {
-        // 如果已经是日期时间格式，尝试解析
+        // 如果解析失败，尝试直接匹配格式
         if (typeof dateStr === 'string') {
             // 尝试匹配 yyyy-MM-dd HH:mm:ss 或类似格式
             const match = dateStr.match(/(\d{4}-\d{2}-\d{2})[\sT](\d{2}):(\d{2}):(\d{2})/)
@@ -548,6 +539,16 @@ const formatDateTime = (dateStr) => {
 
     .detail-content {
         padding: 20px 0;
+    }
+
+    // 修改对话框样式优化
+    .edit-form {
+        :deep(.el-form-item__label) {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow: visible;
+            text-overflow: clip;
+        }
     }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
     <div class="home">
         <div class="header">
-            <div class="left">创世贡献者DAO治理系统-管理后台</div>
+            <div class="left">VEILX-管理后台</div>
             <div class="center"></div>
             <div class="right" v-if="token">
                 <div class="loginOut" @click="handLoginOut">退出</div>

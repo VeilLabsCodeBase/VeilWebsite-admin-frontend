@@ -48,6 +48,50 @@ export function formatToken(amount) {
 }
 
 /**
+ * 格式化加密货币金额
+ * 规则：最多保留8位小数，去除末尾0，但至少保留2位小数（例如整数显示为.00），包含千位分隔符
+ * @param {number|string|null|undefined} amount 金额
+ * @returns {string} 格式化后的金额字符串
+ */
+export function formatCrypto(amount) {
+  if (amount === null || amount === undefined || amount === '') {
+    return '0.00';
+  }
+
+  try {
+    const val = new Decimal(amount);
+    if (val.isNaN()) return '0.00';
+
+    // 格式化为8位小数
+    let formatted = val.toFixed(8);
+
+    // 去除末尾的0，但保留小数点
+    formatted = formatted.replace(/0+$/, '');
+    
+    // 如果最后一位是小数点，补两个0 (例如 "10." -> "10.00")
+    if (formatted.endsWith('.')) {
+      formatted += '00';
+    } else {
+      // 检查小数位数
+      const parts = formatted.split('.');
+      // 如果只有一位小数，补一个0
+      if (parts[1] && parts[1].length < 2) {
+        formatted += '0';
+      }
+    }
+
+    // 添加千位分隔符
+    const parts = formatted.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+
+  } catch (e) {
+    console.warn('Error formatting crypto amount:', e);
+    return '0.00';
+  }
+}
+
+/**
  * 格式化日期时间为 yyyy-MM-dd HH:mm:ss
  * @param {string|Date|null|undefined} dateStr 日期时间字符串或Date对象
  * @returns {string} 格式化后的日期时间字符串，如果为空则返回 '-'

@@ -6,7 +6,7 @@
         <div class="login-content">
             <div class="login-box">
                 <div class="login-header">
-                    <h1 class="system-title">创世贡献者DAO治理系统</h1>
+                    <h1 class="system-title">VEILX</h1>
                     <p class="system-subtitle">管理后台</p>
                 </div>
                 <el-form :model="form" :rules="rules" ref="formRef" class="login-form">

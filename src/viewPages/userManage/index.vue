@@ -11,17 +11,9 @@
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
-                <el-form-item label="手机号码">
-                    <el-input v-model="formValue.phoneNumber" placeholder="请输入手机号码" clearable />
-                </el-form-item>
-                <el-form-item label="是否已绑定">
-                    <el-select v-model="formValue.isBindNode" placeholder="请选择" style="width: 240px">
-                        <el-option v-for="item in isBindNodeList" :key="item.value" :label="item.label"
-                            :value="item.value" />
-                    </el-select>
-                </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
+                    <el-button @click="onReset">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -32,78 +24,78 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中...">
-                        <el-table-column prop="userModelling.userId" label="用户id" />
-                        <el-table-column prop="username" label="用户名" width="180" />
-                        <el-table-column prop="role" label="用户角色" width="180" />
-                        <el-table-column prop="referredUserId" label="推荐人Id" />
-                        <el-table-column prop="email" label="email" width="180" />
-                        <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" width="200" />
-                        <el-table-column prop="stakingRewardUsdt" label="质押收益" width="250">
+                        <el-table-column prop="userModelling.userId" label="用户id" min-width="110" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="160" show-overflow-tooltip />
+                        <el-table-column prop="role" label="用户角色" min-width="160" show-overflow-tooltip />
+                        <el-table-column prop="referredUserId" label="推荐人Id" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="email" label="email" min-width="200" show-overflow-tooltip />
+                        <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" min-width="200" show-overflow-tooltip />
+                        <el-table-column prop="stakingRewardUsdt" label="质押收益" min-width="220" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatUsdtAndToken(row.stakingRewardUsdt, row.stakingRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" width="250">
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" min-width="220" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatUsdtAndToken(row.communityShareRewardUsdt, row.communityShareRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" width="250">
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" min-width="220" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatUsdtAndToken(row.communityRoleRewardUsdt, row.communityRoleRewardToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawableUsdt" label="生态财库" width="250">
+                        <el-table-column prop="withdrawableUsdt" label="生态财库" min-width="220" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatUsdtAndToken(row.withdrawableUsdt, row.withdrawableToken) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" width="150" />
-                        <el-table-column prop="smallZonePerformance" label="小区业绩" width="150">
+                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" min-width="140" show-overflow-tooltip />
+                        <el-table-column prop="smallZonePerformance" label="小区业绩" min-width="160" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatUsdt(row.smallZonePerformance) }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="社区角色" width="150">
+                        <el-table-column label="社区角色" min-width="150">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showCommunityRoleDialog($index, row)" size="small">
                                     {{ row.communityRoleDisplayName || '无等级' }}
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" width="150">
+                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" min-width="150" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.isCollaboratorNode ? 'success' : 'info'">
                                     {{ row.isCollaboratorNode ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column label="Z资产包额度" width="150">
+                        <el-table-column label="Z资产包额度" min-width="150">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small">
                                     {{ formatUsdt(row.userModelling?.zAssetPackageAmount) }}
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column label="资产包额度" width="150">
+                        <el-table-column label="资产包额度" min-width="150">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small">
                                     {{ formatUsdt(row.userModelling?.assetPackageAmount) }}
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="status" label="用户状态" width="180" />
-                        <el-table-column prop="userModelling.updatedAt" label="更新时间" width="200">
+                        <el-table-column prop="status" label="用户状态" min-width="160" show-overflow-tooltip />
+                        <el-table-column prop="userModelling.updatedAt" label="更新时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.updatedAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.createdAt" label="创建时间" width="200">
+                        <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" min-width="250">
+                        <el-table-column fixed="right" label="操作" min-width="260">
                             <template #default="scope">
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">查看经济模型树</el-button>
@@ -355,15 +347,15 @@ import {
 import { reactive, ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { _FormatDate } from '@/utils/commonFn'
+import { formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 const router = useRouter()
 const tableData = ref()
 const tableLoading = ref(false)
 const formValue = reactive({
     userId: "",
     email: "",
-    username: "",
-    isBindNode: "",
-    phoneNumber: "",
+    username: ""
 })
 const statius = reactive({
     'NORMAL': "布道大使",
@@ -371,7 +363,6 @@ const statius = reactive({
     'CITY_PARTNER': "节点共谋人",
     'REGIONAL_PARTNER': "区域共建者"
 })
-const isBindNodeList=reactive([{label:'全部',value:''},{label:'是',value:true},{label:'否',value:false},])
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
@@ -387,7 +378,7 @@ const getTableData = async (page) => {
             tableData.value = res
         }
     } catch (error) {
-        ElMessage.error('查询失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '查询失败')
     } finally {
         tableLoading.value = false
     }
@@ -402,6 +393,13 @@ const handleCurrentChange = (val) => {
     getTableData(currentPage.value)
 }
 const onSearch = () => {
+    currentPage.value = 1
+    getTableData(currentPage.value)
+}
+const onReset = () => {
+    formValue.userId = ""
+    formValue.email = ""
+    formValue.username = ""
     currentPage.value = 1
     getTableData(currentPage.value)
 }
@@ -488,7 +486,7 @@ const updateAssetPackageConfirm = async () => {
             getTableData(currentPage.value)
         }
     } catch (error) {
-        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '更新失败')
     }
 }
 
@@ -526,7 +524,7 @@ const updateZAssetPackageConfirm = async () => {
             getTableData(currentPage.value)
         }
     } catch (error) {
-        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '更新失败')
     }
 }
 
@@ -554,7 +552,7 @@ const confirmAddCollaboratorNode = async () => {
             getTableData(currentPage.value)
         }
     } catch (error) {
-        ElMessage.error('添加失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '添加失败')
     }
 }
 
@@ -587,7 +585,7 @@ const confirmRemoveCollaboratorNode = async () => {
             getTableData(currentPage.value)
         }
     } catch (error) {
-        ElMessage.error('解除失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '解除失败')
     }
 }
 
@@ -648,37 +646,17 @@ const updateCommunityRoleConfirm = async () => {
             getTableData(currentPage.value)
         }
     } catch (error) {
-        ElMessage.error('更新失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '更新失败')
     }
 }
 
-// 格式化USDT金额（最低保留两位小数，最大8位）
-const formatUsdt = (value) => {
-    if (value == null || value === undefined || value === '') {
-        return '0.00'
-    }
-    const num = typeof value === 'string' ? parseFloat(value) : value
-    if (isNaN(num)) {
-        return '0.00'
-    }
-    // 保留2-8位小数，但至少保留2位
-    const str = num.toFixed(8)
-    // 移除末尾的0，但至少保留2位小数
-    const parts = str.split('.')
-    if (parts.length === 2) {
-        let decimals = parts[1].replace(/0+$/, '')
-        if (decimals.length < 2) {
-            decimals = decimals.padEnd(2, '0')
-        }
-        return parts[0] + '.' + decimals
-    }
-    return num.toFixed(2)
-}
+// 统一金额格式化（保留至少两位，最多八位，带千分位）
+const formatUsdt = (value) => formatCrypto(value)
 
 // 格式化USDT和VEILX显示（格式：xxx USDT + xxx VEILX）
 const formatUsdtAndToken = (usdtValue, tokenValue) => {
-    const usdt = formatUsdt(usdtValue)
-    const token = formatUsdt(tokenValue) // 复用formatUsdt格式化token
+    const usdt = formatCrypto(usdtValue)
+    const token = formatCrypto(tokenValue)
     const parts = []
     if (usdt !== '0.00' || token === '0.00') {
         parts.push(`${usdt} USDT`)

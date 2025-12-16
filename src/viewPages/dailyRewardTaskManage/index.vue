@@ -124,6 +124,33 @@
         <!-- 质押记录选择对话框 -->
         <el-dialog v-model="stakingRecordDialogVisible" title="选择质押记录" width="1200" destroy-on-close>
             <div class="staking-record-dialog">
+                <!-- 过滤条件 -->
+                <div class="filter-section" style="margin-bottom: 20px;">
+                    <el-form :inline="true" :model="stakingRecordFilter" class="filter-form">
+                        <el-form-item label="质押记录ID">
+                            <el-input 
+                                v-model="stakingRecordFilter.stakingId" 
+                                placeholder="请输入质押记录ID"
+                                clearable
+                                style="width: 200px;"
+                                @clear="handleFilterChange"
+                                @keyup.enter="handleFilterChange" />
+                        </el-form-item>
+                        <el-form-item label="用户ID">
+                            <el-input 
+                                v-model="stakingRecordFilter.userId" 
+                                placeholder="请输入用户ID"
+                                clearable
+                                style="width: 200px;"
+                                @clear="handleFilterChange"
+                                @keyup.enter="handleFilterChange" />
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="handleFilterChange">查询</el-button>
+                            <el-button @click="handleResetFilter">重置</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
                 <el-table 
                     :data="stakingRecords?.records" 
                     border 
@@ -150,20 +177,19 @@
                     <el-table-column prop="depositId" label="充值ID" width="100" fixed="left" />
                     <el-table-column prop="totalAmount" label="质押金额(USDT)" width="140" fixed="left">
                         <template #default="{ row }">
-                            {{ row.totalAmount?.toFixed(2) }}
+                            {{ formatCrypto(row.totalAmount) }}
                         </template>
                     </el-table-column>
                     <el-table-column prop="amountUsdt" label="USDT金额" width="120">
                         <template #default="{ row }">
-                            {{ row.amountUsdt?.toFixed(2) }}
+                            {{ formatCrypto(row.amountUsdt) }}
                         </template>
                     </el-table-column>
                     <el-table-column prop="amountToken" label="Token金额" width="120">
                         <template #default="{ row }">
-                            {{ row.amountToken?.toFixed(2) }}
+                            {{ formatCrypto(row.amountToken) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="periodDays" label="质押周期(天)" width="120" />
                     <el-table-column prop="dailyRate" label="日算力倍率(%)" width="130">
                         <template #default="{ row }">
                             {{ row.dailyRate }}
@@ -178,11 +204,6 @@
                     <el-table-column prop="startDate" label="开始日期" width="120">
                         <template #default="{ row }">
                             {{ formatDate(row.startDate) }}
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="endDate" label="到期日期" width="120">
-                        <template #default="{ row }">
-                            {{ formatDate(row.endDate) }}
                         </template>
                     </el-table-column>
                     <el-table-column prop="status" label="状态" width="100">
@@ -239,9 +260,7 @@
                     style="margin-bottom: 20px;">
                     <template #default>
                         <p>质押记录ID: {{ selectedStakingRecord?.id }}</p>
-                        <p>质押周期: {{ selectedStakingRecord?.periodDays }} 天</p>
                         <p>已产生收益笔数: {{ selectedStakingRecord?.rewardSequence || 0 }} 笔</p>
-                        <p>剩余可执行次数: {{ (selectedStakingRecord?.periodDays || 0) - (selectedStakingRecord?.rewardSequence || 0) }} 次</p>
                         <p>请选择执行次数（表示对该质押记录执行多少次收益计算）</p>
                     </template>
                 </el-alert>
@@ -272,6 +291,8 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CaretRight, Refresh } from '@element-plus/icons-vue'
 import { ref, inject, onMounted } from 'vue'
+import { formatCrypto, formatDateTime } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 
 const _Api = inject('$api')
 const executing = ref(false)
@@ -285,9 +306,13 @@ const stakingRecordDialogVisible = ref(false)
 const stakingRecords = ref(null)
 const loadingStakingRecords = ref(false)
 const stakingRecordPage = ref(1)
-const stakingRecordPageSize = ref(10)
+const stakingRecordPageSize = ref(8)
 const selectedStakingRecord = ref(null)
 const selectedStakingRecordId = ref(null)
+const stakingRecordFilter = ref({
+    stakingId: '',
+    userId: ''
+})
 
 // 执行次数相关
 const executionCountDialogVisible = ref(false)
@@ -313,16 +338,39 @@ const getStakingRecords = async (page) => {
             pageNo: page,
             pageSize: stakingRecordPageSize.value
         }
+        // 添加过滤条件
+        if (stakingRecordFilter.value.stakingId) {
+            params.stakingId = stakingRecordFilter.value.stakingId
+        }
+        if (stakingRecordFilter.value.userId) {
+            params.userId = stakingRecordFilter.value.userId
+        }
         const res = await _Api._stakingRecordsList(params)
         if (res) {
             stakingRecords.value = res
         }
     } catch (error) {
         console.error('获取质押记录失败:', error)
-        ElMessage.error('获取质押记录失败')
+        handleApiError(error, '获取质押记录失败')
     } finally {
         loadingStakingRecords.value = false
     }
+}
+
+// 处理过滤条件变化
+const handleFilterChange = () => {
+    stakingRecordPage.value = 1
+    getStakingRecords(1)
+}
+
+// 重置过滤条件
+const handleResetFilter = () => {
+    stakingRecordFilter.value = {
+        stakingId: '',
+        userId: ''
+    }
+    stakingRecordPage.value = 1
+    getStakingRecords(1)
 }
 
 // 质押记录分页处理
@@ -411,63 +459,30 @@ const handleConfirmStakingRecord = () => {
         }
     }
     
-    // 生成执行次数选项（根据质押周期和已产生的收益笔数）
-    const periodDays = selectedStakingRecord.value.periodDays
-    const rewardSequence = selectedStakingRecord.value.rewardSequence || 0
-    generateExecutionCountOptions(periodDays, rewardSequence)
-    
-    // 如果生成选项失败（已产生所有收益），不打开对话框
-    if (executionCountOptions.value.length === 0) {
-        return
-    }
+    // 生成执行次数选项（固定360次均匀分布成30个选项）
+    generateExecutionCountOptions()
     
     // 关闭质押记录对话框，打开执行次数对话框
     stakingRecordDialogVisible.value = false
     executionCountDialogVisible.value = true
 }
 
-// 生成执行次数选项（根据质押周期和已产生的收益笔数）
-const generateExecutionCountOptions = (periodDays, rewardSequence) => {
+// 生成执行次数选项（将360次均匀分布成30个选项）
+const generateExecutionCountOptions = () => {
     const options = []
+    const maxCount = 360
+    const optionCount = 30
     
-    // 计算剩余可执行次数：质押周期 - 已产生的收益笔数
-    const remainingCount = periodDays - (rewardSequence || 0)
+    // 计算步长：360 / 30 = 12
+    const step = Math.floor(maxCount / optionCount)
     
-    if (remainingCount <= 0) {
-        ElMessage.warning('该质押记录已产生所有收益，无法继续执行')
-        executionCountOptions.value = []
-        executionCountForm.value.executionCount = null
-        return
+    // 生成30个选项：1, 13, 25, 37, ..., 349, 360
+    for (let i = 0; i < optionCount; i++) {
+        const value = i === optionCount - 1 ? maxCount : (i * step + 1)
+        options.push(value)
     }
     
-    // 至少包含1次和剩余次数
-    options.push(1)
-    if (remainingCount > 1) {
-        options.push(remainingCount)
-    }
-    
-    // 如果剩余次数大于1，均匀分布其他选项
-    if (remainingCount > 1) {
-        // 计算需要多少个选项（最多15个）
-        const maxOptions = Math.min(15, remainingCount)
-        const step = Math.max(1, Math.floor((remainingCount - 1) / (maxOptions - 2)))
-        
-        // 从2开始，每隔step添加一个选项，直到remainingCount-1
-        for (let i = 2; i < remainingCount; i += step) {
-            if (options.length >= maxOptions) break
-            if (!options.includes(i)) {
-                options.push(i)
-            }
-        }
-        
-        // 确保包含remainingCount
-        if (!options.includes(remainingCount)) {
-            options.push(remainingCount)
-        }
-    }
-    
-    // 排序并去重
-    executionCountOptions.value = [...new Set(options)].sort((a, b) => a - b)
+    executionCountOptions.value = options
     
     // 默认选择1次
     executionCountForm.value.executionCount = 1
@@ -614,7 +629,7 @@ const handleExecuteTask = async () => {
             } else {
                 // 其他错误
                 console.error('任务执行失败:', error)
-                ElMessage.error('任务提交失败：' + (error.message || '未知错误'))
+                handleApiError(error, '任务提交失败')
                 // 刷新日志列表以查看是否有失败记录
                 setTimeout(async () => {
                     await refreshLogs()
@@ -624,7 +639,7 @@ const handleExecuteTask = async () => {
     } catch (error) {
         if (error !== 'cancel') {
             console.error('任务执行失败:', error)
-            ElMessage.error('任务执行失败：' + (error.message || '未知错误'))
+            handleApiError(error, '任务执行失败')
         }
     } finally {
         executing.value = false
@@ -645,7 +660,7 @@ const getTaskLogs = async (page) => {
         }
     } catch (error) {
         console.error('获取任务日志失败:', error)
-        ElMessage.error('获取任务日志失败')
+        handleApiError(error, '获取任务日志失败')
     } finally {
         loadingLogs.value = false
     }
@@ -668,22 +683,6 @@ const handleCurrentChange = (val) => {
 }
 
 
-// 格式化日期时间
-const formatDateTime = (dateStr) => {
-    if (!dateStr) return '-'
-    try {
-        const date = new Date(dateStr)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        const seconds = String(date.getSeconds()).padStart(2, '0')
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    } catch (e) {
-        return dateStr
-    }
-}
 
 // 页面加载时获取日志列表
 onMounted(() => {
@@ -765,6 +764,14 @@ onMounted(() => {
     }
     
     .staking-record-dialog {
+        .filter-section {
+            .filter-form {
+                .el-form-item {
+                    margin-bottom: 0;
+                }
+            }
+        }
+        
         .page {
             margin-top: 20px;
             display: flex;

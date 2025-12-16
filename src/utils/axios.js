@@ -4,6 +4,7 @@ import { _AdjustP8, _FormatDate } from '@/utils/commonFn'
 import router from '@/router'
 import { _LocalCache } from "@/utils/cache";
 import { TOKEN } from '@/utils/constants'
+import { ElMessage } from 'element-plus'
 // 统一使用环境变量中的API_PREFIX作为baseURL
 const service = axios.create({
     baseURL: API_PREFIX,
@@ -43,7 +44,28 @@ service.interceptors.response.use(
         return Promise.resolve(response.data)
     },
     error => {
-        if (error.status === 401) router.push('/login')
+        // 处理 401 未登录，跳转到登录页
+        if (error.response?.status === 401) {
+            router.push('/login')
+            return Promise.reject(error)
+        }
+        
+        // 处理 500 服务器错误
+        if (error.response?.status === 500) {
+            // 在错误对象上添加标记，表示拦截器准备处理这个错误
+            error._interceptorMessage = '服务异常，请联系运维人员'
+            // 延迟显示，给业务层机会先处理
+            // 如果业务层已经处理了（设置了 _handledByBusiness），就不显示
+            setTimeout(() => {
+                // 检查业务层是否已经处理了这个错误
+                if (!error._handledByBusiness && error._interceptorMessage) {
+                    ElMessage.error(error._interceptorMessage)
+                }
+            }, 0)
+            return Promise.reject(error)
+        }
+        
+        // 其他错误继续抛出
         return Promise.reject(error)
     }
 )

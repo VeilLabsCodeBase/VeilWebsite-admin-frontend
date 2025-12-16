@@ -41,25 +41,29 @@
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amount" label="提现金额" width="100" />
+                        <el-table-column prop="amount" label="提现金额" width="100">
+                            <template #default="{ row }">
+                                {{ formatCrypto(row.amount) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="usdtBalanceBefore" label="提现前USDT" width="120">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.usdtBalanceBefore) }}
+                                {{ formatCrypto(row.usdtBalanceBefore) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="tokenBalanceBefore" label="提现前VEILX" width="120">
                             <template #default="{ row }">
-                                {{ formatToken(row.tokenBalanceBefore) }}
+                                {{ formatCrypto(row.tokenBalanceBefore) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="usdtBalanceAfter" label="提现后USDT" width="120">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.usdtBalanceAfter) }}
+                                {{ formatCrypto(row.usdtBalanceAfter) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="tokenBalanceAfter" label="提现后VEILX" width="120">
                             <template #default="{ row }">
-                                {{ formatToken(row.tokenBalanceAfter) }}
+                                {{ formatCrypto(row.tokenBalanceAfter) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="address" label="提现地址" width="300" />
@@ -73,16 +77,24 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="network" label="提现网络" width="100" />
-                        <el-table-column prop="fee" label="手续费" width="100" />
-                        <el-table-column prop="actualAmount" label="到账金额" width="100" />
+                        <el-table-column prop="fee" label="手续费" width="100">
+                            <template #default="{ row }">
+                                {{ formatCrypto(row.fee) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="actualAmount" label="到账金额" width="100">
+                            <template #default="{ row }">
+                                {{ formatCrypto(row.actualAmount) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="actualUsdtAmount" label="到账USDT" width="120">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.actualUsdtAmount) }}
+                                {{ formatCrypto(row.actualUsdtAmount) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="actualTokenAmount" label="到账VEILX" width="120">
                             <template #default="{ row }">
-                                {{ formatToken(row.actualTokenAmount) }}
+                                {{ formatCrypto(row.actualTokenAmount) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="withdrawTypeName" label="提现方式" width="100" />
@@ -129,20 +141,20 @@
                     <el-descriptions-item label="实际到账金额">
                         <div class="amount-info">
                             <span class="amount-usdt" v-if="rowData.actualUsdtAmount">
-                                {{ formatUsdt(rowData.actualUsdtAmount) }} USDT
+                                {{ formatCrypto(rowData.actualUsdtAmount) }} USDT
                             </span>
                             <span class="amount-token" v-if="rowData.actualTokenAmount">
-                                {{ formatToken(rowData.actualTokenAmount) }} VEILX
+                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
                             </span>
                             <span v-if="!rowData.actualUsdtAmount && !rowData.actualTokenAmount" class="no-amount">
-                                {{ formatUsdt(rowData.actualAmount) || '-' }}
+                                {{ formatCrypto(rowData.actualAmount) || '-' }}
                             </span>
                         </div>
                     </el-descriptions-item>
                     <el-descriptions-item label="到账金额">
                         <div class="amount-info">
                             <span class="amount-usdt">
-                                {{ formatUsdt(rowData.actualAmount) || '0.00' }} USDT
+                                {{ formatCrypto(rowData.actualAmount) || '0.00' }} USDT
                             </span>
                         </div>
                     </el-descriptions-item>
@@ -215,7 +227,7 @@
                         <strong>到账金额：</strong>
                         <div class="confirm-amount-info">
                             <span class="confirm-amount-usdt">
-                                {{ formatUsdt(rowData.actualAmount) || '0.00' }} USDT
+                                {{ formatCrypto(rowData.actualAmount) || '0.00' }} USDT
                             </span>
                         </div>
                     </div>
@@ -240,7 +252,8 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive, ref, inject } from 'vue'
-import { formatUsdt, formatToken, formatDateTime } from '@/utils/format'
+import { formatUsdt, formatToken, formatDateTime, formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 const formValue = reactive({
     userId: "",
     address: "",
@@ -289,7 +302,7 @@ const getTableData = async (page) => {
         }
     } catch (error) {
         console.error('获取数据失败:', error)
-        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取数据失败')
     } finally {
         loading.value = false
     }
@@ -364,7 +377,7 @@ const handConfirm = async () => {
             auditForm.reason = ''
         }
     } catch (error) {
-        ElMessage.error('审核失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '审核失败')
     } finally {
         submitLoading.value = false
         confirmLoading.value = false

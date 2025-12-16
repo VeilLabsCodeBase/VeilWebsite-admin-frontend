@@ -23,36 +23,35 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
-                        <el-table-column prop="id" label="id" width="50" />
-                        <el-table-column prop="userId" label="用户id" width="80" />
-                        <el-table-column prop="username" label="用户名" width="100" />
-                        <el-table-column prop="role" label="角色" width="100" />
-                        <el-table-column prop="userStatus" label="用户状态" width="100" />
-                        <el-table-column prop="email" label="邮箱" width="150" />
-                        <el-table-column prop="amount" label="充值金额" width="100" />
-                        <el-table-column prop="currency" label="充值币种" width="100" />
-                        <el-table-column prop="periodDays" label="质押周期" width="100">
+                        <el-table-column prop="id" label="id" min-width="70" show-overflow-tooltip />
+                        <el-table-column prop="userId" label="用户id" min-width="90" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="role" label="角色" min-width="110" show-overflow-tooltip />
+                        <el-table-column prop="userStatus" label="用户状态" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="email" label="邮箱" min-width="200" show-overflow-tooltip />
+                        <el-table-column prop="amount" label="充值金额" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ row.periodDays ? row.periodDays + '天' : '-' }}
+                                {{ formatCrypto(row.amount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="fromAddr" label="交易哈希" width="300" />
-                        <el-table-column prop="status" label="状态" width="100">
+                        <el-table-column prop="currency" label="充值币种" min-width="110" show-overflow-tooltip />
+                        <el-table-column prop="fromAddr" label="交易哈希" min-width="260" show-overflow-tooltip />
+                        <el-table-column prop="status" label="状态" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ statius[row.status] }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="createdAt" label="创建时间" width="200">
+                        <el-table-column prop="createdAt" label="创建时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="updatedAt" label="更新时间" width="200">
+                        <el-table-column prop="updatedAt" label="更新时间" min-width="180" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.updatedAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" min-width="120">
+                        <el-table-column fixed="right" label="操作" min-width="140">
                             <template #default="scope">
                                 <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                     size="small">修改充值状态</el-button>
@@ -96,7 +95,8 @@ import {
     _SessionCache
 } from '@/utils/cache'
 import { reactive, ref, inject } from 'vue'
-import { formatDateTime } from '@/utils/format'
+import { formatDateTime, formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 const formValue = reactive({
     userId: "",
     fromAddr: "",
@@ -129,7 +129,7 @@ const getTableData = async (page) => {
         }
     } catch (error) {
         console.error('获取数据失败:', error)
-        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取数据失败')
     } finally {
         loading.value = false
     }
@@ -169,7 +169,7 @@ const handConfirm = async () => {
         }
     } catch (error) {
         console.error('修改失败:', error)
-        ElMessage.error('修改失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '修改失败')
     }
 }
 const onSearch = () => {

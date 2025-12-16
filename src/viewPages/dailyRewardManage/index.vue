@@ -71,12 +71,12 @@
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
                         <el-table-column prop="dailyRewardUsdt" label="USDT收益" width="120">
                             <template #default="{ row }">
-                                {{ formatUsdt(row.dailyRewardUsdt) }}
+                                {{ formatCrypto(row.dailyRewardUsdt) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="dailyRewardToken" label="VEILX收益" width="120">
                             <template #default="{ row }">
-                                {{ formatToken(row.dailyRewardToken) }}
+                                {{ formatCrypto(row.dailyRewardToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="发放状态" width="120">
@@ -137,8 +137,8 @@
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="收益日期">{{ detailData.rewardDate }}</el-descriptions-item>
-                    <el-descriptions-item label="USDT收益">{{ formatUsdt(detailData.dailyRewardUsdt) }}</el-descriptions-item>
-                    <el-descriptions-item label="VEILX收益">{{ formatToken(detailData.dailyRewardToken) }}</el-descriptions-item>
+                    <el-descriptions-item label="USDT收益">{{ formatCrypto(detailData.dailyRewardUsdt) }}</el-descriptions-item>
+                    <el-descriptions-item label="VEILX收益">{{ formatCrypto(detailData.dailyRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="发放状态">
                         <el-tag :type="getDistributionStatusType(detailData.status)">
                             {{ getDistributionStatusText(detailData.status) }}
@@ -170,10 +170,10 @@
                     <el-table-column label="金额" min-width="200">
                         <template #default="{ row }">
                             <span v-if="row.usdtAmount && row.usdtAmount > 0" style="color: #67c23a; margin-right: 8px;">
-                                {{ formatUsdt(row.usdtAmount) }} USDT
+                                {{ formatCrypto(row.usdtAmount) }} USDT
                             </span>
                             <span v-if="row.tokenAmount && row.tokenAmount > 0" style="color: #409eff;">
-                                {{ formatToken(row.tokenAmount) }} VEILX
+                                {{ formatCrypto(row.tokenAmount) }} VEILX
                             </span>
                             <span v-if="(!row.usdtAmount || row.usdtAmount <= 0) && (!row.tokenAmount || row.tokenAmount <= 0)">
                                 -
@@ -196,7 +196,8 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
-import { formatUsdt, formatToken, formatDateTime } from '@/utils/format'
+import { formatUsdt, formatToken, formatDateTime, formatCrypto } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 
 const formValue = reactive({
     rewardId: "",
@@ -236,7 +237,7 @@ const getTableData = async (page) => {
         }
     } catch (error) {
         console.error('获取数据失败:', error)
-        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取数据失败')
     } finally {
         loading.value = false
     }
@@ -302,7 +303,7 @@ const viewTeamRewards = async (row) => {
         }
     } catch (error) {
         console.error('查询团队收益详情失败:', error)
-        ElMessage.error('查询团队收益详情失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '查询团队收益详情失败')
     }
 }
 
@@ -326,6 +327,7 @@ const retryDistribution = async (row) => {
     } catch (error) {
         if (error !== 'cancel') {
             console.error('重试失败:', error)
+            handleApiError(error, '重试失败')
         }
     }
 }

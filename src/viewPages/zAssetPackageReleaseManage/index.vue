@@ -84,6 +84,7 @@
 import { ElMessage } from 'element-plus'
 import { reactive, ref, inject } from 'vue'
 import { formatUsdt, formatDateTime } from '@/utils/format'
+import { handleApiError } from '@/utils/request'
 
 const tableData = ref()
 const formValue = reactive({
@@ -119,7 +120,7 @@ const getTableData = async (page) => {
         }
     } catch (error) {
         console.error('获取数据失败:', error)
-        ElMessage.error('获取数据失败: ' + (error.message || '未知错误'))
+        handleApiError(error, '获取数据失败')
     } finally {
         loading.value = false
     }
