@@ -42,6 +42,8 @@ export const _addCollaboratorNodeRole = data => _Request('/admin/user/add-collab
 export const _removeCollaboratorNodeRole = data => _Request('/admin/user/remove-collaborator-node-role', data) //解除用户共谋者节点角色
 export const _updateCommunityRoleLevel = data => _Request('/admin/user/update-community-role-level', data) //更新用户社区角色等级
 export const _updateAssetPackage = data => _Request('/admin/user/update-asset-package', data) //更新用户资产包额度
+export const _freezeUserWithdraw = data => _Request('/admin/user/freeze-withdraw', data) //冻结用户提现
+export const _unfreezeUserWithdraw = data => _Request('/admin/user/unfreeze-withdraw', data) //解冻用户提现
 
 export const _GlobalApi = {
     _upLogin,
@@ -82,4 +84,6 @@ export const _GlobalApi = {
     _removeCollaboratorNodeRole,
     _updateCommunityRoleLevel,
     _updateAssetPackage,
+    _freezeUserWithdraw,
+    _unfreezeUserWithdraw,
 }

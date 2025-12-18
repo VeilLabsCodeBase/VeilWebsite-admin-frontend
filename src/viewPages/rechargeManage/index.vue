@@ -9,8 +9,8 @@
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
-                <el-form-item label="交易哈希">
-                    <el-input v-model="formValue.fromAddr" placeholder="请输入交易哈希" clearable />
+                <el-form-item label="交易Hash">
+                    <el-input v-model="formValue.transactionHash" placeholder="请输入交易Hash" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -37,7 +37,16 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="currency" label="充值币种" min-width="110" show-overflow-tooltip />
-                        <el-table-column prop="fromAddr" label="交易哈希" min-width="260" show-overflow-tooltip />
+                        <el-table-column prop="fromAddr" label="转账地址" min-width="260" show-overflow-tooltip />
+                        <el-table-column prop="transactionHash" label="交易Hash" min-width="350" show-overflow-tooltip>
+                            <template #default="{ row }">
+                                <span v-if="row.transactionHash" style="font-family: monospace; color: #409EFF; cursor: pointer;" 
+                                      @click="copyTxHash(row.transactionHash)" :title="row.transactionHash">
+                                    {{ row.transactionHash }}
+                                </span>
+                                <span v-else style="color: #909399;">-</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="状态" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ statius[row.status] }}
@@ -101,7 +110,7 @@ import { formatDateTime, formatCrypto } from '@/utils/format'
 import { handleApiError } from '@/utils/request'
 const formValue = reactive({
     userId: "",
-    fromAddr: "",
+    transactionHash: "",
     username: "",
 })
 const dialogVisible = ref(false)
@@ -181,7 +190,7 @@ const onSearch = () => {
 
 const onReset = () => {
     formValue.userId = ""
-    formValue.fromAddr = ""
+    formValue.transactionHash = ""
     formValue.username = ""
     currentPage.value = 1
     getTableData(currentPage.value)
@@ -191,6 +200,16 @@ const onReset = () => {
 const handleUserIdInput = (value) => {
     // 只保留数字字符
     formValue.userId = value.replace(/\D/g, '')
+}
+
+// 复制交易Hash
+const copyTxHash = (txHash) => {
+    if (!txHash) return
+    navigator.clipboard.writeText(txHash).then(() => {
+        ElMessage.success('交易Hash已复制到剪贴板')
+    }).catch(() => {
+        ElMessage.error('复制失败')
+    })
 }
 </script>
 <style lang="scss" scoped>

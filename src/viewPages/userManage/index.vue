@@ -71,6 +71,13 @@
                                 </el-tag>
                             </template>
                         </el-table-column>
+                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="120" show-overflow-tooltip>
+                            <template #default="{ row }">
+                                <el-tag :type="getWithdrawFrozenStatus(row) ? 'danger' : 'success'">
+                                    {{ getWithdrawFrozenStatus(row) ? '已冻结' : '正常' }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="Z资产包额度" min-width="150">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small">
@@ -96,14 +103,20 @@
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" min-width="260">
+                        <el-table-column fixed="right" label="操作" min-width="400">
                             <template #default="scope">
-                                <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
-                                    size="small">查看经济模型树</el-button>
-                                <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
-                                    @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)" size="small">添加共谋者节点</el-button>
-                                <el-button link type="danger" v-if="scope.row.isCollaboratorNode"
-                                    @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)" size="small">解除共谋者节点</el-button>
+                                <div class="action-buttons">
+                                    <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
+                                        size="small">查看经济模型树</el-button>
+                                    <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
+                                        @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)" size="small">添加共谋者节点</el-button>
+                                    <el-button link type="danger" v-if="scope.row.isCollaboratorNode"
+                                        @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)" size="small">解除共谋者节点</el-button>
+                                    <el-button link type="warning" v-if="!getWithdrawFrozenStatus(scope.row)"
+                                        @click="showFreezeWithdrawDialog(scope.$index, scope.row)" size="small">冻结提现</el-button>
+                                    <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
+                                        @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)" size="small">解冻提现</el-button>
+                                </div>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -335,6 +348,48 @@
                     <el-button type="primary" @click="updateCommunityRoleConfirm">
                         确定修改
                     </el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 冻结提现确认对话框 -->
+        <el-dialog v-model="freezeWithdrawDialogVisible" title="冻结提现" width="500" destroy-on-close>
+            <div v-if="currentFreezeWithdrawRow" class="freeze-withdraw-content">
+                <el-alert
+                    title="确认操作"
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                        <p>确定要冻结用户 <strong>{{ currentFreezeWithdrawRow.username }}</strong> (ID: {{ currentFreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                    </template>
+                </el-alert>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="cancelFreezeWithdraw">取消</el-button>
+                    <el-button type="warning" @click="confirmFreezeWithdraw">确定冻结</el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 解冻提现确认对话框 -->
+        <el-dialog v-model="unfreezeWithdrawDialogVisible" title="解冻提现" width="500" destroy-on-close>
+            <div v-if="currentUnfreezeWithdrawRow" class="unfreeze-withdraw-content">
+                <el-alert
+                    title="确认操作"
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                        <p>确定要解冻用户 <strong>{{ currentUnfreezeWithdrawRow.username }}</strong> (ID: {{ currentUnfreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                    </template>
+                </el-alert>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="cancelUnfreezeWithdraw">取消</el-button>
+                    <el-button type="success" @click="confirmUnfreezeWithdraw">确定解冻</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -657,6 +712,72 @@ const updateCommunityRoleConfirm = async () => {
     }
 }
 
+// 冻结提现相关
+const freezeWithdrawDialogVisible = ref(false)
+const currentFreezeWithdrawRow = ref(null)
+
+const showFreezeWithdrawDialog = (index, row) => {
+    currentFreezeWithdrawRow.value = row
+    freezeWithdrawDialogVisible.value = true
+}
+
+const confirmFreezeWithdraw = async () => {
+    if (!currentFreezeWithdrawRow.value) {
+        return
+    }
+    try {
+        const res = await _Api._freezeUserWithdraw({
+            userId: currentFreezeWithdrawRow.value.userModelling?.userId
+        })
+        if (res) {
+            ElMessage.success('冻结成功')
+            freezeWithdrawDialogVisible.value = false
+            currentFreezeWithdrawRow.value = null
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        handleApiError(error, '冻结失败')
+    }
+}
+
+const cancelFreezeWithdraw = () => {
+    freezeWithdrawDialogVisible.value = false
+    currentFreezeWithdrawRow.value = null
+}
+
+// 解冻提现相关
+const unfreezeWithdrawDialogVisible = ref(false)
+const currentUnfreezeWithdrawRow = ref(null)
+
+const showUnfreezeWithdrawDialog = (index, row) => {
+    currentUnfreezeWithdrawRow.value = row
+    unfreezeWithdrawDialogVisible.value = true
+}
+
+const confirmUnfreezeWithdraw = async () => {
+    if (!currentUnfreezeWithdrawRow.value) {
+        return
+    }
+    try {
+        const res = await _Api._unfreezeUserWithdraw({
+            userId: currentUnfreezeWithdrawRow.value.userModelling?.userId
+        })
+        if (res) {
+            ElMessage.success('解冻成功')
+            unfreezeWithdrawDialogVisible.value = false
+            currentUnfreezeWithdrawRow.value = null
+            getTableData(currentPage.value)
+        }
+    } catch (error) {
+        handleApiError(error, '解冻失败')
+    }
+}
+
+const cancelUnfreezeWithdraw = () => {
+    unfreezeWithdrawDialogVisible.value = false
+    currentUnfreezeWithdrawRow.value = null
+}
+
 // 统一金额格式化（保留至少两位，最多八位，带千分位）
 const formatUsdt = (value) => formatCrypto(value)
 
@@ -683,6 +804,11 @@ const formatDateTime = (dateStr) => {
     // _FormatDate 使用小写 h 表示小时，但输出格式为 24 小时制（0-23）
     const formatted = _FormatDate(dateStr, 'yyyy-MM-dd hh:mm:ss')
     return formatted || '-'
+}
+
+// 获取提现冻结状态（处理null/undefined情况）
+const getWithdrawFrozenStatus = (row) => {
+    return row?.userModelling?.withdrawFrozen === true
 }
 </script>
 <style lang="scss" scoped>
@@ -875,6 +1001,30 @@ const formatDateTime = (dateStr) => {
     .asset-package-content {
         .asset-package-form {
             margin-top: 10px;
+        }
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        
+        .el-button {
+            flex-shrink: 0;
+            white-space: nowrap;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    }
+
+    // 确保表格操作列不换行
+    :deep(.el-table__fixed-right) {
+        .action-buttons {
+            min-width: 380px;
         }
     }
 }
