@@ -28,16 +28,14 @@
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
-                        <el-table-column prop="id" label="id" min-width="70" show-overflow-tooltip />
-                        <el-table-column prop="userId" label="用户id" min-width="90" show-overflow-tooltip />
-                        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
-                        <el-table-column prop="email" label="邮箱" min-width="220" show-overflow-tooltip />
-                        <el-table-column prop="createdAt" label="申请时间" min-width="180" show-overflow-tooltip>
+                        <el-table-column prop="id" label="id" min-width="70" fixed="left" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="120" fixed="left" show-overflow-tooltip />
+                        <el-table-column prop="createdAt" label="申请时间" min-width="180" fixed="left" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="amount" label="提现金额" min-width="120" show-overflow-tooltip>
+                        <el-table-column prop="amount" label="提现金额USDT" min-width="140" fixed="left" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.amount) }}
                             </template>
@@ -47,19 +45,9 @@
                                 {{ formatCrypto(row.usdtBalanceBefore) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="tokenBalanceBefore" label="提现前VEILX" min-width="130" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.tokenBalanceBefore) }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="usdtBalanceAfter" label="提现后USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.usdtBalanceAfter) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="tokenBalanceAfter" label="提现后VEILX" min-width="130" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.tokenBalanceAfter) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="address" label="提现地址" min-width="350" show-overflow-tooltip />
@@ -72,20 +60,9 @@
                                 <span v-else style="color: #909399;">-</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="network" label="提现网络" min-width="110" show-overflow-tooltip />
                         <el-table-column prop="fee" label="手续费" min-width="110" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.fee) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="actualAmount" label="到账金额" min-width="120" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.actualAmount) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="actualUsdtAmount" label="到账USDT" min-width="130" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.actualUsdtAmount) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="actualTokenAmount" label="到账VEILX" min-width="130" show-overflow-tooltip>
@@ -93,17 +70,11 @@
                                 {{ formatCrypto(row.actualTokenAmount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawTypeName" label="提现方式" min-width="120" show-overflow-tooltip />
-                        <el-table-column prop="withdrawCategory" label="提取类型" min-width="110" show-overflow-tooltip>
+                        <el-table-column prop="status" label="提现状态" min-width="125" show-overflow-tooltip>
                             <template #default="{ row }">
-                                <span v-if="row.withdrawCategory === 'PRINCIPAL'">本金</span>
-                                <span v-else-if="row.withdrawCategory === 'REWARD'">收益</span>
-                                <span v-else>-</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="status" label="提现状态" min-width="110" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ status[row.status] }}
+                                <el-tag :type="getStatusType(row.status)">
+                                    {{ status[row.status] }}
+                                </el-tag>
                             </template>
                         </el-table-column>
                         <el-table-column prop="reason" label="备注" min-width="180" show-overflow-tooltip />
@@ -134,23 +105,13 @@
                     <el-descriptions-item label="用户名">
                         <span class="info-value">{{ rowData.username || '-' }}</span>
                     </el-descriptions-item>
-                    <el-descriptions-item label="实际到账金额">
+                    <el-descriptions-item label="到账金额">
                         <div class="amount-info">
-                            <span class="amount-usdt" v-if="rowData.actualUsdtAmount">
-                                {{ formatCrypto(rowData.actualUsdtAmount) }} USDT
-                            </span>
                             <span class="amount-token" v-if="rowData.actualTokenAmount">
                                 {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
                             </span>
-                            <span v-if="!rowData.actualUsdtAmount && !rowData.actualTokenAmount" class="no-amount">
+                            <span v-else class="no-amount">
                                 {{ formatCrypto(rowData.actualAmount) || '-' }}
-                            </span>
-                        </div>
-                    </el-descriptions-item>
-                    <el-descriptions-item label="到账金额">
-                        <div class="amount-info">
-                            <span class="amount-usdt">
-                                {{ formatCrypto(rowData.actualAmount) || '0.00' }} USDT
                             </span>
                         </div>
                     </el-descriptions-item>
@@ -222,8 +183,11 @@
                     <div class="confirm-amount-row">
                         <strong>到账金额：</strong>
                         <div class="confirm-amount-info">
-                            <span class="confirm-amount-usdt">
-                                {{ formatCrypto(rowData.actualAmount) || '0.00' }} USDT
+                            <span class="confirm-amount-token" v-if="rowData.actualTokenAmount">
+                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
+                            </span>
+                            <span v-else>
+                                {{ formatCrypto(rowData.actualAmount) || '0.00' }}
                             </span>
                         </div>
                     </div>
@@ -316,9 +280,9 @@ const beforeClose = () => {
 
 const status = reactive({
     APPROVAL: '待审核',
-    FAILED: '失败',
-    SUCCESSFULLY: '成功',
-    CANCELED: '已取消',
+    FAILED: '审核不通过',
+    SUCCESSFULLY: '审核通过',
+    CANCELED: '无效',
 })
 
 // 获取状态标签类型
@@ -573,23 +537,37 @@ const handleUserIdInput = (value) => {
             .status-radio-group {
                 display: flex;
                 flex-direction: column;
-                gap: 12px;
+                align-items: flex-start;
 
                 :deep() {
                     .el-radio {
                         margin-right: 0;
-                        margin-bottom: 8px;
-                        height: auto;
-                        line-height: 1.8;
+                        margin-bottom: 12px;
                     }
 
-                    .el-radio__label {
-                        padding-left: 8px;
+                    .el-radio:last-child {
+                        margin-bottom: 0;
                     }
                 }
+            }
+        }
+    }
 
-                .status-label {
-                    font-size: 14px;
+    // 状态标签样式优化
+    :deep(.el-tag) {
+        font-weight: 500;
+        padding: 4px 12px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+
+    // 提现状态列样式，确保内容完整显示
+    :deep(.el-table__body-wrapper) {
+        .el-table__body {
+            td:nth-child(9) {
+                .cell {
+                    overflow: visible !important;
+                    white-space: nowrap !important;
                 }
             }
         }
@@ -630,12 +608,12 @@ const handleUserIdInput = (value) => {
             .confirm-amount-info {
                 display: inline-block;
 
-                .confirm-amount-usdt {
-                    color: #409EFF;
+                .confirm-amount-token {
+                    color: #67C23A;
                     font-weight: 600;
                     font-size: 16px;
                     padding: 4px 8px;
-                    background: #ecf5ff;
+                    background: #f0f9ff;
                     border-radius: 4px;
                 }
             }
