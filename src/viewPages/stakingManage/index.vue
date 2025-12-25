@@ -85,11 +85,6 @@
                                 {{ formatCrypto(row.totalRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="totalRewardToken" label="累计VEILX收益" min-width="130" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.totalRewardToken) }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="principalWithdrawn" label="本金是否已返还" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.principalWithdrawn ? 'success' : 'info'">
@@ -165,7 +160,6 @@
                         </el-tag>
                     </el-descriptions-item>
                     <el-descriptions-item label="累计USDT收益">{{ formatCrypto(detailData.totalRewardUsdt) }}</el-descriptions-item>
-                    <el-descriptions-item label="累计VEILX收益">{{ formatCrypto(detailData.totalRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="是否已达到收益倍数封顶">
                         <el-tag :type="detailData.isRewardCapped ? 'warning' : 'success'">
                             {{ detailData.isRewardCapped ? '是' : '否' }}

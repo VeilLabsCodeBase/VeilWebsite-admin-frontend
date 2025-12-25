@@ -63,16 +63,11 @@
                         <el-table-column prop="id" label="ID" width="80" />
                         <el-table-column prop="stakingRecordId" label="质押记录ID" width="120" />
                         <el-table-column prop="userId" label="用户ID" width="100" />
-                        <el-table-column prop="username" label="用户名" width="120" />
+                        <el-table-column prop="username" label="用户名" width="120" show-overflow-tooltip />
                         <el-table-column prop="rewardDate" label="收益日期" width="120" />
                         <el-table-column prop="dailyRewardUsdt" label="USDT收益" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.dailyRewardUsdt) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="dailyRewardToken" label="VEILX收益" min-width="160" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.dailyRewardToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="发放状态" width="120">
@@ -134,7 +129,6 @@
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="收益日期">{{ detailData.rewardDate }}</el-descriptions-item>
                     <el-descriptions-item label="USDT收益">{{ formatCrypto(detailData.dailyRewardUsdt) }}</el-descriptions-item>
-                    <el-descriptions-item label="VEILX收益">{{ formatCrypto(detailData.dailyRewardToken) }}</el-descriptions-item>
                     <el-descriptions-item label="发放状态">
                         <el-tag :type="getDistributionStatusType(detailData.status)">
                             {{ getDistributionStatusText(detailData.status) }}
@@ -165,13 +159,10 @@
                     <el-table-column prop="rewardTypeDisplayName" label="收益类型" width="180" />
                     <el-table-column label="金额" min-width="200">
                         <template #default="{ row }">
-                            <span v-if="row.usdtAmount && row.usdtAmount > 0" style="color: #67c23a; margin-right: 8px;">
+                            <span v-if="row.usdtAmount && row.usdtAmount > 0" style="color: #67c23a;">
                                 {{ formatCrypto(row.usdtAmount) }} USDT
                             </span>
-                            <span v-if="row.tokenAmount && row.tokenAmount > 0" style="color: #409eff;">
-                                {{ formatCrypto(row.tokenAmount) }} VEILX
-                            </span>
-                            <span v-if="(!row.usdtAmount || row.usdtAmount <= 0) && (!row.tokenAmount || row.tokenAmount <= 0)">
+                            <span v-else>
                                 -
                             </span>
                         </template>

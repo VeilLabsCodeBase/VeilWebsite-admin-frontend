@@ -187,11 +187,6 @@
                             {{ formatCrypto(row.amountUsdt) }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="amountToken" label="Token金额" width="120">
-                        <template #default="{ row }">
-                            {{ formatCrypto(row.amountToken) }}
-                        </template>
-                    </el-table-column>
                     <el-table-column prop="dailyRate" label="日算力倍率(%)" width="130">
                         <template #default="{ row }">
                             {{ row.dailyRate }}

@@ -50,12 +50,8 @@
                             </div>
                             <div class="withdraw-row">
                                 <div class="withdraw-item">
-                                    <span class="label">可提现USDT：</span>
+                                    <span class="label">可提现USDT等值的VEILX：</span>
                                     <span class="value selectable">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</span>
-                                </div>
-                                <div class="withdraw-item">
-                                    <span class="label">可提现VEILX：</span>
-                                    <span class="value selectable">{{ formatCrypto(item?.userModelling?.maxTokenLimit) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -278,38 +274,39 @@ onMounted(() => {
 
         .withdraw-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
-            gap: 16px;
             margin-top: 12px;
             padding-top: 12px;
             border-top: 1px solid #e4e7ed;
 
             .withdraw-item {
-                flex: 1;
                 display: flex;
-                flex-direction: column;
-                gap: 4px;
-                padding: 8px 12px;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 16px;
                 background: #f5f7fa;
                 border-radius: 6px;
                 min-width: 0;
+                width: 100%;
+                min-height: 44px;
 
                 .label {
-                    font-size: 12px;
+                    flex-shrink: 0;
+                    font-size: 13px;
                     color: #909399;
                     font-weight: 500;
                     white-space: nowrap;
                 }
 
                 .value {
-                    font-size: 14px;
+                    font-size: 15px;
                     color: #409EFF;
                     font-weight: 700;
-                    word-break: break-all;
-                    min-width: 0;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: visible;
+                    min-width: fit-content;
 
                     &.selectable {
                         user-select: text;

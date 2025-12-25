@@ -24,88 +24,92 @@
                     <span>用户管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中...">
-                        <el-table-column prop="userModelling.userId" label="用户id" min-width="110" show-overflow-tooltip />
-                        <el-table-column prop="username" label="用户名" min-width="160" show-overflow-tooltip />
-                        <el-table-column prop="role" label="用户角色" min-width="160" show-overflow-tooltip />
-                        <el-table-column prop="referredUserId" label="推荐人Id" min-width="120" show-overflow-tooltip />
-                        <el-table-column prop="email" label="email" min-width="200" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" min-width="200" show-overflow-tooltip />
-                        <el-table-column prop="stakingRewardUsdt" label="质押收益" min-width="220" show-overflow-tooltip>
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中..." class="user-manage-table">
+                        <el-table-column prop="userModelling.userId" label="用户id" min-width="90" show-overflow-tooltip />
+                        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="role" label="用户角色" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="referredUserId" label="推荐人Id" min-width="100" show-overflow-tooltip />
+                        <el-table-column prop="email" label="email" min-width="180" show-overflow-tooltip />
+                        <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" min-width="150" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdtAndToken(row.stakingRewardUsdt, row.stakingRewardToken) }}
+                                <span class="amount-text">{{ formatUsdt(row.userModelling?.realDepositAmount) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" min-width="220" show-overflow-tooltip>
+                        <el-table-column prop="stakingRewardUsdt" label="质押收益" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdtAndToken(row.communityShareRewardUsdt, row.communityShareRewardToken) }}
+                                <span class="amount-text">{{ formatUsdt(row.stakingRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" min-width="220" show-overflow-tooltip>
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdtAndToken(row.communityRoleRewardUsdt, row.communityRoleRewardToken) }}
+                                <span class="amount-text">{{ formatUsdt(row.communityShareRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawableUsdt" label="生态财库" min-width="220" show-overflow-tooltip>
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdtAndToken(row.withdrawableUsdt, row.withdrawableToken) }}
+                                <span class="amount-text">{{ formatUsdt(row.communityRoleRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" min-width="140" show-overflow-tooltip />
-                        <el-table-column prop="smallZonePerformance" label="小区业绩" min-width="160" show-overflow-tooltip>
+                        <el-table-column prop="withdrawableUsdt" label="生态财库" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatUsdt(row.smallZonePerformance) }}
+                                <span class="amount-text">{{ formatUsdt(row.withdrawableUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="社区角色" min-width="150">
+                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" min-width="130" show-overflow-tooltip />
+                        <el-table-column prop="smallZonePerformance" label="小区业绩" min-width="120" show-overflow-tooltip>
+                            <template #default="{ row }">
+                                <span class="amount-text">{{ formatUsdt(row.smallZonePerformance) }} USDT</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="社区角色" min-width="120">
                             <template #default="{ row, $index }">
                                 <el-button link type="primary" @click="showCommunityRoleDialog($index, row)" size="small">
                                     {{ row.communityRoleDisplayName || '无等级' }}
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" min-width="150" show-overflow-tooltip>
+                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.isCollaboratorNode ? 'success' : 'info'">
                                     {{ row.isCollaboratorNode ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="120" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="100" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="getWithdrawFrozenStatus(row) ? 'danger' : 'success'">
                                     {{ getWithdrawFrozenStatus(row) ? '已冻结' : '正常' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column label="Z资产包额度" min-width="150">
+                        <el-table-column label="Z资产包额度" min-width="130">
                             <template #default="{ row, $index }">
-                                <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small">
-                                    {{ formatUsdt(row.userModelling?.zAssetPackageAmount) }}
+                                <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small" class="package-amount-btn">
+                                    {{ formatUsdt(row.userModelling?.zAssetPackageAmount) }} USDT
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column label="资产包额度" min-width="150">
+                        <el-table-column label="资产包额度" min-width="130">
                             <template #default="{ row, $index }">
-                                <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small">
-                                    {{ formatUsdt(row.userModelling?.assetPackageAmount) }}
+                                <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small" class="package-amount-btn">
+                                    {{ formatUsdt(row.userModelling?.assetPackageAmount) }} USDT
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="status" label="用户状态" min-width="160" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.updatedAt" label="更新时间" min-width="180" show-overflow-tooltip>
+                        <el-table-column prop="status" label="用户状态" min-width="120" show-overflow-tooltip />
+                        <el-table-column prop="userModelling.updatedAt" label="更新时间" min-width="160" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.updatedAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="180" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="160" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" min-width="400">
+                        <el-table-column fixed="right" label="操作" :width="actionColumnExpanded ? 400 : 60" :class-name="actionColumnExpanded ? 'action-column' : 'action-column collapsed'">
                             <template #default="scope">
-                                <div class="action-buttons">
+                                <div class="action-buttons" v-show="actionColumnExpanded">
                                     <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
                                         size="small">查看经济模型树</el-button>
                                     <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
@@ -116,6 +120,20 @@
                                         @click="showFreezeWithdrawDialog(scope.$index, scope.row)" size="small">冻结提现</el-button>
                                     <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
                                         @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)" size="small">解冻提现</el-button>
+                                </div>
+                            </template>
+                            <template #header>
+                                <div class="action-header" :class="{ 'collapsed': !actionColumnExpanded }">
+                                    <span v-if="actionColumnExpanded">操作</span>
+                                    <el-button 
+                                        link 
+                                        type="primary" 
+                                        @click.stop="toggleActionColumn"
+                                        size="small"
+                                        class="toggle-action-btn">
+                                        <el-icon v-if="actionColumnExpanded"><ArrowLeft /></el-icon>
+                                        <el-icon v-else><ArrowRight /></el-icon>
+                                    </el-button>
                                 </div>
                             </template>
                         </el-table-column>
@@ -238,14 +256,11 @@
                     <el-descriptions-item label="已释放额度">
                         {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageReleased) }} USDT
                     </el-descriptions-item>
-                    <el-descriptions-item label="已使用额度">
-                        {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageUsed) }} USDT
-                    </el-descriptions-item>
-                    <el-descriptions-item label="可用额度">
+                    <el-descriptions-item label="待释放额度">
                         <span style="color: #67C23A; font-weight: bold;">
                             {{ formatUsdt(
-                                (currentZAssetPackageRow.userModelling?.zAssetPackageReleased || 0) - 
-                                (currentZAssetPackageRow.userModelling?.zAssetPackageUsed || 0)
+                                (currentZAssetPackageRow.userModelling?.zAssetPackageAmount || 0) - 
+                                (currentZAssetPackageRow.userModelling?.zAssetPackageReleased || 0)
                             ) }} USDT
                         </span>
                     </el-descriptions-item>
@@ -257,10 +272,20 @@
                             v-model="zAssetPackageForm.zAssetPackageAmount" 
                             :precision="2" 
                             :step="100" 
-                            :min="0"
+                            :min="getZAssetPackageMinAmount()"
                             style="width: 300px"
                             placeholder="请输入新的Z资产包额度" />
                         <span style="margin-left: 10px; color: #909399; font-size: 14px;">USDT</span>
+                    </el-form-item>
+                    <el-form-item v-if="currentZAssetPackageRow.userModelling?.zAssetPackageReleased">
+                        <el-alert
+                            type="info"
+                            :closable="false"
+                            show-icon>
+                            <template #default>
+                                新额度不能低于已释放额度（{{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageReleased) }} USDT）
+                            </template>
+                        </el-alert>
                     </el-form-item>
                 </el-form>
             </div>
@@ -397,10 +422,11 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import {
     _SessionCache
 } from '@/utils/cache'
-import { reactive, ref, inject } from 'vue'
+import { reactive, ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { _FormatDate } from '@/utils/commonFn'
 import { formatCrypto } from '@/utils/format'
@@ -408,11 +434,16 @@ import { handleApiError } from '@/utils/request'
 const router = useRouter()
 const tableData = ref()
 const tableLoading = ref(false)
+const actionColumnExpanded = ref(true)
 const formValue = reactive({
     userId: "",
     email: "",
     username: ""
 })
+
+const toggleActionColumn = () => {
+    actionColumnExpanded.value = !actionColumnExpanded.value
+}
 const statius = reactive({
     'NORMAL': "布道大使",
     'TEAM_LEADER': "布道公会长",
@@ -571,10 +602,33 @@ const beforeCloseZAssetPackage = () => {
     zAssetPackageForm.zAssetPackageAmount = 0
 }
 
+// 获取Z资产包最小额度（不能低于已释放额度）
+const getZAssetPackageMinAmount = () => {
+    if (!currentZAssetPackageRow.value) {
+        return 0
+    }
+    const released = currentZAssetPackageRow.value.userModelling?.zAssetPackageReleased || 0
+    return released
+}
+
 const updateZAssetPackageConfirm = async () => {
     if (!currentZAssetPackageRow.value) {
         return
     }
+    
+    // 验证新额度不能低于已释放额度
+    const released = currentZAssetPackageRow.value.userModelling?.zAssetPackageReleased || 0
+    if (zAssetPackageForm.zAssetPackageAmount < released) {
+        ElMessage.warning(`Z资产包额度不能低于已释放额度，当前已释放: ${formatUsdt(released)} USDT`)
+        return
+    }
+    
+    // 验证额度不能为负数
+    if (zAssetPackageForm.zAssetPackageAmount < 0) {
+        ElMessage.warning('Z资产包额度不能为负数')
+        return
+    }
+    
     try {
         const res = await _Api._updateZAssetPackage({
             userId: currentZAssetPackageRow.value.userModelling?.userId,
@@ -781,23 +835,6 @@ const cancelUnfreezeWithdraw = () => {
 // 统一金额格式化（保留至少两位，最多八位，带千分位）
 const formatUsdt = (value) => formatCrypto(value)
 
-// 格式化USDT和VEILX显示（格式：xxx USDT + xxx VEILX）
-const formatUsdtAndToken = (usdtValue, tokenValue) => {
-    const usdt = formatCrypto(usdtValue)
-    const token = formatCrypto(tokenValue)
-    const parts = []
-    if (usdt !== '0.00' || token === '0.00') {
-        parts.push(`${usdt} USDT`)
-    }
-    if (token !== '0.00') {
-        parts.push(`${token} VEILX`)
-    }
-    if (parts.length === 0) {
-        return '0.00 USDT'
-    }
-    return parts.join(' + ')
-}
-
 // 格式化日期时间为 yyyy-MM-dd HH:mm:ss（使用已有的工具方法）
 const formatDateTime = (dateStr) => {
     if (!dateStr) return '-'
@@ -848,6 +885,7 @@ const getWithdrawFrozenStatus = (row) => {
                 margin-top: 0.2rem;
                 flex: 1;
                 overflow-y: auto;
+                overflow-x: auto;
                 padding-bottom: 0.4rem;
 
                 .cover {
@@ -1021,10 +1059,162 @@ const getWithdrawFrozenStatus = (row) => {
         }
     }
 
-    // 确保表格操作列不换行
-    :deep(.el-table__fixed-right) {
-        .action-buttons {
-            min-width: 380px;
+    // 操作列样式
+    .action-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 8px;
+        transition: all 0.3s ease;
+        
+        span {
+            flex: 1;
+        }
+        
+        .toggle-action-btn {
+            padding: 0;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            
+            &:hover {
+                transform: scale(1.1);
+            }
+        }
+        
+        &.collapsed {
+            justify-content: center;
+        }
+    }
+
+    // 固定表格行高，保持折叠状态的较低行高，与其他页面一致
+    :deep(.user-manage-table) {
+        .el-table__body {
+            tr {
+                height: auto !important;
+                
+                td {
+                    height: auto !important;
+                    padding: 8px 0 !important;
+                    vertical-align: middle;
+                }
+            }
+        }
+        
+        .el-table__header {
+            th {
+                height: auto !important;
+                padding: 8px 0 !important;
+            }
+        }
+        
+        // 减少单元格内边距，降低行高
+        .el-table__body td .cell,
+        .el-table__header th .cell {
+            padding: 4px 8px !important;
+            line-height: 1.5;
+        }
+    }
+
+    :deep(.action-column) {
+        .cell {
+            padding: 4px 8px !important;
+            position: relative;
+            vertical-align: middle;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+        }
+        
+        &.collapsed .cell {
+            text-align: center;
+            justify-content: center;
+        }
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 4px;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: 100%;
+        width: 100%;
+        
+        .el-button {
+            flex-shrink: 0;
+            white-space: nowrap;
+            padding: 2px 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            height: auto;
+        }
+    }
+
+    // 确保表格列宽变化时，表格总宽度保持不变
+    :deep(.user-manage-table) {
+        width: 100% !important;
+        
+        // 表格主体和表头宽度保持一致
+        .el-table__body-wrapper,
+        .el-table__header-wrapper {
+            width: 100%;
+        }
+        
+        // 表格内容区域允许横向滚动
+        .el-table__body-wrapper {
+            overflow-x: auto;
+        }
+        
+        // 确保表格主体宽度固定
+        .el-table__body,
+        .el-table__header {
+            width: 100%;
+            table-layout: auto;
+        }
+        
+        // 操作列宽度变化时，通过最小宽度限制其他列
+        .el-table__body colgroup col,
+        .el-table__header colgroup col {
+            min-width: 0;
+        }
+        
+        // 确保固定列正确显示
+        .el-table__fixed-right {
+            right: 0;
+        }
+    }
+    
+    // 表格容器限制最大宽度，防止无限扩展
+    .list {
+        :deep(.user-manage-table) {
+            max-width: 100%;
+        }
+    }
+
+    // 金额样式美化 - 只改变颜色
+    .amount-text {
+        color: #67C23A;
+    }
+
+    // 资产包额度按钮样式（可点击的）
+    .package-amount-btn {
+        font-weight: 500;
+        font-size: 13px;
+        padding: 2px 4px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+            font-weight: 600;
+            text-decoration: underline;
+            transform: translateY(-1px);
+        }
+        
+        &:active {
+            transform: translateY(0);
         }
     }
 }
