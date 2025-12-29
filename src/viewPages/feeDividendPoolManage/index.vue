@@ -87,67 +87,74 @@
                 </div>
             </template>
         </el-dialog>
-    </div>
-</template>
 
-<div class="logs-section">
-    <div class="section-header">
-        <span class="title">分红池操作记录</span>
-    </div>
-    <el-table
-        class="logs-table"
-        :data="operationLogs"
-        border
-        style="width: 100%"
-        v-loading="logsLoading">
-        <el-table-column prop="createdAt" label="时间" min-width="160">
-            <template #default="{ row }">
-                {{ formatDateTime(row.createdAt) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="poolTypeDisplayName" label="分红池" min-width="140" />
-        <el-table-column prop="operationTypeDisplayName" label="操作类型" min-width="100" />
-        <el-table-column prop="amount" label="操作金额(USDT)" min-width="150">
-            <template #default="{ row }">
-                {{ formatCrypto(row.amount) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="balanceBefore" label="操作前余额" min-width="150">
-            <template #default="{ row }">
-                {{ formatCrypto(row.balanceBefore) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="balanceAfter" label="操作后余额" min-width="150">
-            <template #default="{ row }">
-                {{ formatCrypto(row.balanceAfter) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="userCount" label="分红人数" min-width="90" />
-        <el-table-column prop="totalDistributed" label="分红总金额(USDT)" min-width="160">
-            <template #default="{ row }">
-                {{ formatCrypto(row.totalDistributed) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="operatorUsername" label="操作人" min-width="120" />
-        <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-    </el-table>
-    <div class="logs-pagination">
-        <el-pagination
-            v-model:current-page="logsPageNo"
-            v-model:page-size="logsPageSize"
-            :total="operationLogsTotal"
-            background
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleLogsSizeChange"
-            @current-change="handleLogsCurrentChange"
-        />
+        <div class="logs-section">
+            <div class="section-header">
+                <span class="title">分红池操作记录</span>
+            </div>
+            <div class="table-wrapper">
+                <el-table
+                    class="logs-table"
+                    :data="operationLogs"
+                    border
+                    style="width: 100%"
+                    height="280"
+                    v-loading="logsLoading">
+                <el-table-column prop="createdAt" label="时间" min-width="200" show-overflow-tooltip>
+                    <template #default="{ row }">
+                        <span class="time-cell">{{ formatDateTime(row.createdAt) }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="poolTypeDisplayName" label="分红池" min-width="200" />
+                <el-table-column prop="operationTypeDisplayName" label="操作类型" min-width="100" />
+                <el-table-column prop="amount" label="操作金额(USDT)" min-width="150">
+                    <template #default="{ row }">
+                        {{ formatCrypto(row.amount) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="balanceBefore" label="操作前余额" min-width="150">
+                    <template #default="{ row }">
+                        {{ formatCrypto(row.balanceBefore) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="balanceAfter" label="操作后余额" min-width="150">
+                    <template #default="{ row }">
+                        {{ formatCrypto(row.balanceAfter) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="userCount" label="分红人数" min-width="90" />
+                <el-table-column prop="totalDistributed" label="分红总金额(USDT)" min-width="160">
+                    <template #default="{ row }">
+                        {{ formatCrypto(row.totalDistributed) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="operatorUsername" label="操作人" min-width="120" />
+                <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
+                </el-table>
+            </div>
+            <div class="logs-pagination">
+                <el-pagination
+                    v-model:current-page="logsPageNo"
+                    v-model:page-size="logsPageSize"
+                    :total="operationLogsTotal"
+                    :page-sizes="[10, 20, 50, 100]"
+                    background
+                    layout="total, sizes, prev, pager, next, jumper"
+                    @size-change="handleLogsSizeChange"
+                    @current-change="handleLogsCurrentChange">
+                    <template #total="{ total }">
+                        <span class="pagination-total">共 {{ total }} 条</span>
+                    </template>
+                </el-pagination>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, inject, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { formatCrypto, formatDate } from '@/utils/format'
+import { formatCrypto, formatDateTime } from '@/utils/format'
 import { handleApiError } from '@/utils/request'
 
 const _Api = inject('$api')
@@ -280,9 +287,6 @@ const getPoolTypeName = (poolType) => {
     return pool ? pool.poolTypeDisplayName : poolType
 }
 
-// 格式化时间
-const formatDateTime = (val) => formatDate(val, true)
-
 // 分页变化
 const handleLogsSizeChange = (val) => {
     logsPageSize.value = val
@@ -308,12 +312,16 @@ onMounted(async () => {
     padding: 20px;
 
     .pool-cards {
-        margin-bottom: 24px;
+        margin-bottom: 16px;
     }
 
     .pool-card {
-        margin-bottom: 20px;
-        height: 100%;
+        margin-bottom: 12px;
+        height: auto;
+
+        :deep(.el-card__body) {
+            padding: 12px;
+        }
 
         .card-header {
             display: flex;
@@ -321,39 +329,44 @@ onMounted(async () => {
             align-items: center;
 
             .pool-title {
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
             }
         }
 
         .pool-content {
             .balance-item {
-                margin-bottom: 15px;
+                margin-bottom: 10px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
 
                 .label {
                     color: #606266;
-                    font-size: 14px;
+                    font-size: 13px;
                 }
 
                 .value {
-                    font-size: 16px;
+                    font-size: 14px;
                     font-weight: 500;
 
                     &.balance {
                         color: #409EFF;
-                        font-size: 20px;
+                        font-size: 18px;
                         font-weight: bold;
                     }
                 }
             }
 
             .card-actions {
-                margin-top: 20px;
+                margin-top: 12px;
                 display: flex;
-                gap: 10px;
+                gap: 8px;
+
+                .el-button {
+                    padding: 8px 15px;
+                    font-size: 13px;
+                }
             }
         }
     }
@@ -398,12 +411,15 @@ onMounted(async () => {
 
     .logs-section {
         margin-top: 10px;
+        display: flex;
+        flex-direction: column;
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+            flex-shrink: 0;
 
             .title {
                 font-size: 16px;
@@ -412,14 +428,32 @@ onMounted(async () => {
             }
         }
 
-        .logs-table {
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
             margin-bottom: 10px;
+            flex-shrink: 0;
+
+            .logs-table {
+                min-width: 1200px;
+
+                .time-cell {
+                    white-space: nowrap;
+                }
+            }
         }
 
         .logs-pagination {
             display: flex;
             justify-content: flex-end;
             margin-top: 10px;
+            flex-shrink: 0;
+            padding-top: 10px;
+            width: 100%;
+
+            .pagination-total {
+                margin-right: 8px;
+            }
         }
     }
 }
