@@ -44,6 +44,10 @@ export const _updateCommunityRoleLevel = data => _Request('/admin/user/update-co
 export const _updateAssetPackage = data => _Request('/admin/user/update-asset-package', data) //更新用户资产包额度
 export const _freezeUserWithdraw = data => _Request('/admin/user/freeze-withdraw', data) //冻结用户提现
 export const _unfreezeUserWithdraw = data => _Request('/admin/user/unfreeze-withdraw', data) //解冻用户提现
+export const _FeeDividendPoolList = data => _Request('/admin/fee-dividend-pool/list', data, 'get') //获取分红池列表
+export const _FeeDividendPoolDistribute = data => _Request('/admin/fee-dividend-pool/distribute', data) //触发分红
+export const _FeeDividendPoolAdjust = data => _Request('/admin/fee-dividend-pool/adjust-node-conspiracy', data) //调整共谋者节点角色分红池余额
+export const _FeeDividendPoolOperationLogs = data => _Request('/admin/fee-dividend-pool/operation-logs', data, 'get') //分红池操作记录分页
 
 export const _GlobalApi = {
     _upLogin,
@@ -86,4 +90,8 @@ export const _GlobalApi = {
     _updateAssetPackage,
     _freezeUserWithdraw,
     _unfreezeUserWithdraw,
+    _FeeDividendPoolList,
+    _FeeDividendPoolDistribute,
+    _FeeDividendPoolAdjust,
+    _FeeDividendPoolOperationLogs,
 }

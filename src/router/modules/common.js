@@ -99,6 +99,14 @@ export default [
                     title: 'Z资产包释放管理'
                 }
             },
+            {
+                path: '/feeDividendPoolManage',
+                name: 'feeDividendPoolManage',
+                component: () => import('@/viewPages/feeDividendPoolManage/index.vue'),
+                meta: {
+                    title: '手续费分红池管理'
+                }
+            },
         ],
     },
     {
