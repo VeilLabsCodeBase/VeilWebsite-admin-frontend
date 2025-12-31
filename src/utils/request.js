@@ -102,30 +102,35 @@ const _ErrorMethod = res => {
 
 /**
  * 处理 API 错误，避免与拦截器重复显示
- * 优先使用业务自定义消息，如果没有则使用拦截器的消息作为兜底
+ * 优先使用后端返回的具体错误信息，如果没有则使用业务自定义消息作为兜底
  * @param {Error} error - 错误对象
- * @param {string} defaultMessage - 业务自定义错误消息（可选）
+ * @param {string} defaultMessage - 业务自定义错误消息（可选，作为兜底）
  */
 export const handleApiError = (error, defaultMessage = null) => {
     // 标记业务层已经处理了这个错误，拦截器将不再显示
     error._handledByBusiness = true
     
-    // 优先使用业务自定义消息
+    // 优先使用后端返回的具体错误信息
+    const backendMessage = error?.response?.data?.message
+    if (backendMessage && typeof backendMessage === 'string' && backendMessage.trim() !== '') {
+        ElMessage.error(backendMessage)
+        return
+    }
+    
+    // 如果没有后端消息，使用业务自定义消息
     if (defaultMessage && typeof defaultMessage === 'string' && defaultMessage.trim() !== '') {
         ElMessage.error(defaultMessage)
         return
     }
     
-    // 如果没有业务自定义消息，使用拦截器准备的消息（如 500 错误的友好提示）
+    // 如果都没有，使用拦截器准备的消息（如 500 错误的友好提示）
     if (error._interceptorMessage) {
         ElMessage.error(error._interceptorMessage)
         return
     }
     
-    // 最后使用错误对象中的消息
-    const errorMessage = error?.response?.data?.message || 
-                       error?.message || 
-                       '操作失败，请稍后重试'
+    // 最后使用错误对象中的其他消息
+    const errorMessage = error?.message || '操作失败，请稍后重试'
     
     if (errorMessage && typeof errorMessage === 'string' && errorMessage.trim() !== '') {
         ElMessage.error(errorMessage)
