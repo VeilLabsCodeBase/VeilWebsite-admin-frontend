@@ -4,8 +4,6 @@ E_IS_ENCRYPT = 1
 E_PROHIBIT_OPEN_CONSOLE = 1
 # 清除控制台打印（0: 保留 1: 清除） 打包后生效
 E_CLEAR_CONSOLE_PRINT = 1
-# API 请求地址
-E_API_BASE_URL = http://veiladmin.veillabs.io
 
 
 
@@ -13,5 +11,5 @@ E_API_BASE_URL = http://veiladmin.veillabs.io
 # 以下配置不动 #
 ##############
 
-# 本地开发环境 接口请求的前缀
-E_API_PREFIX = /api
+# 生产环境 接口请求的前缀
+E_API_PREFIX = https://api.veilx.global/api
