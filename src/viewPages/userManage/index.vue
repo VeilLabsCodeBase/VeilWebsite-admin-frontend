@@ -107,7 +107,7 @@
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" :width="actionColumnExpanded ? 400 : 60" :class-name="actionColumnExpanded ? 'action-column' : 'action-column collapsed'">
+                        <el-table-column fixed="right" label="操作" :width="actionColumnExpanded ? 460 : 60" :class-name="actionColumnExpanded ? 'action-column' : 'action-column collapsed'">
                             <template #default="scope">
                                 <div class="action-buttons" v-show="actionColumnExpanded">
                                     <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
@@ -120,6 +120,8 @@
                                         @click="showFreezeWithdrawDialog(scope.$index, scope.row)" size="small">冻结提现</el-button>
                                     <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
                                         @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)" size="small">解冻提现</el-button>
+                                    <el-button type="primary" @click="showTeamStakingDetailsDialog(scope.$index, scope.row)"
+                                        size="small" class="team-staking-btn">团队质押详情</el-button>
                                 </div>
                             </template>
                             <template #header>
@@ -415,6 +417,67 @@
                 <div class="dialog-footer">
                     <el-button @click="cancelUnfreezeWithdraw">取消</el-button>
                     <el-button type="success" @click="confirmUnfreezeWithdraw">确定解冻</el-button>
+                </div>
+            </template>
+        </el-dialog>
+
+        <!-- 团队质押详情对话框 -->
+        <el-dialog v-model="teamStakingDetailsDialogVisible" title="团队质押详情" width="700" :before-close="beforeCloseTeamStakingDetails" destroy-on-close>
+            <div class="team-staking-details-content" v-if="currentTeamStakingDetailsRow">
+                <el-descriptions :column="1" border class="team-staking-info">
+                    <el-descriptions-item label="用户ID">{{ currentTeamStakingDetailsRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户名">{{ currentTeamStakingDetailsRow.username }}</el-descriptions-item>
+                </el-descriptions>
+                
+                <el-divider content-position="left">时间范围</el-divider>
+                <el-form :model="teamStakingDetailsForm" label-width="100px" class="team-staking-form">
+                    <el-form-item label="开始日期">
+                        <el-date-picker
+                            v-model="teamStakingDetailsForm.startDate"
+                            type="date"
+                            placeholder="选择开始日期"
+                            format="YYYY-MM-DD"
+                            value-format="YYYY-MM-DD"
+                            style="width: 100%"
+                            :disabled-date="(time) => time.getTime() > new Date().getTime()" />
+                    </el-form-item>
+                    <el-form-item label="结束日期">
+                        <el-date-picker
+                            v-model="teamStakingDetailsForm.endDate"
+                            type="date"
+                            placeholder="选择结束日期"
+                            format="YYYY-MM-DD"
+                            value-format="YYYY-MM-DD"
+                            style="width: 100%"
+                            :disabled-date="(time) => time.getTime() > new Date().getTime()" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="queryTeamStakingDetails">查询</el-button>
+                        <el-button @click="resetTeamStakingDetailsDate">重置为最近一个月</el-button>
+                    </el-form-item>
+                </el-form>
+
+                <el-divider content-position="left">统计结果</el-divider>
+                <div class="team-staking-statistics" v-if="teamStakingDetailsData">
+                    <el-descriptions :column="1" border>
+                        <el-descriptions-item label="团队质押总金额">
+                            <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="参与用户数">
+                            <span class="count-highlight">{{ teamStakingDetailsData.userCount }} 人</span>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="查询时间范围">
+                            {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </div>
+                <div v-else class="no-data-tip">
+                    <el-empty description="请选择时间范围后点击查询" :image-size="100" />
+                </div>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="beforeCloseTeamStakingDetails">关闭</el-button>
                 </div>
             </template>
         </el-dialog>
@@ -847,6 +910,101 @@ const formatDateTime = (dateStr) => {
 const getWithdrawFrozenStatus = (row) => {
     return row?.userModelling?.withdrawFrozen === true
 }
+
+// 团队质押详情相关
+const teamStakingDetailsDialogVisible = ref(false)
+const currentTeamStakingDetailsRow = ref(null)
+const teamStakingDetailsData = ref(null)
+const teamStakingDetailsForm = reactive({
+    startDate: '',
+    endDate: ''
+})
+
+// 初始化默认时间范围（最近一个月）
+const initDefaultDateRange = () => {
+    const endDate = new Date()
+    const startDate = new Date()
+    startDate.setMonth(startDate.getMonth() - 1)
+    
+    teamStakingDetailsForm.endDate = formatDateForPicker(endDate)
+    teamStakingDetailsForm.startDate = formatDateForPicker(startDate)
+}
+
+// 格式化日期为 YYYY-MM-DD
+const formatDateForPicker = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+// 格式化日期范围显示（只显示日期部分）
+const formatDateRange = (startDate, endDate) => {
+    if (!startDate || !endDate) return '-'
+    // 提取日期部分（去掉时间部分）
+    const start = startDate.split(' ')[0]
+    const end = endDate.split(' ')[0]
+    return `${start} 至 ${end}`
+}
+
+const showTeamStakingDetailsDialog = (index, row) => {
+    currentTeamStakingDetailsRow.value = row
+    teamStakingDetailsData.value = null
+    initDefaultDateRange()
+    teamStakingDetailsDialogVisible.value = true
+}
+
+const beforeCloseTeamStakingDetails = () => {
+    teamStakingDetailsDialogVisible.value = false
+    currentTeamStakingDetailsRow.value = null
+    teamStakingDetailsData.value = null
+    teamStakingDetailsForm.startDate = ''
+    teamStakingDetailsForm.endDate = ''
+}
+
+const resetTeamStakingDetailsDate = () => {
+    initDefaultDateRange()
+}
+
+const queryTeamStakingDetails = async () => {
+    if (!currentTeamStakingDetailsRow.value) {
+        return
+    }
+    
+    if (!teamStakingDetailsForm.startDate || !teamStakingDetailsForm.endDate) {
+        ElMessage.warning('请选择开始日期和结束日期')
+        return
+    }
+    
+    // 验证结束日期不能超过当前时间
+    const endDate = new Date(teamStakingDetailsForm.endDate)
+    const now = new Date()
+    if (endDate > now) {
+        ElMessage.warning('结束日期不能超过当前时间')
+        return
+    }
+    
+    // 验证开始日期不能大于结束日期
+    const startDate = new Date(teamStakingDetailsForm.startDate)
+    if (startDate > endDate) {
+        ElMessage.warning('开始日期不能大于结束日期')
+        return
+    }
+    
+    try {
+        const res = await _Api._getTeamStakingDetails({
+            userId: currentTeamStakingDetailsRow.value.userModelling?.userId,
+            startDate: teamStakingDetailsForm.startDate + ' 00:00:00',
+            endDate: teamStakingDetailsForm.endDate + ' 23:59:59'
+        })
+        if (res) {
+            teamStakingDetailsData.value = res
+            ElMessage.success('查询成功')
+        }
+    } catch (error) {
+        handleApiError(error, '查询失败')
+    }
+}
 </script>
 <style lang="scss" scoped>
 .batchUpload {
@@ -1136,21 +1294,33 @@ const getWithdrawFrozenStatus = (row) => {
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
-        gap: 4px;
+        gap: 8px;
         transition: opacity 0.3s ease;
         white-space: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
+        overflow: visible;
         height: 100%;
         width: 100%;
         
         .el-button {
             flex-shrink: 0;
             white-space: nowrap;
-            padding: 2px 8px;
+            padding: 2px 4px;
             font-size: 12px;
             line-height: 1.5;
             height: auto;
+
+            &.team-staking-btn {
+                background-color: #f0f9eb;
+                border-color: #e1f3d8;
+                color: #67c23a;
+                font-weight: bold;
+                
+                &:hover {
+                    background-color: #67c23a;
+                    border-color: #67c23a;
+                    color: #fff;
+                }
+            }
         }
     }
 
@@ -1198,6 +1368,38 @@ const getWithdrawFrozenStatus = (row) => {
     // 金额样式美化 - 只改变颜色
     .amount-text {
         color: #67C23A;
+    }
+
+    // 团队质押详情样式
+    .team-staking-details-content {
+        .team-staking-info {
+            margin-bottom: 20px;
+        }
+
+        .team-staking-form {
+            margin-top: 10px;
+        }
+
+        .team-staking-statistics {
+            margin-top: 20px;
+
+            .amount-highlight {
+                color: #67C23A;
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .count-highlight {
+                color: #409EFF;
+                font-weight: bold;
+                font-size: 16px;
+            }
+        }
+
+        .no-data-tip {
+            margin-top: 20px;
+            text-align: center;
+        }
     }
 
     // 资产包额度按钮样式（可点击的）
