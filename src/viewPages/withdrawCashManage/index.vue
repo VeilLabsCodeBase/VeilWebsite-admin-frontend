@@ -2,18 +2,23 @@
     <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
+                <el-form-item label="用户名">
+                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                </el-form-item>
                 <el-form-item label="用户id">
                     <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
                               @input="handleUserIdInput" />
                 </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                <el-form-item label="交易Hash">
+                    <el-input v-model="formValue.txHash" placeholder="请输入交易Hash" clearable />
                 </el-form-item>
-                <el-form-item label="提现地址">
-                    <el-input v-model="formValue.address" placeholder="请输入提现地址" clearable />
-                </el-form-item>
-                <el-form-item label="邮箱">
-                    <el-input v-model="formValue.email" placeholder="请输入邮箱" clearable />
+                <el-form-item label="提现状态">
+                    <el-select v-model="formValue.status" placeholder="请选择提现状态" clearable style="width: 200px">
+                        <el-option label="待审核" value="APPROVAL" />
+                        <el-option label="审核不通过" value="FAILED" />
+                        <el-option label="审核通过" value="SUCCESSFULLY" />
+                        <el-option label="无效" value="CANCELED" />
+                    </el-select>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -216,9 +221,9 @@ import { formatUsdt, formatToken, formatDateTime, formatCrypto } from '@/utils/f
 import { handleApiError } from '@/utils/request'
 const formValue = reactive({
     userId: "",
-    address: "",
     username: "",
-    email: "",
+    status: "",
+    txHash: "",
 })
 const dialogVisible = ref(false)
 const confirmDialogVisible = ref(false)
@@ -360,9 +365,9 @@ const onSearch = () => {
 
 const onReset = () => {
     formValue.userId = ""
-    formValue.address = ""
     formValue.username = ""
-    formValue.email = ""
+    formValue.status = ""
+    formValue.txHash = ""
     currentPage.value = 1
     getTableData(currentPage.value)
 }

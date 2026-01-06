@@ -2,15 +2,15 @@
     <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline">
+                <el-form-item label="用户名">
+                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                </el-form-item>
                 <el-form-item label="用户id">
                     <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
                               @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="email">
                     <el-input v-model="formValue.email" placeholder="请输入email" clearable />
-                </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -97,11 +97,6 @@
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="用户状态" min-width="120" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.updatedAt" label="更新时间" min-width="160" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatDateTime(row.userModelling?.updatedAt) }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="160" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
@@ -458,21 +453,23 @@
                 </el-form>
 
                 <el-divider content-position="left">统计结果</el-divider>
-                <div class="team-staking-statistics" v-if="teamStakingDetailsData">
-                    <el-descriptions :column="1" border>
-                        <el-descriptions-item label="团队质押总金额">
-                            <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
-                        </el-descriptions-item>
-                        <el-descriptions-item label="参与用户数">
-                            <span class="count-highlight">{{ teamStakingDetailsData.userCount }} 人</span>
-                        </el-descriptions-item>
-                        <el-descriptions-item label="查询时间范围">
-                            {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
-                        </el-descriptions-item>
-                    </el-descriptions>
-                </div>
-                <div v-else class="no-data-tip">
-                    <el-empty description="请选择时间范围后点击查询" :image-size="100" />
+                <div class="team-staking-statistics" v-loading="teamStakingDetailsLoading" element-loading-text="查询中...">
+                    <div v-if="teamStakingDetailsData">
+                        <el-descriptions :column="1" border>
+                            <el-descriptions-item label="团队质押总金额">
+                                <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="参与用户数">
+                                <span class="count-highlight">{{ teamStakingDetailsData.userCount }} 人</span>
+                            </el-descriptions-item>
+                            <el-descriptions-item label="查询时间范围">
+                                {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
+                            </el-descriptions-item>
+                        </el-descriptions>
+                    </div>
+                    <div v-else class="no-data-tip">
+                        <el-empty description="请选择时间范围后点击查询" :image-size="100" />
+                    </div>
                 </div>
             </div>
             <template #footer>
@@ -915,6 +912,7 @@ const getWithdrawFrozenStatus = (row) => {
 const teamStakingDetailsDialogVisible = ref(false)
 const currentTeamStakingDetailsRow = ref(null)
 const teamStakingDetailsData = ref(null)
+const teamStakingDetailsLoading = ref(false)
 const teamStakingDetailsForm = reactive({
     startDate: '',
     endDate: ''
@@ -976,26 +974,30 @@ const queryTeamStakingDetails = async () => {
         return
     }
     
-    // 验证结束日期不能超过当前时间
-    const endDate = new Date(teamStakingDetailsForm.endDate)
-    const now = new Date()
-    if (endDate > now) {
-        ElMessage.warning('结束日期不能超过当前时间')
+    // 只比较日期部分，忽略时分秒
+    // 将日期字符串转换为当天的00:00:00进行比较
+    const startDateStr = teamStakingDetailsForm.startDate
+    const endDateStr = teamStakingDetailsForm.endDate
+    const todayStr = formatDateForPicker(new Date())
+    
+    // 验证结束日期不能超过今天（只比较日期部分）
+    if (endDateStr > todayStr) {
+        ElMessage.warning('结束日期不能超过今天')
         return
     }
     
-    // 验证开始日期不能大于结束日期
-    const startDate = new Date(teamStakingDetailsForm.startDate)
-    if (startDate > endDate) {
+    // 验证开始日期不能大于结束日期（只比较日期部分）
+    if (startDateStr > endDateStr) {
         ElMessage.warning('开始日期不能大于结束日期')
         return
     }
     
+    teamStakingDetailsLoading.value = true
     try {
         const res = await _Api._getTeamStakingDetails({
             userId: currentTeamStakingDetailsRow.value.userModelling?.userId,
-            startDate: teamStakingDetailsForm.startDate + ' 00:00:00',
-            endDate: teamStakingDetailsForm.endDate + ' 23:59:59'
+            startDate: teamStakingDetailsForm.startDate,
+            endDate: teamStakingDetailsForm.endDate
         })
         if (res) {
             teamStakingDetailsData.value = res
@@ -1003,6 +1005,8 @@ const queryTeamStakingDetails = async () => {
         }
     } catch (error) {
         handleApiError(error, '查询失败')
+    } finally {
+        teamStakingDetailsLoading.value = false
     }
 }
 </script>

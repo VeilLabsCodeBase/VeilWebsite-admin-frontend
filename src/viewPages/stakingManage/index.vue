@@ -6,12 +6,12 @@
                     <el-input v-model="formValue.stakingId" placeholder="请输入质押记录ID" clearable 
                               @input="handleStakingIdInput" />
                 </el-form-item>
+                <el-form-item label="用户名">
+                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                </el-form-item>
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable 
                               @input="handleUserIdInput" />
-                </el-form-item>
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
                 </el-form-item>
                 <el-form-item label="状态">
                     <el-select v-model="formValue.status" placeholder="请选择状态" clearable style="width: 200px">
