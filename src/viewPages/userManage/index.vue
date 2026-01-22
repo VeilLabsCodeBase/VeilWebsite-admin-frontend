@@ -30,7 +30,7 @@
                         <el-table-column prop="role" label="用户角色" min-width="120" show-overflow-tooltip />
                         <el-table-column prop="referredUserId" label="推荐人Id" min-width="100" show-overflow-tooltip />
                         <el-table-column prop="email" label="email" min-width="180" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.realDepositAmount" label="用户真实充值金额" min-width="150" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.realDepositAmount" label="用户质押金额" min-width="150" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.userModelling?.realDepositAmount) }} USDT</span>
                             </template>
@@ -40,22 +40,22 @@
                                 <span class="amount-text">{{ formatUsdt(row.stakingRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityShareRewardUsdt" label="社区分享奖励" min-width="140" show-overflow-tooltip>
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享收益" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.communityShareRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色奖励" min-width="140" show-overflow-tooltip>
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色收益" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.communityRoleRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="withdrawableUsdt" label="生态财库" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="withdrawableUsdt" label="可提现金额" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.withdrawableUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="subordinateReferrals" label="下级贡献者人数" min-width="130" show-overflow-tooltip />
+                        <el-table-column prop="subordinateReferrals" label="直接下级人数" min-width="130" show-overflow-tooltip />
                         <el-table-column prop="smallZonePerformance" label="小区业绩" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.smallZonePerformance) }} USDT</span>
@@ -116,7 +116,7 @@
                                     <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
                                         @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)" size="small">解冻提现</el-button>
                                     <el-button type="primary" @click="showTeamStakingDetailsDialog(scope.$index, scope.row)"
-                                        size="small" class="team-staking-btn">团队质押详情</el-button>
+                                        size="small" class="team-staking-btn">团队质押提现详情</el-button>
                                 </div>
                             </template>
                             <template #header>
@@ -417,7 +417,7 @@
         </el-dialog>
 
         <!-- 团队质押详情对话框 -->
-        <el-dialog v-model="teamStakingDetailsDialogVisible" title="团队质押详情" width="700" :before-close="beforeCloseTeamStakingDetails" destroy-on-close>
+        <el-dialog v-model="teamStakingDetailsDialogVisible" title="团队质押提现详情" width="700" :before-close="beforeCloseTeamStakingDetails" destroy-on-close>
             <div class="team-staking-details-content" v-if="currentTeamStakingDetailsRow">
                 <el-descriptions :column="1" border class="team-staking-info">
                     <el-descriptions-item label="用户ID">{{ currentTeamStakingDetailsRow.userModelling?.userId }}</el-descriptions-item>
@@ -455,17 +455,48 @@
                 <el-divider content-position="left">统计结果</el-divider>
                 <div class="team-staking-statistics" v-loading="teamStakingDetailsLoading" element-loading-text="查询中...">
                     <div v-if="teamStakingDetailsData">
-                        <el-descriptions :column="1" border>
-                            <el-descriptions-item label="团队质押总金额">
-                                <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
-                            </el-descriptions-item>
-                            <el-descriptions-item label="参与用户数">
-                                <span class="count-highlight">{{ teamStakingDetailsData.userCount }} 人</span>
-                            </el-descriptions-item>
-                            <el-descriptions-item label="查询时间范围">
-                                {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
-                            </el-descriptions-item>
-                        </el-descriptions>
+                        <div class="statistics-container">
+                            <!-- 质押详情 -->
+                            <div class="statistics-section staking-section">
+                                <div class="section-title">
+                                    <el-icon><Coin /></el-icon>
+                                    <span>质押详情</span>
+                                </div>
+                                <el-descriptions :column="1" border>
+                                    <el-descriptions-item label="团队质押总金额">
+                                        <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
+                                    </el-descriptions-item>
+                                    <el-descriptions-item label="参与用户数">
+                                        <span class="count-highlight">{{ teamStakingDetailsData.userCount || 0 }} 人</span>
+                                    </el-descriptions-item>
+                                </el-descriptions>
+                            </div>
+                            
+                            <!-- 提现详情 -->
+                            <div class="statistics-section withdraw-section">
+                                <div class="section-title">
+                                    <el-icon><Money /></el-icon>
+                                    <span>提现详情</span>
+                                </div>
+                                <el-descriptions :column="1" border>
+                                    <el-descriptions-item label="团队提现总金额">
+                                        <span class="amount-highlight withdraw-amount">{{ formatUsdt(teamStakingDetailsData.totalWithdrawAmount) }} USDT</span>
+                                    </el-descriptions-item>
+                                    <el-descriptions-item label="参与用户数">
+                                        <span class="count-highlight">{{ teamStakingDetailsData.withdrawUserCount || 0 }} 人</span>
+                                    </el-descriptions-item>
+                                </el-descriptions>
+                            </div>
+                        </div>
+                        
+                        <!-- 查询时间范围 -->
+                        <div class="time-range-info">
+                            <el-descriptions :column="1" border>
+                                <el-descriptions-item label="查询时间范围">
+                                    {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
+                                </el-descriptions-item>
+                            </el-descriptions>
+                        </div>
                     </div>
                     <div v-else class="no-data-tip">
                         <el-empty description="请选择时间范围后点击查询" :image-size="100" />
@@ -482,7 +513,7 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Coin, Money } from '@element-plus/icons-vue'
 import {
     _SessionCache
 } from '@/utils/cache'
@@ -994,7 +1025,7 @@ const queryTeamStakingDetails = async () => {
     
     teamStakingDetailsLoading.value = true
     try {
-        const res = await _Api._getTeamStakingDetails({
+        const res = await _Api._getTeamStakingWithdrawDetails({
             userId: currentTeamStakingDetailsRow.value.userModelling?.userId,
             startDate: teamStakingDetailsForm.startDate,
             endDate: teamStakingDetailsForm.endDate
@@ -1374,7 +1405,7 @@ const queryTeamStakingDetails = async () => {
         color: #67C23A;
     }
 
-    // 团队质押详情样式
+    // 团队质押提现详情样式
     .team-staking-details-content {
         .team-staking-info {
             margin-bottom: 20px;
@@ -1387,16 +1418,73 @@ const queryTeamStakingDetails = async () => {
         .team-staking-statistics {
             margin-top: 20px;
 
+            .statistics-container {
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+                
+                @media (max-width: 768px) {
+                    flex-direction: column;
+                }
+            }
+
+            .statistics-section {
+                flex: 1;
+                min-width: 0;
+                
+                .section-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #303133;
+                    
+                    .el-icon {
+                        font-size: 18px;
+                    }
+                }
+                
+                &.staking-section {
+                    .section-title {
+                        color: #67C23A;
+                        
+                        .el-icon {
+                            color: #67C23A;
+                        }
+                    }
+                }
+                
+                &.withdraw-section {
+                    .section-title {
+                        color: #409EFF;
+                        
+                        .el-icon {
+                            color: #409EFF;
+                        }
+                    }
+                }
+            }
+
             .amount-highlight {
                 color: #67C23A;
                 font-weight: bold;
                 font-size: 16px;
+                
+                &.withdraw-amount {
+                    color: #409EFF;
+                }
             }
 
             .count-highlight {
                 color: #409EFF;
                 font-weight: bold;
                 font-size: 16px;
+            }
+            
+            .time-range-info {
+                margin-top: 20px;
             }
         }
 
