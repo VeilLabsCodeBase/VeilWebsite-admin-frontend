@@ -1,16 +1,25 @@
 <template>
     <div class="batchUpload">
         <div class="filter">
-            <el-form :inline="true" :model="formValue" class="demo-form-inline">
+            <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
                 <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                    <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 110px" />
                 </el-form-item>
-                <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
+                <el-form-item label="用户ID">
+                    <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
                               @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="email">
-                    <el-input v-model="formValue.email" placeholder="请输入email" clearable />
+                    <el-input v-model="formValue.email" placeholder="email" clearable style="width: 130px" />
+                </el-form-item>
+                <el-form-item label="社区角色">
+                    <el-select v-model="formValue.communityRoleLevel" placeholder="社区角色" clearable style="width: 140px">
+                        <el-option
+                            v-for="role in communityRoleOptions"
+                            :key="role.value"
+                            :label="role.label"
+                            :value="role.value" />
+                    </el-select>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -529,7 +538,8 @@ const actionColumnExpanded = ref(true)
 const formValue = reactive({
     userId: "",
     email: "",
-    username: ""
+    username: "",
+    communityRoleLevel: ""
 })
 
 const toggleActionColumn = () => {
@@ -578,6 +588,7 @@ const onReset = () => {
     formValue.userId = ""
     formValue.email = ""
     formValue.username = ""
+    formValue.communityRoleLevel = ""
     currentPage.value = 1
     getTableData(currentPage.value)
 }
@@ -1044,6 +1055,24 @@ const queryTeamStakingDetails = async () => {
 <style lang="scss" scoped>
 .batchUpload {
     padding-bottom: 40px;
+
+    .filter {
+        .filter-form {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+
+            :deep(.el-form-item) {
+                margin-bottom: 10px;
+                margin-right: 18px;
+
+                .el-form-item__label {
+                    font-size: 13px;
+                    padding-right: 8px;
+                }
+            }
+        }
+    }
 
     .add {
         height: 0.32rem;

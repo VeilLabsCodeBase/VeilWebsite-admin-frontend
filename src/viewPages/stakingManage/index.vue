@@ -1,20 +1,20 @@
 <template>
     <div class="batchUpload">
         <div class="filter">
-            <el-form :inline="true" :model="formValue" class="demo-form-inline">
+            <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
                 <el-form-item label="质押记录ID">
-                    <el-input v-model="formValue.stakingId" placeholder="请输入质押记录ID" clearable 
+                    <el-input v-model="formValue.stakingId" placeholder="记录ID" clearable style="width: 90px"
                               @input="handleStakingIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                    <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 110px" />
                 </el-form-item>
                 <el-form-item label="用户ID">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户ID" clearable 
+                    <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
                               @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="状态">
-                    <el-select v-model="formValue.status" placeholder="请选择状态" clearable style="width: 200px">
+                    <el-select v-model="formValue.status" placeholder="状态" clearable style="width: 110px">
                         <el-option label="进行中" value="ACTIVE" />
                         <el-option label="已完成" value="COMPLETED" />
                         <el-option label="已取消" value="CANCELLED" />
@@ -513,6 +513,24 @@ const formatDateTime = (dateStr) => {
 <style lang="scss" scoped>
 .batchUpload {
     padding-bottom: 40px;
+
+    .filter {
+        .filter-form {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+
+            :deep(.el-form-item) {
+                margin-bottom: 10px;
+                margin-right: 18px;
+
+                .el-form-item__label {
+                    font-size: 13px;
+                    padding-right: 8px;
+                }
+            }
+        }
+    }
 
     .uploadList {
         display: flex;

@@ -1,16 +1,19 @@
 <template>
     <div class="batchUpload">
         <div class="filter">
-            <el-form :inline="true" :model="formValue" class="demo-form-inline">
-                <el-form-item label="用户id">
-                    <el-input v-model="formValue.userId" placeholder="请输入用户id" clearable 
+            <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
+                <el-form-item label="用户ID">
+                    <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
                               @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="请输入用户名" clearable />
+                    <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 110px" />
+                </el-form-item>
+                <el-form-item label="转账地址">
+                    <el-input v-model="formValue.fromAddr" placeholder="转账地址" clearable style="width: 160px" />
                 </el-form-item>
                 <el-form-item label="交易Hash">
-                    <el-input v-model="formValue.transactionHash" placeholder="请输入交易Hash" clearable />
+                    <el-input v-model="formValue.transactionHash" placeholder="交易Hash" clearable style="width: 160px" />
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="onSearch">搜索</el-button>
@@ -112,6 +115,7 @@ const formValue = reactive({
     userId: "",
     transactionHash: "",
     username: "",
+    fromAddr: "",
 })
 const dialogVisible = ref(false)
 const tableData = ref()
@@ -192,6 +196,7 @@ const onReset = () => {
     formValue.userId = ""
     formValue.transactionHash = ""
     formValue.username = ""
+    formValue.fromAddr = ""
     currentPage.value = 1
     getTableData(currentPage.value)
 }
@@ -215,6 +220,24 @@ const copyTxHash = (txHash) => {
 <style lang="scss" scoped>
 .batchUpload {
     padding-bottom: 40px;
+
+    .filter {
+        .filter-form {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+
+            :deep(.el-form-item) {
+                margin-bottom: 10px;
+                margin-right: 18px;
+
+                .el-form-item__label {
+                    font-size: 13px;
+                    padding-right: 8px;
+                }
+            }
+        }
+    }
 
     .add {
         height: 0.32rem;

@@ -49,6 +49,9 @@ export const _FeeDividendPoolList = data => _Request('/admin/fee-dividend-pool/l
 export const _FeeDividendPoolDistribute = data => _Request('/admin/fee-dividend-pool/distribute', data) //触发分红
 export const _FeeDividendPoolAdjust = data => _Request('/admin/fee-dividend-pool/adjust-node-conspiracy', data) //调整共谋者节点角色分红池余额
 export const _FeeDividendPoolOperationLogs = data => _Request('/admin/fee-dividend-pool/operation-logs', data, 'get') //分红池操作记录分页
+export const _BatchAuditPendingSummary = () => _Request('/admin/withdraw/batch-audit/pending-summary', {}, 'get') //批量审核待处理汇总
+export const _BatchAuditSubmit = () => _Request('/admin/withdraw/batch-audit/submit', {}) //批量审核提交
+export const _BatchAuditStatus = batchId => _Request('/admin/withdraw/batch-audit/status/' + batchId, {}, 'get') //批量审核轮询状态
 
 export const _GlobalApi = {
     _upLogin,
@@ -96,4 +99,7 @@ export const _GlobalApi = {
     _FeeDividendPoolDistribute,
     _FeeDividendPoolAdjust,
     _FeeDividendPoolOperationLogs,
+    _BatchAuditPendingSummary,
+    _BatchAuditSubmit,
+    _BatchAuditStatus,
 }
