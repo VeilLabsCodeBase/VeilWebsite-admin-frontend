@@ -53,6 +53,12 @@ export const _BatchAuditPendingSummary = () => _Request('/admin/withdraw/batch-a
 export const _BatchAuditSubmit = () => _Request('/admin/withdraw/batch-audit/submit', {}) //批量审核提交
 export const _BatchAuditStatus = batchId => _Request('/admin/withdraw/batch-audit/status/' + batchId, {}, 'get') //批量审核轮询状态
 
+// 积分价格管理
+export const _TokenPointPriceCreate = data => _Request('/admin/token-point-price/create', data) //设置新积分价格
+export const _TokenPointPriceCurrent = () => _Request('/admin/token-point-price/current', {}, 'get') //查询当前积分价格
+export const _TokenPointPriceHistory = data => _Request('/admin/token-point-price/history', data, 'get') //分页查询历史价格
+export const _TokenPointPriceAllHistory = () => _Request('/admin/token-point-price/history/all', {}, 'get') //全部历史（折线图用）
+
 export const _GlobalApi = {
     _upLogin,
     _userList,
@@ -102,4 +108,8 @@ export const _GlobalApi = {
     _BatchAuditPendingSummary,
     _BatchAuditSubmit,
     _BatchAuditStatus,
+    _TokenPointPriceCreate,
+    _TokenPointPriceCurrent,
+    _TokenPointPriceHistory,
+    _TokenPointPriceAllHistory,
 }

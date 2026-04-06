@@ -107,6 +107,14 @@ export default [
                     title: '手续费分红池管理'
                 }
             },
+            {
+                path: '/tokenPointPriceManage',
+                name: 'tokenPointPriceManage',
+                component: () => import('@/viewPages/tokenPointPriceManage/index.vue'),
+                meta: {
+                    title: '积分价格管理'
+                }
+            },
         ],
     },
     {

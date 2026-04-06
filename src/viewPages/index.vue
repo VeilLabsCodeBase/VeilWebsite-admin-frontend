@@ -25,6 +25,7 @@
                     <el-menu-item index="11" route="/dailyRewardTaskManage">每日收益任务管理</el-menu-item>
                     <el-menu-item index="12" route="/zAssetPackageReleaseManage">Z资产包释放管理</el-menu-item>
                     <el-menu-item index="13" route="/feeDividendPoolManage">手续费分红池管理</el-menu-item>
+                    <el-menu-item index="14" route="/tokenPointPriceManage">积分价格管理</el-menu-item>
                     <!-- <el-menu-item index="4" route="/geoManage">区域管理</el-menu-item>
                     <el-menu-item index="5" route="/bizNodeManage">节点管理</el-menu-item>
                     <el-menu-item index="6" route="/nodeBindManage">节点绑定管理</el-menu-item>
