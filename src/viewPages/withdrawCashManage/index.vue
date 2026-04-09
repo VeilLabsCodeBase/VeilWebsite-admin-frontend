@@ -76,9 +76,9 @@
                                 {{ formatCrypto(row.fee) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="actualTokenAmount" label="到账VEILX" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="actualAmount" label="到账USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatCrypto(row.actualTokenAmount) }}
+                                {{ formatCrypto(row.actualAmount) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="提现状态" min-width="125" show-overflow-tooltip>
@@ -118,11 +118,11 @@
                     </el-descriptions-item>
                     <el-descriptions-item label="到账金额">
                         <div class="amount-info">
-                            <span class="amount-token" v-if="rowData.actualTokenAmount">
-                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
+                            <span class="amount-usdt" v-if="rowData.actualAmount">
+                                {{ formatCrypto(rowData.actualAmount) }} USDT
                             </span>
                             <span v-else class="no-amount">
-                                {{ formatCrypto(rowData.actualAmount) || '-' }}
+                                -
                             </span>
                         </div>
                     </el-descriptions-item>
@@ -194,11 +194,11 @@
                     <div class="confirm-amount-row">
                         <strong>到账金额：</strong>
                         <div class="confirm-amount-info">
-                            <span class="confirm-amount-token" v-if="rowData.actualTokenAmount">
-                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
+                            <span class="confirm-amount-usdt" v-if="rowData.actualAmount">
+                                {{ formatCrypto(rowData.actualAmount) }} USDT
                             </span>
                             <span v-else>
-                                {{ formatCrypto(rowData.actualAmount) || '0.00' }}
+                                -
                             </span>
                         </div>
                     </div>
@@ -873,12 +873,6 @@ onUnmounted(() => {
                     font-size: 14px;
                 }
 
-                .amount-token {
-                    color: #67C23A;
-                    font-weight: 600;
-                    font-size: 14px;
-                }
-
                 .no-amount {
                     color: #909399;
                 }
@@ -925,7 +919,7 @@ onUnmounted(() => {
     // 提现状态列样式，确保内容完整显示
     :deep(.el-table__body-wrapper) {
         .el-table__body {
-            td:nth-child(9) {
+            td:nth-child(10) {
                 .cell {
                     overflow: visible !important;
                     white-space: nowrap !important;
@@ -969,7 +963,7 @@ onUnmounted(() => {
             .confirm-amount-info {
                 display: inline-block;
 
-                .confirm-amount-token {
+                .confirm-amount-usdt {
                     color: #67C23A;
                     font-weight: 600;
                     font-size: 16px;
