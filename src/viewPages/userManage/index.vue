@@ -7,17 +7,14 @@
                 </el-form-item>
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
-                              @input="handleUserIdInput" />
+                        @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="email">
                     <el-input v-model="formValue.email" placeholder="email" clearable style="width: 130px" />
                 </el-form-item>
                 <el-form-item label="社区角色">
                     <el-select v-model="formValue.communityRoleLevel" placeholder="社区角色" clearable style="width: 140px">
-                        <el-option
-                            v-for="role in communityRoleOptions"
-                            :key="role.value"
-                            :label="role.label"
+                        <el-option v-for="role in communityRoleOptions" :key="role.value" :label="role.label"
                             :value="role.value" />
                     </el-select>
                 </el-form-item>
@@ -33,15 +30,19 @@
                     <span>用户管理列表</span>
                 </div>
                 <div class="list">
-                    <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="tableLoading" element-loading-text="加载中..." class="user-manage-table">
-                        <el-table-column prop="userModelling.userId" label="用户id" min-width="90" show-overflow-tooltip />
+                    <el-table :data="tableData?.records" border style="width: 100%" height="100%"
+                        v-loading="tableLoading" element-loading-text="加载中..." class="user-manage-table">
+                        <el-table-column prop="userModelling.userId" label="用户id" min-width="90"
+                            show-overflow-tooltip />
                         <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
                         <el-table-column prop="role" label="用户角色" min-width="120" show-overflow-tooltip />
                         <el-table-column prop="referredUserId" label="推荐人Id" min-width="100" show-overflow-tooltip />
                         <el-table-column prop="email" label="email" min-width="180" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.realDepositAmount" label="用户质押金额" min-width="150" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.realDepositAmount" label="用户质押金额" min-width="150"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
-                                <span class="amount-text">{{ formatUsdt(row.userModelling?.realDepositAmount) }} USDT</span>
+                                <span class="amount-text">{{ formatUsdt(row.userModelling?.realDepositAmount) }}
+                                    USDT</span>
                             </template>
                         </el-table-column>
                         <el-table-column prop="stakingRewardUsdt" label="质押收益" min-width="130" show-overflow-tooltip>
@@ -49,12 +50,14 @@
                                 <span class="amount-text">{{ formatUsdt(row.stakingRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityShareRewardUsdt" label="社区分享收益" min-width="140" show-overflow-tooltip>
+                        <el-table-column prop="communityShareRewardUsdt" label="社区分享收益" min-width="140"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.communityShareRewardUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色收益" min-width="140" show-overflow-tooltip>
+                        <el-table-column prop="communityRoleRewardUsdt" label="社区角色收益" min-width="140"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.communityRoleRewardUsdt) }} USDT</span>
                             </template>
@@ -64,7 +67,15 @@
                                 <span class="amount-text">{{ formatUsdt(row.withdrawableUsdt) }} USDT</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="subordinateReferrals" label="直接下级人数" min-width="130" show-overflow-tooltip />
+                        <el-table-column prop="userModelling.pointBalance" label="剩余积分" min-width="130"
+                            show-overflow-tooltip>
+                            <template #default="{ row }">
+                                <span class="amount-text point-text">{{ formatCrypto(row.userModelling?.pointBalance)
+                                    }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="subordinateReferrals" label="下级总人数" min-width="130"
+                            show-overflow-tooltip />
                         <el-table-column prop="smallZonePerformance" label="小区业绩" min-width="120" show-overflow-tooltip>
                             <template #default="{ row }">
                                 <span class="amount-text">{{ formatUsdt(row.smallZonePerformance) }} USDT</span>
@@ -72,19 +83,22 @@
                         </el-table-column>
                         <el-table-column label="社区角色" min-width="120">
                             <template #default="{ row, $index }">
-                                <el-button link type="primary" @click="showCommunityRoleDialog($index, row)" size="small">
+                                <el-button link type="primary" @click="showCommunityRoleDialog($index, row)"
+                                    size="small">
                                     {{ row.communityRoleDisplayName || '无等级' }}
                                 </el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="isCollaboratorNode" label="是否共谋者节点" min-width="130"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.isCollaboratorNode ? 'success' : 'info'">
                                     {{ row.isCollaboratorNode ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="100" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="100"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="getWithdrawFrozenStatus(row) ? 'danger' : 'success'">
                                     {{ getWithdrawFrozenStatus(row) ? '已冻结' : '正常' }}
@@ -93,52 +107,62 @@
                         </el-table-column>
                         <el-table-column label="Z资产包额度" min-width="130">
                             <template #default="{ row, $index }">
-                                <el-button link type="primary" @click="showZAssetPackageDialog($index, row)" size="small" class="package-amount-btn">
+                                <el-button link type="primary" @click="showZAssetPackageDialog($index, row)"
+                                    size="small" class="package-amount-btn">
                                     {{ formatUsdt(row.userModelling?.zAssetPackageAmount) }} USDT
                                 </el-button>
                             </template>
                         </el-table-column>
                         <el-table-column label="资产包额度" min-width="130">
                             <template #default="{ row, $index }">
-                                <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small" class="package-amount-btn">
+                                <el-button link type="primary" @click="showAssetPackageDialog($index, row)" size="small"
+                                    class="package-amount-btn">
                                     {{ formatUsdt(row.userModelling?.assetPackageAmount) }} USDT
                                 </el-button>
                             </template>
                         </el-table-column>
                         <el-table-column prop="status" label="用户状态" min-width="120" show-overflow-tooltip />
-                        <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="160" show-overflow-tooltip>
+                        <el-table-column prop="userModelling.createdAt" label="创建时间" min-width="160"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.userModelling?.createdAt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" :width="actionColumnExpanded ? 460 : 60" :class-name="actionColumnExpanded ? 'action-column' : 'action-column collapsed'">
+                        <el-table-column fixed="right" label="操作" :width="actionColumnExpanded ? 460 : 60"
+                            :class-name="actionColumnExpanded ? 'action-column' : 'action-column collapsed'">
                             <template #default="scope">
                                 <div class="action-buttons" v-show="actionColumnExpanded">
                                     <el-button link type="primary" @click="showDialog(scope.$index, scope.row)"
-                                        size="small">查看经济模型树</el-button>
+                                        :disabled="isAdminRow(scope.row)" size="small">查看经济模型树</el-button>
                                     <el-button link type="primary" v-if="!scope.row.isCollaboratorNode"
-                                        @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)" size="small">添加共谋者节点</el-button>
+                                        @click="showAddCollaboratorNodeDialog(scope.$index, scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small">添加共谋者节点</el-button>
                                     <el-button link type="danger" v-if="scope.row.isCollaboratorNode"
-                                        @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)" size="small">解除共谋者节点</el-button>
+                                        @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small">解除共谋者节点</el-button>
                                     <el-button link type="warning" v-if="!getWithdrawFrozenStatus(scope.row)"
-                                        @click="showFreezeWithdrawDialog(scope.$index, scope.row)" size="small">冻结提现</el-button>
+                                        @click="showFreezeWithdrawDialog(scope.$index, scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small">冻结提现</el-button>
                                     <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
-                                        @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)" size="small">解冻提现</el-button>
-                                    <el-button type="primary" @click="showTeamStakingDetailsDialog(scope.$index, scope.row)"
-                                        size="small" class="team-staking-btn">团队质押提现详情</el-button>
+                                        @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small">解冻提现</el-button>
+                                    <el-button type="primary"
+                                        @click="showTeamStakingDetailsDialog(scope.$index, scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small"
+                                        class="team-staking-btn">团队质押提现详情</el-button>
                                 </div>
                             </template>
                             <template #header>
                                 <div class="action-header" :class="{ 'collapsed': !actionColumnExpanded }">
                                     <span v-if="actionColumnExpanded">操作</span>
-                                    <el-button 
-                                        link 
-                                        type="primary" 
-                                        @click.stop="toggleActionColumn"
-                                        size="small"
+                                    <el-button link type="primary" @click.stop="toggleActionColumn" size="small"
                                         class="toggle-action-btn">
-                                        <el-icon v-if="actionColumnExpanded"><ArrowLeft /></el-icon>
-                                        <el-icon v-else><ArrowRight /></el-icon>
+                                        <el-icon v-if="actionColumnExpanded">
+                                            <ArrowLeft />
+                                        </el-icon>
+                                        <el-icon v-else>
+                                            <ArrowRight />
+                                        </el-icon>
                                     </el-button>
                                 </div>
                             </template>
@@ -207,10 +231,12 @@
             </el-dialog>
         </div>
         <!-- 资产包详情弹框 -->
-        <el-dialog v-model="assetPackageDialog" title="资产包详情" width="600" :before-close="beforeCloseAssetPackage" destroy-on-close>
+        <el-dialog v-model="assetPackageDialog" title="资产包详情" width="600" :before-close="beforeCloseAssetPackage"
+            destroy-on-close>
             <div class="asset-package-content" v-if="currentAssetPackageRow">
                 <el-descriptions :column="1" border>
-                    <el-descriptions-item label="用户ID">{{ currentAssetPackageRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户ID">{{ currentAssetPackageRow.userModelling?.userId
+                        }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ currentAssetPackageRow.username }}</el-descriptions-item>
                     <el-descriptions-item label="资产包额度">
                         {{ formatUsdt(currentAssetPackageRow.userModelling?.assetPackageAmount) }} USDT
@@ -221,7 +247,7 @@
                     <el-descriptions-item label="可用额度">
                         <span style="color: #67C23A; font-weight: bold;">
                             {{ formatUsdt(
-                                (currentAssetPackageRow.userModelling?.assetPackageAmount || 0) - 
+                                (currentAssetPackageRow.userModelling?.assetPackageAmount || 0) -
                                 (currentAssetPackageRow.userModelling?.assetPackageUsed || 0)
                             ) }} USDT
                         </span>
@@ -230,13 +256,8 @@
                 <el-divider content-position="left">更新额度</el-divider>
                 <el-form :model="assetPackageForm" label-width="100px" class="asset-package-form">
                     <el-form-item label="新额度">
-                        <el-input-number 
-                            v-model="assetPackageForm.assetPackageAmount" 
-                            :precision="2" 
-                            :step="100" 
-                            :min="0"
-                            style="width: 300px"
-                            placeholder="请输入新的资产包额度" />
+                        <el-input-number v-model="assetPackageForm.assetPackageAmount" :precision="2" :step="100"
+                            :min="0" style="width: 300px" placeholder="请输入新的资产包额度" />
                         <span style="margin-left: 10px; color: #909399; font-size: 14px;">USDT</span>
                     </el-form-item>
                 </el-form>
@@ -251,10 +272,12 @@
             </template>
         </el-dialog>
         <!-- Z资产包详情弹框 -->
-        <el-dialog v-model="zAssetPackageDialog" title="Z资产包详情" width="600" :before-close="beforeCloseZAssetPackage" destroy-on-close>
+        <el-dialog v-model="zAssetPackageDialog" title="Z资产包详情" width="600" :before-close="beforeCloseZAssetPackage"
+            destroy-on-close>
             <div class="z-asset-package-content" v-if="currentZAssetPackageRow">
                 <el-descriptions :column="1" border>
-                    <el-descriptions-item label="用户ID">{{ currentZAssetPackageRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户ID">{{ currentZAssetPackageRow.userModelling?.userId
+                        }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ currentZAssetPackageRow.username }}</el-descriptions-item>
                     <el-descriptions-item label="Z资产包额度">
                         {{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageAmount) }} USDT
@@ -265,7 +288,7 @@
                     <el-descriptions-item label="待释放额度">
                         <span style="color: #67C23A; font-weight: bold;">
                             {{ formatUsdt(
-                                (currentZAssetPackageRow.userModelling?.zAssetPackageAmount || 0) - 
+                                (currentZAssetPackageRow.userModelling?.zAssetPackageAmount || 0) -
                                 (currentZAssetPackageRow.userModelling?.zAssetPackageReleased || 0)
                             ) }} USDT
                         </span>
@@ -274,22 +297,15 @@
                 <el-divider content-position="left">更新额度</el-divider>
                 <el-form :model="zAssetPackageForm" label-width="100px" class="z-asset-package-form">
                     <el-form-item label="新额度">
-                        <el-input-number 
-                            v-model="zAssetPackageForm.zAssetPackageAmount" 
-                            :precision="2" 
-                            :step="100" 
-                            :min="getZAssetPackageMinAmount()"
-                            style="width: 300px"
-                            placeholder="请输入新的Z资产包额度" />
+                        <el-input-number v-model="zAssetPackageForm.zAssetPackageAmount" :precision="2" :step="100"
+                            :min="getZAssetPackageMinAmount()" style="width: 300px" placeholder="请输入新的Z资产包额度" />
                         <span style="margin-left: 10px; color: #909399; font-size: 14px;">USDT</span>
                     </el-form-item>
                     <el-form-item v-if="currentZAssetPackageRow.userModelling?.zAssetPackageReleased">
-                        <el-alert
-                            type="info"
-                            :closable="false"
-                            show-icon>
+                        <el-alert type="info" :closable="false" show-icon>
                             <template #default>
-                                新额度不能低于已释放额度（{{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageReleased) }} USDT）
+                                新额度不能低于已释放额度（{{ formatUsdt(currentZAssetPackageRow.userModelling?.zAssetPackageReleased)
+                                }} USDT）
                             </template>
                         </el-alert>
                     </el-form-item>
@@ -304,17 +320,14 @@
                 </div>
             </template>
         </el-dialog>
-        
+
         <!-- 添加共谋者节点确认对话框 -->
         <el-dialog v-model="addCollaboratorNodeDialogVisible" title="添加共谋者节点" width="500" destroy-on-close>
             <div v-if="currentAddCollaboratorNodeRow" class="add-collaborator-node-content">
-                <el-alert
-                    title="确认操作"
-                    type="warning"
-                    :closable="false"
-                    show-icon>
+                <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
-                        <p>确定要给用户 <strong>{{ currentAddCollaboratorNodeRow.username }}</strong> (ID: {{ currentAddCollaboratorNodeRow.userModelling?.userId }}) 添加"共谋者节点"角色吗？</p>
+                        <p>确定要给用户 <strong>{{ currentAddCollaboratorNodeRow.username }}</strong> (ID: {{
+                            currentAddCollaboratorNodeRow.userModelling?.userId }}) 添加"共谋者节点"角色吗？</p>
                     </template>
                 </el-alert>
             </div>
@@ -329,13 +342,10 @@
         <!-- 解除共谋者节点确认对话框 -->
         <el-dialog v-model="removeCollaboratorNodeDialogVisible" title="解除共谋者节点" width="500" destroy-on-close>
             <div v-if="currentRemoveCollaboratorNodeRow" class="remove-collaborator-node-content">
-                <el-alert
-                    title="确认操作"
-                    type="warning"
-                    :closable="false"
-                    show-icon>
+                <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
-                        <p>确定要解除用户 <strong>{{ currentRemoveCollaboratorNodeRow.username }}</strong> (ID: {{ currentRemoveCollaboratorNodeRow.userModelling?.userId }}) 的"共谋者节点"角色吗？</p>
+                        <p>确定要解除用户 <strong>{{ currentRemoveCollaboratorNodeRow.username }}</strong> (ID: {{
+                            currentRemoveCollaboratorNodeRow.userModelling?.userId }}) 的"共谋者节点"角色吗？</p>
                     </template>
                 </el-alert>
             </div>
@@ -348,10 +358,12 @@
         </el-dialog>
 
         <!-- 修改社区角色对话框 -->
-        <el-dialog v-model="communityRoleDialogVisible" title="修改社区角色" width="600" :before-close="beforeCloseCommunityRole" destroy-on-close>
+        <el-dialog v-model="communityRoleDialogVisible" title="修改社区角色" width="600"
+            :before-close="beforeCloseCommunityRole" destroy-on-close>
             <div class="community-role-content" v-if="currentCommunityRoleRow">
                 <el-descriptions :column="1" border>
-                    <el-descriptions-item label="用户ID">{{ currentCommunityRoleRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户ID">{{ currentCommunityRoleRow.userModelling?.userId
+                        }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ currentCommunityRoleRow.username }}</el-descriptions-item>
                     <el-descriptions-item label="当前社区角色">
                         {{ currentCommunityRoleRow.communityRoleDisplayName || '无等级' }}
@@ -360,14 +372,9 @@
                 <el-divider content-position="left">选择新角色</el-divider>
                 <el-form :model="communityRoleForm" label-width="120px" class="community-role-form">
                     <el-form-item label="社区角色">
-                        <el-select 
-                            v-model="communityRoleForm.communityRoleLevel" 
-                            placeholder="请选择社区角色"
+                        <el-select v-model="communityRoleForm.communityRoleLevel" placeholder="请选择社区角色"
                             style="width: 100%">
-                            <el-option 
-                                v-for="role in communityRoleOptions" 
-                                :key="role.value" 
-                                :label="role.label" 
+                            <el-option v-for="role in communityRoleOptions" :key="role.value" :label="role.label"
                                 :value="role.value" />
                         </el-select>
                     </el-form-item>
@@ -386,13 +393,10 @@
         <!-- 冻结提现确认对话框 -->
         <el-dialog v-model="freezeWithdrawDialogVisible" title="冻结提现" width="500" destroy-on-close>
             <div v-if="currentFreezeWithdrawRow" class="freeze-withdraw-content">
-                <el-alert
-                    title="确认操作"
-                    type="warning"
-                    :closable="false"
-                    show-icon>
+                <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
-                        <p>确定要冻结用户 <strong>{{ currentFreezeWithdrawRow.username }}</strong> (ID: {{ currentFreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                        <p>确定要冻结用户 <strong>{{ currentFreezeWithdrawRow.username }}</strong> (ID: {{
+                            currentFreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
                     </template>
                 </el-alert>
             </div>
@@ -407,13 +411,10 @@
         <!-- 解冻提现确认对话框 -->
         <el-dialog v-model="unfreezeWithdrawDialogVisible" title="解冻提现" width="500" destroy-on-close>
             <div v-if="currentUnfreezeWithdrawRow" class="unfreeze-withdraw-content">
-                <el-alert
-                    title="确认操作"
-                    type="warning"
-                    :closable="false"
-                    show-icon>
+                <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
-                        <p>确定要解冻用户 <strong>{{ currentUnfreezeWithdrawRow.username }}</strong> (ID: {{ currentUnfreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                        <p>确定要解冻用户 <strong>{{ currentUnfreezeWithdrawRow.username }}</strong> (ID: {{
+                            currentUnfreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
                     </template>
                 </el-alert>
             </div>
@@ -426,33 +427,25 @@
         </el-dialog>
 
         <!-- 团队质押详情对话框 -->
-        <el-dialog v-model="teamStakingDetailsDialogVisible" title="团队质押提现详情" width="700" :before-close="beforeCloseTeamStakingDetails" destroy-on-close>
+        <el-dialog v-model="teamStakingDetailsDialogVisible" title="团队质押提现详情" width="700"
+            :before-close="beforeCloseTeamStakingDetails" destroy-on-close>
             <div class="team-staking-details-content" v-if="currentTeamStakingDetailsRow">
                 <el-descriptions :column="1" border class="team-staking-info">
-                    <el-descriptions-item label="用户ID">{{ currentTeamStakingDetailsRow.userModelling?.userId }}</el-descriptions-item>
+                    <el-descriptions-item label="用户ID">{{ currentTeamStakingDetailsRow.userModelling?.userId
+                        }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ currentTeamStakingDetailsRow.username }}</el-descriptions-item>
                 </el-descriptions>
-                
+
                 <el-divider content-position="left">时间范围</el-divider>
                 <el-form :model="teamStakingDetailsForm" label-width="100px" class="team-staking-form">
                     <el-form-item label="开始日期">
-                        <el-date-picker
-                            v-model="teamStakingDetailsForm.startDate"
-                            type="date"
-                            placeholder="选择开始日期"
-                            format="YYYY-MM-DD"
-                            value-format="YYYY-MM-DD"
-                            style="width: 100%"
+                        <el-date-picker v-model="teamStakingDetailsForm.startDate" type="date" placeholder="选择开始日期"
+                            format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%"
                             :disabled-date="(time) => time.getTime() > new Date().getTime()" />
                     </el-form-item>
                     <el-form-item label="结束日期">
-                        <el-date-picker
-                            v-model="teamStakingDetailsForm.endDate"
-                            type="date"
-                            placeholder="选择结束日期"
-                            format="YYYY-MM-DD"
-                            value-format="YYYY-MM-DD"
-                            style="width: 100%"
+                        <el-date-picker v-model="teamStakingDetailsForm.endDate" type="date" placeholder="选择结束日期"
+                            format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%"
                             :disabled-date="(time) => time.getTime() > new Date().getTime()" />
                     </el-form-item>
                     <el-form-item>
@@ -462,47 +455,59 @@
                 </el-form>
 
                 <el-divider content-position="left">统计结果</el-divider>
-                <div class="team-staking-statistics" v-loading="teamStakingDetailsLoading" element-loading-text="查询中...">
+                <div class="team-staking-statistics" v-loading="teamStakingDetailsLoading"
+                    element-loading-text="查询中...">
                     <div v-if="teamStakingDetailsData">
                         <div class="statistics-container">
                             <!-- 质押详情 -->
                             <div class="statistics-section staking-section">
                                 <div class="section-title">
-                                    <el-icon><Coin /></el-icon>
+                                    <el-icon>
+                                        <Coin />
+                                    </el-icon>
                                     <span>质押详情</span>
                                 </div>
                                 <el-descriptions :column="1" border>
                                     <el-descriptions-item label="团队质押总金额">
-                                        <span class="amount-highlight">{{ formatUsdt(teamStakingDetailsData.totalStakingAmount) }} USDT</span>
+                                        <span class="amount-highlight">{{
+                                            formatUsdt(teamStakingDetailsData.totalStakingAmount)
+                                            }} USDT</span>
                                     </el-descriptions-item>
                                     <el-descriptions-item label="参与用户数">
-                                        <span class="count-highlight">{{ teamStakingDetailsData.userCount || 0 }} 人</span>
+                                        <span class="count-highlight">{{ teamStakingDetailsData.userCount || 0 }}
+                                            人</span>
                                     </el-descriptions-item>
                                 </el-descriptions>
                             </div>
-                            
+
                             <!-- 提现详情 -->
                             <div class="statistics-section withdraw-section">
                                 <div class="section-title">
-                                    <el-icon><Money /></el-icon>
+                                    <el-icon>
+                                        <Money />
+                                    </el-icon>
                                     <span>提现详情</span>
                                 </div>
                                 <el-descriptions :column="1" border>
                                     <el-descriptions-item label="团队提现总金额">
-                                        <span class="amount-highlight withdraw-amount">{{ formatUsdt(teamStakingDetailsData.totalWithdrawAmount) }} USDT</span>
+                                        <span class="amount-highlight withdraw-amount">{{
+                                            formatUsdt(teamStakingDetailsData.totalWithdrawAmount) }} USDT</span>
                                     </el-descriptions-item>
                                     <el-descriptions-item label="参与用户数">
-                                        <span class="count-highlight">{{ teamStakingDetailsData.withdrawUserCount || 0 }} 人</span>
+                                        <span class="count-highlight">{{ teamStakingDetailsData.withdrawUserCount || 0
+                                            }}
+                                            人</span>
                                     </el-descriptions-item>
                                 </el-descriptions>
                             </div>
                         </div>
-                        
+
                         <!-- 查询时间范围 -->
                         <div class="time-range-info">
                             <el-descriptions :column="1" border>
                                 <el-descriptions-item label="查询时间范围">
-                                    {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate) }}
+                                    {{ formatDateRange(teamStakingDetailsData.startDate, teamStakingDetailsData.endDate)
+                                    }}
                                 </el-descriptions-item>
                             </el-descriptions>
                         </div>
@@ -545,12 +550,7 @@ const formValue = reactive({
 const toggleActionColumn = () => {
     actionColumnExpanded.value = !actionColumnExpanded.value
 }
-const statius = reactive({
-    'NORMAL': "布道大使",
-    'TEAM_LEADER': "布道公会长",
-    'CITY_PARTNER': "节点共谋人",
-    'REGIONAL_PARTNER': "区域共建者"
-})
+const isAdminRow = (row) => ['ADMIN', '管理员'].includes(row?.role)
 const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
@@ -628,10 +628,10 @@ const showDialog = (index, row) => {
         name: 'modelTree',
         params: { userId: userId }
     })
-    
+
     // 直接打开新标签页，让新标签页自己去调用接口
     const newWindow = window.open(routeData.href, '_blank')
-    
+
     // 如果新窗口被阻止，提示用户
     if (!newWindow) {
         ElMessage.warning('请允许弹出窗口以查看经济模型树')
@@ -717,20 +717,20 @@ const updateZAssetPackageConfirm = async () => {
     if (!currentZAssetPackageRow.value) {
         return
     }
-    
+
     // 验证新额度不能低于已释放额度
     const released = currentZAssetPackageRow.value.userModelling?.zAssetPackageReleased || 0
     if (zAssetPackageForm.zAssetPackageAmount < released) {
         ElMessage.warning(`Z资产包额度不能低于已释放额度，当前已释放: ${formatUsdt(released)} USDT`)
         return
     }
-    
+
     // 验证额度不能为负数
     if (zAssetPackageForm.zAssetPackageAmount < 0) {
         ElMessage.warning('Z资产包额度不能为负数')
         return
     }
-    
+
     try {
         const res = await _Api._updateZAssetPackage({
             userId: currentZAssetPackageRow.value.userModelling?.userId,
@@ -965,7 +965,7 @@ const initDefaultDateRange = () => {
     const endDate = new Date()
     const startDate = new Date()
     startDate.setMonth(startDate.getMonth() - 1)
-    
+
     teamStakingDetailsForm.endDate = formatDateForPicker(endDate)
     teamStakingDetailsForm.startDate = formatDateForPicker(startDate)
 }
@@ -1010,30 +1010,30 @@ const queryTeamStakingDetails = async () => {
     if (!currentTeamStakingDetailsRow.value) {
         return
     }
-    
+
     if (!teamStakingDetailsForm.startDate || !teamStakingDetailsForm.endDate) {
         ElMessage.warning('请选择开始日期和结束日期')
         return
     }
-    
+
     // 只比较日期部分，忽略时分秒
     // 将日期字符串转换为当天的00:00:00进行比较
     const startDateStr = teamStakingDetailsForm.startDate
     const endDateStr = teamStakingDetailsForm.endDate
     const todayStr = formatDateForPicker(new Date())
-    
+
     // 验证结束日期不能超过今天（只比较日期部分）
     if (endDateStr > todayStr) {
         ElMessage.warning('结束日期不能超过今天')
         return
     }
-    
+
     // 验证开始日期不能大于结束日期（只比较日期部分）
     if (startDateStr > endDateStr) {
         ElMessage.warning('开始日期不能大于结束日期')
         return
     }
-    
+
     teamStakingDetailsLoading.value = true
     try {
         const res = await _Api._getTeamStakingWithdrawDetails({
@@ -1272,7 +1272,7 @@ const queryTeamStakingDetails = async () => {
         white-space: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        
+
         .el-button {
             flex-shrink: 0;
             white-space: nowrap;
@@ -1289,21 +1289,21 @@ const queryTeamStakingDetails = async () => {
         width: 100%;
         padding: 0 8px;
         transition: all 0.3s ease;
-        
+
         span {
             flex: 1;
         }
-        
+
         .toggle-action-btn {
             padding: 0;
             flex-shrink: 0;
             transition: transform 0.3s ease;
-            
+
             &:hover {
                 transform: scale(1.1);
             }
         }
-        
+
         &.collapsed {
             justify-content: center;
         }
@@ -1314,7 +1314,7 @@ const queryTeamStakingDetails = async () => {
         .el-table__body {
             tr {
                 height: auto !important;
-                
+
                 td {
                     height: auto !important;
                     padding: 8px 0 !important;
@@ -1322,14 +1322,14 @@ const queryTeamStakingDetails = async () => {
                 }
             }
         }
-        
+
         .el-table__header {
             th {
                 height: auto !important;
                 padding: 8px 0 !important;
             }
         }
-        
+
         // 减少单元格内边距，降低行高
         .el-table__body td .cell,
         .el-table__header th .cell {
@@ -1347,7 +1347,7 @@ const queryTeamStakingDetails = async () => {
             display: flex;
             align-items: center;
         }
-        
+
         &.collapsed .cell {
             text-align: center;
             justify-content: center;
@@ -1364,7 +1364,7 @@ const queryTeamStakingDetails = async () => {
         overflow: visible;
         height: 100%;
         width: 100%;
-        
+
         .el-button {
             flex-shrink: 0;
             white-space: nowrap;
@@ -1378,7 +1378,7 @@ const queryTeamStakingDetails = async () => {
                 border-color: #e1f3d8;
                 color: #67c23a;
                 font-weight: bold;
-                
+
                 &:hover {
                     background-color: #67c23a;
                     border-color: #67c23a;
@@ -1391,37 +1391,37 @@ const queryTeamStakingDetails = async () => {
     // 确保表格列宽变化时，表格总宽度保持不变
     :deep(.user-manage-table) {
         width: 100% !important;
-        
+
         // 表格主体和表头宽度保持一致
         .el-table__body-wrapper,
         .el-table__header-wrapper {
             width: 100%;
         }
-        
+
         // 表格内容区域允许横向滚动
         .el-table__body-wrapper {
             overflow-x: auto;
         }
-        
+
         // 确保表格主体宽度固定
         .el-table__body,
         .el-table__header {
             width: 100%;
             table-layout: auto;
         }
-        
+
         // 操作列宽度变化时，通过最小宽度限制其他列
         .el-table__body colgroup col,
         .el-table__header colgroup col {
             min-width: 0;
         }
-        
+
         // 确保固定列正确显示
         .el-table__fixed-right {
             right: 0;
         }
     }
-    
+
     // 表格容器限制最大宽度，防止无限扩展
     .list {
         :deep(.user-manage-table) {
@@ -1432,6 +1432,30 @@ const queryTeamStakingDetails = async () => {
     // 金额样式美化 - 只改变颜色
     .amount-text {
         color: #67C23A;
+    }
+
+    .point-text {
+        color: #409EFF;
+    }
+
+    :deep(.action-buttons .el-button.is-disabled) {
+        color: #bfc4cd !important;
+        cursor: not-allowed !important;
+        opacity: 0.75;
+    }
+
+    :deep(.action-buttons .el-button.is-disabled:hover) {
+        color: #bfc4cd !important;
+        background: transparent !important;
+        border-color: transparent !important;
+        transform: none !important;
+        text-decoration: none !important;
+    }
+
+    :deep(.action-buttons .el-button.team-staking-btn.is-disabled) {
+        background-color: #f4f4f5 !important;
+        border-color: #e4e7ed !important;
+        color: #bfc4cd !important;
     }
 
     // 团队质押提现详情样式
@@ -1451,7 +1475,7 @@ const queryTeamStakingDetails = async () => {
                 display: flex;
                 gap: 20px;
                 margin-bottom: 20px;
-                
+
                 @media (max-width: 768px) {
                     flex-direction: column;
                 }
@@ -1460,7 +1484,7 @@ const queryTeamStakingDetails = async () => {
             .statistics-section {
                 flex: 1;
                 min-width: 0;
-                
+
                 .section-title {
                     display: flex;
                     align-items: center;
@@ -1469,26 +1493,26 @@ const queryTeamStakingDetails = async () => {
                     font-size: 16px;
                     font-weight: 600;
                     color: #303133;
-                    
+
                     .el-icon {
                         font-size: 18px;
                     }
                 }
-                
+
                 &.staking-section {
                     .section-title {
                         color: #67C23A;
-                        
+
                         .el-icon {
                             color: #67C23A;
                         }
                     }
                 }
-                
+
                 &.withdraw-section {
                     .section-title {
                         color: #409EFF;
-                        
+
                         .el-icon {
                             color: #409EFF;
                         }
@@ -1500,7 +1524,7 @@ const queryTeamStakingDetails = async () => {
                 color: #67C23A;
                 font-weight: bold;
                 font-size: 16px;
-                
+
                 &.withdraw-amount {
                     color: #409EFF;
                 }
@@ -1511,7 +1535,7 @@ const queryTeamStakingDetails = async () => {
                 font-weight: bold;
                 font-size: 16px;
             }
-            
+
             .time-range-info {
                 margin-top: 20px;
             }
@@ -1529,13 +1553,13 @@ const queryTeamStakingDetails = async () => {
         font-size: 13px;
         padding: 2px 4px;
         transition: all 0.2s ease;
-        
+
         &:hover {
             font-weight: 600;
             text-decoration: underline;
             transform: translateY(-1px);
         }
-        
+
         &:active {
             transform: translateY(0);
         }

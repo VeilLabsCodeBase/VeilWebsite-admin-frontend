@@ -5,6 +5,14 @@ export default [
         component: () => import('@/viewPages/index.vue'),
         children: [
             {
+                path: '/tokenPointPriceManage',
+                name: 'tokenPointPriceManage',
+                component: () => import('@/viewPages/tokenPointPriceManage/index.vue'),
+                meta: {
+                    title: '积分价格管理'
+                }
+            },
+            {
                 path: '',
                 component: () => import('@/viewPages/userManage/index.vue'),
                 meta: {
@@ -105,14 +113,6 @@ export default [
                 component: () => import('@/viewPages/feeDividendPoolManage/index.vue'),
                 meta: {
                     title: '手续费分红池管理'
-                }
-            },
-            {
-                path: '/tokenPointPriceManage',
-                name: 'tokenPointPriceManage',
-                component: () => import('@/viewPages/tokenPointPriceManage/index.vue'),
-                meta: {
-                    title: '积分价格管理'
                 }
             },
         ],

@@ -6,7 +6,7 @@
         <div class="login-content">
             <div class="login-box">
                 <div class="login-header">
-                    <h1 class="system-title">VEILX</h1>
+                    <h1 class="system-title">VEIL SOCIPAY</h1>
                     <p class="system-subtitle">管理后台</p>
                 </div>
                 <el-form :model="form" :rules="rules" ref="formRef" class="login-form">

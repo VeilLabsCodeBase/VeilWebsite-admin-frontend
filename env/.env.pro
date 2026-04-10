@@ -12,4 +12,4 @@ E_CLEAR_CONSOLE_PRINT = 1
 ##############
 
 # 生产环境 接口请求的前缀
-E_API_PREFIX = https://api.veilx.global/api
+E_API_PREFIX = https://api.vsocipay.com/api

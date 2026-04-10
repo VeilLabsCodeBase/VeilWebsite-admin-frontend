@@ -1,7 +1,7 @@
 <template>
     <div class="home">
         <div class="header">
-            <div class="left">VEILX-管理后台</div>
+            <div class="left">VEIL SOCIPAY-管理后台</div>
             <div class="center"></div>
             <div class="right" v-if="token">
                 <div class="loginOut" @click="handLoginOut">退出</div>
@@ -14,18 +14,26 @@
         </div>
         <div class="container">
             <div class="aside">
-                <el-menu background-color="rgb(121.3, 187.1, 255)" text-color="#000" active-text-color="#ffd04b"
-                    unique-opened  router  class="el-menu-vertical-demo">
-                    <el-menu-item index="1" route="/">用户管理</el-menu-item>
-                    <el-menu-item index="2" route="/rechargeManage">充值管理</el-menu-item>
-                    <el-menu-item index="3" route="/withdrawCashManage">提现管理</el-menu-item>
-                    <el-menu-item index="8" route="/stakingManage">质押记录管理</el-menu-item>
-                    <el-menu-item index="9" route="/dailyRewardManage">每日收益管理</el-menu-item>
+                <el-menu
+                    :default-active="activeMenu"
+                    background-color="rgb(121.3, 187.1, 255)"
+                    text-color="#000"
+                    active-text-color="#ffd04b"
+                    unique-opened
+                    router
+                    class="el-menu-vertical-demo"
+                >
+                    <el-menu-item index="/tokenPointPriceManage">积分价格管理</el-menu-item>
+                    <el-menu-item index="/">用户管理</el-menu-item>
+                    <el-menu-item index="/rechargeManage">充值管理</el-menu-item>
+                    <el-menu-item index="/withdrawCashManage">提现管理</el-menu-item>
+                    <el-menu-item index="/stakingManage">质押记录管理</el-menu-item>
+                    <el-menu-item index="/dailyRewardManage">每日收益管理</el-menu-item>
                     <!-- <el-menu-item index="10" route="/distributionFailureManage">收益发放失败管理</el-menu-item> -->
-                    <el-menu-item index="11" route="/dailyRewardTaskManage">每日收益任务管理</el-menu-item>
-                    <el-menu-item index="12" route="/zAssetPackageReleaseManage">Z资产包释放管理</el-menu-item>
-                    <el-menu-item index="13" route="/feeDividendPoolManage">手续费分红池管理</el-menu-item>
-                    <el-menu-item index="14" route="/tokenPointPriceManage">积分价格管理</el-menu-item>
+                    <el-menu-item index="/dailyRewardTaskManage">每日收益任务管理</el-menu-item>
+                    <el-menu-item index="/zAssetPackageReleaseManage">Z资产包释放管理</el-menu-item>
+                    <el-menu-item index="/feeDividendPoolManage">手续费分红池管理</el-menu-item>
+
                     <!-- <el-menu-item index="4" route="/geoManage">区域管理</el-menu-item>
                     <el-menu-item index="5" route="/bizNodeManage">节点管理</el-menu-item>
                     <el-menu-item index="6" route="/nodeBindManage">节点绑定管理</el-menu-item>
@@ -54,7 +62,9 @@
 import { TOKEN } from '@/utils/constants'
 const _Cache = inject('$caches')
 const router = useRouter()
+const route = useRoute()
 const loginOutDialog = ref(false)
+const activeMenu = computed(() => route.path || '/')
 const handLoginOut = () => {
     loginOutDialog.value = true
 }

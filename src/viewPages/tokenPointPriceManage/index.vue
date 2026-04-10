@@ -114,6 +114,7 @@
 
       <div class="table-foot">
         <el-pagination
+          size="small"
           v-model:current-page="historyPageNo"
           v-model:page-size="historyPageSize"
           :total="historyTotal"
@@ -583,6 +584,8 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   padding: 24px 28px;
   background: #fff;
   min-height: 100%;
+  box-sizing: border-box;
+  padding-bottom: 32px;
 }
 
 /* ── 顶部栏 ── */
@@ -699,9 +702,9 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   background: #fff;
   border: 1px solid #E8ECF2;
   border-radius: 10px;
-  padding: 18px 20px 12px;
+  padding: 16px 18px 10px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .chart-header {
   display: flex;
@@ -711,7 +714,7 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
 }
 .chart-title { font-size: 15px; font-weight: 700; color: #111827; margin-right: 8px; }
 .chart-unit  { font-size: 12px; color: #9ca3af; }
-.chart-canvas { width: 100%; height: 480px; }
+.chart-canvas { width: 100%; height: 360px; }
 .chart-empty  { display:flex; justify-content:center; padding:80px 0; }
 
 /* ── 表格卡 ── */
@@ -721,6 +724,9 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   border-radius: 10px;
   padding: 18px 20px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
 }
 .table-header {
   display: flex;
@@ -738,7 +744,11 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
 }
 
 /* 自定义表格 */
-.price-table { width: 100%; }
+.price-table {
+  width: 100%;
+  max-height: 420px;
+  overflow-y: auto;
+}
 .price-table__head,
 .price-table__row {
   display: grid;
@@ -817,9 +827,32 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
 .table-foot {
   display: flex;
   justify-content: flex-end;
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid #F3F4F6;
+}
+
+.table-foot :deep(.el-pagination) {
+  --el-pagination-button-height: 24px;
+  --el-pagination-button-width: 24px;
+  --el-pagination-font-size: 12px;
+}
+
+.table-foot :deep(.el-pager li) {
+  min-width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.table-foot :deep(.btn-prev),
+.table-foot :deep(.btn-next) {
+  width: 24px;
+  height: 24px;
+}
+
+.table-foot :deep(.el-select .el-input__wrapper) {
+  min-height: 24px;
+  padding: 0 8px;
 }
 
 /* ── 设置价格弹窗 ── */
