@@ -4,14 +4,14 @@
             <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
                 <el-form-item label="质押记录ID">
                     <el-input v-model="formValue.stakingId" placeholder="记录ID" clearable style="width: 90px"
-                              @input="handleStakingIdInput" />
+                        @input="handleStakingIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 110px" />
                 </el-form-item>
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
-                              @input="handleUserIdInput" />
+                        @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="状态">
                     <el-select v-model="formValue.status" placeholder="状态" clearable style="width: 110px">
@@ -40,16 +40,6 @@
                         <el-table-column prop="totalAmount" label="质押金额(USDT)" min-width="140" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatCrypto(row.totalAmount) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="amountUsdt" label="USDT金额" min-width="120" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.amountUsdt) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="amountToken" label="VEILX金额" min-width="120" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.amountToken) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="stakingType" label="质押类型" min-width="150" show-overflow-tooltip>
@@ -85,14 +75,16 @@
                                 {{ formatCrypto(row.totalRewardUsdt) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="principalWithdrawn" label="本金是否已返还" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="principalWithdrawn" label="本金是否已返还" min-width="130"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.principalWithdrawn ? 'success' : 'info'">
                                     {{ row.principalWithdrawn ? '是' : '否' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="isRewardCapped" label="是否已达到收益倍数封顶" min-width="180" show-overflow-tooltip>
+                        <el-table-column prop="isRewardCapped" label="是否已达到收益倍数封顶" min-width="180"
+                            show-overflow-tooltip>
                             <template #default="{ row }">
                                 <el-tag :type="row.isRewardCapped ? 'warning' : 'success'">
                                     {{ row.isRewardCapped ? '是' : '否' }}
@@ -141,10 +133,11 @@
                     <el-descriptions-item label="用户ID">{{ detailData.userId }}</el-descriptions-item>
                     <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
                     <el-descriptions-item label="充值ID">{{ detailData.depositId }}</el-descriptions-item>
-                    <el-descriptions-item label="质押金额(USDT)">{{ formatCrypto(detailData.totalAmount) }}</el-descriptions-item>
-                    <el-descriptions-item label="USDT金额">{{ formatCrypto(detailData.amountUsdt) }}</el-descriptions-item>
-                    <el-descriptions-item label="VEILX金额">{{ formatCrypto(detailData.amountToken) }}</el-descriptions-item>
-                    <el-descriptions-item label="质押类型">{{ getStakingTypeDesc(detailData.stakingType, detailData.stakingTypeDesc) }}</el-descriptions-item>
+                    <el-descriptions-item label="质押金额(USDT)">{{ formatCrypto(detailData.totalAmount)
+                    }}</el-descriptions-item>
+                    <el-descriptions-item label="质押类型">{{ getStakingTypeDesc(detailData.stakingType,
+                        detailData.stakingTypeDesc)
+                    }}</el-descriptions-item>
                     <el-descriptions-item label="日算力倍率(%)">{{ detailData.dailyRate }}</el-descriptions-item>
                     <el-descriptions-item label="收益倍数">{{ detailData.rewardMultiple }}</el-descriptions-item>
                     <el-descriptions-item label="收益封顶金额(USDT)" :span="2">
@@ -152,14 +145,16 @@
                             {{ formatCrypto(detailData.rewardCapacity) }}
                         </span>
                     </el-descriptions-item>
-                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule) }}</el-descriptions-item>
+                    <el-descriptions-item label="提现规则">{{ getWithdrawRuleDesc(detailData.withdrawRule)
+                    }}</el-descriptions-item>
                     <el-descriptions-item label="开始日期">{{ formatDate(detailData.startDate) }}</el-descriptions-item>
                     <el-descriptions-item label="状态">
                         <el-tag :type="getStatusType(detailData.status)">
                             {{ getStatusText(detailData.status) }}
                         </el-tag>
                     </el-descriptions-item>
-                    <el-descriptions-item label="累计USDT收益">{{ formatCrypto(detailData.totalRewardUsdt) }}</el-descriptions-item>
+                    <el-descriptions-item label="累计USDT收益">{{ formatCrypto(detailData.totalRewardUsdt)
+                    }}</el-descriptions-item>
                     <el-descriptions-item label="是否已达到收益倍数封顶">
                         <el-tag :type="detailData.isRewardCapped ? 'warning' : 'success'">
                             {{ detailData.isRewardCapped ? '是' : '否' }}
@@ -181,42 +176,40 @@
                 </div>
             </template>
         </el-dialog>
-        
+
         <!-- 修改对话框 -->
         <el-dialog v-model="editDialogVisible" title="修改质押记录" width="600" destroy-on-close>
             <el-config-provider :locale="zhCn">
                 <el-form :model="editForm" label-width="140px" :rules="editRules" ref="editFormRef" class="edit-form">
-                <el-form-item label="质押记录ID">
-                    <el-input v-model="editForm.id" disabled />
-                </el-form-item>
-                <el-form-item label="开始日期" prop="startDate">
-                    <el-date-picker
-                        v-model="editForm.startDate"
-                        type="datetime"
-                        placeholder="选择开始日期"
-                        format="YYYY年MM月DD日 HH:mm:ss"
-                        value-format="YYYY-MM-DDTHH:mm:ss"
-                        style="width: 100%"
-                        @change="handleStartDateChange" />
-                </el-form-item>
-                <el-form-item label="下次收益产生时间">
-                    <el-input :value="editForm.nextRewardTime ? formatDateTime(editForm.nextRewardTime) : '-'" disabled>
-                        <template #prefix>
-                            <el-icon style="margin-right: 8px;"><Calendar /></el-icon>
-                        </template>
-                    </el-input>
-                    <el-text type="info" style="margin-left: 12px; font-size: 12px;">
-                        自动计算：开始日期 + 24小时
-                    </el-text>
-                </el-form-item>
-                <el-form-item label="状态" prop="status">
-                    <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
-                        <el-option label="进行中" value="ACTIVE" />
-                        <el-option label="已完成" value="COMPLETED" />
-                        <el-option label="已取消" value="CANCELLED" />
-                    </el-select>
-                </el-form-item>
-            </el-form>
+                    <el-form-item label="质押记录ID">
+                        <el-input v-model="editForm.id" disabled />
+                    </el-form-item>
+                    <el-form-item label="开始日期" prop="startDate">
+                        <el-date-picker v-model="editForm.startDate" type="datetime" placeholder="选择开始日期"
+                            format="YYYY年MM月DD日 HH:mm:ss" value-format="YYYY-MM-DDTHH:mm:ss" style="width: 100%"
+                            @change="handleStartDateChange" />
+                    </el-form-item>
+                    <el-form-item label="下次收益产生时间">
+                        <el-input :value="editForm.nextRewardTime ? formatDateTime(editForm.nextRewardTime) : '-'"
+                            disabled>
+                            <template #prefix>
+                                <el-icon style="margin-right: 8px;">
+                                    <Calendar />
+                                </el-icon>
+                            </template>
+                        </el-input>
+                        <el-text type="info" style="margin-left: 12px; font-size: 12px;">
+                            自动计算：开始日期 + 24小时
+                        </el-text>
+                    </el-form-item>
+                    <el-form-item label="状态" prop="status">
+                        <el-select v-model="editForm.status" placeholder="请选择状态" style="width: 100%">
+                            <el-option label="进行中" value="ACTIVE" />
+                            <el-option label="已完成" value="COMPLETED" />
+                            <el-option label="已取消" value="CANCELLED" />
+                        </el-select>
+                    </el-form-item>
+                </el-form>
             </el-config-provider>
             <template #footer>
                 <div class="dialog-footer">
@@ -393,7 +386,7 @@ const viewDetail = async (row) => {
     loadingDetail.value = true
     // 清空之前的数据，避免显示旧数据
     detailData.value = null
-    
+
     try {
         // 调用接口获取详情（包含收益封顶金额）
         const res = await _Api._stakingRecordDetail(row.id)
@@ -418,7 +411,7 @@ const showEditDialog = (row) => {
         const date = dayjs(row.startDate)
         startDate = date.format('YYYY-MM-DDTHH:mm:ss')
     }
-    
+
     // 直接使用列表数据中的 nextRewardTime，不重新计算
     let nextRewardTime = null
     if (row.nextRewardTime) {
@@ -426,7 +419,7 @@ const showEditDialog = (row) => {
         const date = dayjs(row.nextRewardTime)
         nextRewardTime = date.format('YYYY-MM-DDTHH:mm:ss')
     }
-    
+
     editForm.value = {
         id: row.id,
         startDate: startDate,
@@ -438,18 +431,18 @@ const showEditDialog = (row) => {
 
 const handleUpdate = async () => {
     if (!editFormRef.value) return
-    
+
     try {
         await editFormRef.value.validate()
         updateLoading.value = true
-        
+
         // 只传startDate和status，后端会自动根据startDate+24小时计算nextRewardTime
         const res = await _Api._stakingRecordUpdate({
             id: editForm.value.id,
             startDate: editForm.value.startDate,
             status: editForm.value.status
         })
-        
+
         if (res) {
             ElMessage.success('修改成功')
             editDialogVisible.value = false
