@@ -1,7 +1,7 @@
 <template>
     <div class="home">
         <div class="header">
-            <div class="left">VEIL SOCIPAY-管理后台</div>
+            <div class="left">VSOCIPAY-管理后台</div>
             <div class="center"></div>
             <div class="right" v-if="token">
                 <div class="loginOut" @click="handLoginOut">退出</div>

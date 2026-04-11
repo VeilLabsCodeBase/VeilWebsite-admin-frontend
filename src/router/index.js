@@ -10,9 +10,9 @@ const router = createRouter({
 // 设置页面标题
 router.beforeEach((to, from, next) => {
     // 获取路由的meta.title，如果没有则使用默认标题
-    const title = to.meta?.title || 'VEIL SOCIPAY-管理后台'
+    const title = to.meta?.title || 'VSOCIPAY-管理后台'
     // 设置浏览器标签栏标题
-    document.title = `VEIL SOCIPAY-${title}`
+    document.title = `VSOCIPAY-${title}`
     next()
 })
 

@@ -50,7 +50,7 @@
                             </div>
                             <div class="withdraw-row">
                                 <div class="withdraw-item">
-                                    <span class="label">可提现USDT等值的VEILX：</span>
+                                    <span class="label">可提现USDT：</span>
                                     <span class="value selectable">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</span>
                                 </div>
                             </div>
