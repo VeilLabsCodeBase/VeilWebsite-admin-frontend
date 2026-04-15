@@ -82,11 +82,15 @@ const onSubmit = async () => {
     try {
         await formRef.value.validate()
         loading.value = true
-        
-        const res = await _Api._upLogin(form)
+
+        const payload = {
+            username: form.username.trim(),
+            password: form.password
+        }
+        const res = await _Api._upLogin(payload)
         if (res) {
             _Cache._LocalCache.Set(TOKEN, res.token)
-            _Cache._LocalCache.Set('nickname', res.user.username)
+            _Cache._LocalCache.Set('nickname', res.user.nickname || res.user.username)
             
             ElMessage.success('登录成功')
             

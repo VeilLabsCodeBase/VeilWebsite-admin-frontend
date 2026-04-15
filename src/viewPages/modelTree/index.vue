@@ -4,98 +4,133 @@
             <h2>经济模型树</h2>
             <el-button @click="closePage">关闭</el-button>
         </div>
-        <div class="content" v-loading="loading" element-loading-text="加载中..." 
-             @mousedown="handleMouseDown"
-             @dragstart="handleDragStart">
-            <div v-if="!loading && modelTreeData" class="tree-container">
+
+        <div class="content">
+            <div v-if="loading" class="loading-state">
+                <el-skeleton :rows="6" animated />
+            </div>
+            <div v-else-if="modelTreeData.length" class="tree-container">
                 <vue3-org-chart :data="modelTreeData">
                     <template #node="{ item, children, open, toggleChildren }">
-                        <div class="contentBox" :class="{ 'active': open, 'passive': !open }"
-                             @mousedown.stop
-                             @dragstart.prevent
-                             @selectstart.stop>
+                        <div class="content-box" :class="{ active: open, passive: !open }">
                             <div class="info-grid">
                                 <div class="info-item">
-                                    <span class="label">用户id：</span>
-                                    <span class="value selectable">{{ item.id }}</span>
+                                    <span class="label">用户ID：</span>
+                                    <span class="value">{{ item.id }}</span>
                                 </div>
                                 <div class="info-item">
-                                    <span class="label">用户名：</span>
-                                    <span class="value selectable">{{ item.username }}</span>
-                                </div>
-                                <div class="info-item" v-if="item.parentId">
-                                    <span class="label">上级id：</span>
-                                    <span class="value selectable">{{ item.parentId }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">推荐码：</span>
-                                    <span class="value selectable">{{ item.referralCode }}</span>
+                                    <span class="label">钱包地址：</span>
+                                    <el-tooltip :content="item.walletAddress" placement="top">
+                                        <el-button link type="primary" class="wallet-button" @click="copyWalletAddress(item.walletAddress)">
+                                            {{ shortenAddress(item.walletAddress) }}
+                                        </el-button>
+                                    </el-tooltip>
                                 </div>
                                 <div class="info-item">
-                                    <span class="label">社区等级角色：</span>
-                                    <span class="value selectable">{{ item.communityRoleLevelDesc || '-' }}</span>
+                                    <span class="label">上级用户：</span>
+                                    <span class="value">{{ item.parentId ?? '-' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">根用户：</span>
+                                    <span class="value">{{ item.rootUserId ?? '-' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">层级深度：</span>
+                                    <span class="value">{{ item.depth ?? 0 }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">下级人数：</span>
+                                    <span class="value">{{ item.directChildrenCount ?? 0 }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">社区角色：</span>
+                                    <span class="value">{{ item.communityRoleDisplayName || '无等级' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">共谋者节点：</span>
+                                    <span class="value">{{ item.isCollaboratorNode ? '是' : '否' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">累计充值：</span>
+                                    <span class="value">{{ formatAmount(item.totalDepositUsdt) }} U</span>
                                 </div>
                                 <div class="info-item">
                                     <span class="label">小区业绩：</span>
-                                    <span class="value selectable">{{ item?.userModelling?.smallZonePerformance || '0' }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">直推人数：</span>
-                                    <span class="value selectable">{{ item.directReferrals || '0' }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">质押金额：</span>
-                                    <span class="value selectable">{{ item?.userModelling?.realDepositAmount || '0' }}</span>
+                                    <span class="value">{{ formatAmount(item.smallZonePerformance) }} U</span>
                                 </div>
                             </div>
+
                             <div class="withdraw-row">
-                                <div class="withdraw-item">
-                                    <span class="label">可提现USDT等值的VEILX：</span>
-                                    <span class="value selectable">{{ formatCrypto(item?.userModelling?.withdrawableUsdt) }}</span>
-                                </div>
+                                <span class="label">可提现金额：</span>
+                                <span class="value">{{ formatAmount(item.withdrawableUsdt) }} U</span>
+                                <span class="status-tag" :class="{ frozen: item.isFrozen }">
+                                    {{ item.isFrozen ? '提现已冻结' : '提现正常' }}
+                                </span>
                             </div>
                         </div>
-                        <div class="btnBox">
-                            <button v-if="children.length" @click="toggleChildren"> {{ open ? '-' : '+' }}</button>
+                        <div class="toggle-box">
+                            <button v-if="children.length" @click="toggleChildren">
+                                {{ open ? '-' : '+' }}
+                            </button>
                         </div>
                     </template>
                 </vue3-org-chart>
             </div>
-            <div v-else-if="!loading && !modelTreeData" class="empty-state">
-                <p>暂无数据</p>
+
+            <div v-else class="empty-state">
+                <el-empty description="暂无数据" :image-size="100" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { inject, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { inject } from 'vue'
 import { formatCrypto } from '@/utils/format'
 import { handleApiError } from '@/utils/request'
+import { copyText, shortenAddress } from '@/utils/address'
 
 const route = useRoute()
 const _Api = inject('$api')
 const loading = ref(true)
-const modelTreeData = ref(null)
+const modelTreeData = ref([])
+
+const formatAmount = (value) => formatCrypto(value)
+
+const flattenTree = (node, result = [], parentIdOverride = null) => {
+    if (!node) {
+        return result
+    }
+
+    const current = {
+        ...node,
+        id: String(node.id),
+        parentId: parentIdOverride == null ? '' : String(parentIdOverride)
+    }
+    result.push(current)
+
+    const children = Array.isArray(node.children) ? node.children : []
+    children.forEach((child) => flattenTree(child, result, node.id))
+
+    return result
+}
 
 const loadModelTree = async () => {
     const userId = route.params.userId
     if (!userId) {
-        handleApiError(null, '用户ID不存在')
+        ElMessage.error('用户ID不存在')
         loading.value = false
         return
     }
 
     loading.value = true
     try {
-        const res = await _Api._UserModellingTree({
-            userId: userId,
-        })
-        if (res) {
-            modelTreeData.value = res
-        }
+        const res = await _Api._userModelTreeV2({ userId })
+        const payload = res?.data ?? res ?? null
+        const rootNode = Array.isArray(payload) ? (payload[0] || null) : payload
+        modelTreeData.value = flattenTree(rootNode)
     } catch (error) {
         handleApiError(error, '获取经济模型树失败')
     } finally {
@@ -103,23 +138,17 @@ const loadModelTree = async () => {
     }
 }
 
-const closePage = () => {
-    window.close()
-}
-
-// 阻止拖拽，允许文本选择
-const handleMouseDown = (e) => {
-    // 如果是在文本上点击，允许选择
-    const target = e.target
-    if (target.tagName === 'SPAN' || target.tagName === 'DIV' || target.classList.contains('value') || target.classList.contains('label')) {
-        e.stopPropagation()
+const copyWalletAddress = async (walletAddress) => {
+    try {
+        await copyText(walletAddress)
+        ElMessage.success('钱包地址已复制')
+    } catch (error) {
+        handleApiError(error, '复制失败')
     }
 }
 
-const handleDragStart = (e) => {
-    // 阻止拖拽
-    e.preventDefault()
-    return false
+const closePage = () => {
+    window.close()
 }
 
 onMounted(() => {
@@ -129,21 +158,21 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .model-tree-page {
-    width: 100%;
-    height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #f5f5f5;
+    height: 100vh;
+    min-height: 100vh;
+    background: #f5f7fa;
+    overflow: auto;
 
     .header {
-        height: 60px;
-        background: #409EFF;
-        color: #fff;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         padding: 0 20px;
-        flex-shrink: 0;
+        height: 60px;
+        background: #409eff;
+        color: #fff;
 
         h2 {
             margin: 0;
@@ -154,209 +183,143 @@ onMounted(() => {
     .content {
         flex: 1;
         overflow: auto;
-        padding: 20px;
-
-        .tree-container {
-            width: 100%;
-            height: 100%;
-
-            :deep() {
-                .vue3-org-chart {
-                    height: 100%;
-                    user-select: text !important;
-                    -webkit-user-select: text !important;
-                    -moz-user-select: text !important;
-                    -ms-user-select: text !important;
-                }
-
-                .vue3-org-chart .vue3-org-chart-container {
-                    height: 100%;
-                    user-select: text !important;
-                    -webkit-user-select: text !important;
-                    -moz-user-select: text !important;
-                    -ms-user-select: text !important;
-                }
-
-                // 禁用拖拽功能，允许文本选择
-                .vue3-org-chart-container * {
-                    user-select: text !important;
-                    -webkit-user-select: text !important;
-                    -moz-user-select: text !important;
-                    -ms-user-select: text !important;
-                }
-            }
-        }
-
-        .empty-state {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            font-size: 16px;
-            color: #909399;
-        }
+        min-height: 0;
+        padding: 20px 20px 140px;
     }
 
-    .contentBox {
-        width: 520px;
-        min-height: 240px;
-        padding: 16px;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
+    .loading-state {
+        padding: 12px;
         background: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        user-select: text !important; // 允许选择文本
-        -webkit-user-select: text !important;
-        -moz-user-select: text !important;
-        -ms-user-select: text !important;
-        // 禁用拖拽
-        -webkit-user-drag: none;
-        -khtml-user-drag: none;
-        -moz-user-drag: none;
-        -o-user-drag: none;
-        // 允许文本选择
-        cursor: default;
-        
-        // 阻止拖拽事件
-        * {
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
+        border-radius: 10px;
+    }
+
+    .tree-container {
+        display: block;
+        width: max-content;
+        min-width: max-content;
+        margin: 0 auto;
+        padding: 0 24px 140px 0;
+    }
+
+    :deep(.vue3-org-chart) {
+        --vue3-org-chart-container-height: auto !important;
+    }
+
+    :deep(.vue3-org-chart .vue3-org-chart-container) {
+        height: max-content !important;
+        min-height: max-content !important;
+        overflow: visible !important;
+        padding-bottom: 140px !important;
+    }
+
+    :deep(.vue3-org-chart .vue3-org-chart-scene) {
+        align-items: flex-start !important;
+        padding-top: 8px;
+        padding-bottom: 80px;
+    }
+
+    :deep(.vue3-org-chart .vue3-org-chart-node-container) {
+        align-items: flex-start;
+    }
+
+    .content-box {
+        width: 500px;
+        min-height: 210px;
+        padding: 18px 20px;
+        border-radius: 10px;
+        border: 1px solid #dfe6f1;
+        background: #fff;
+        transition: all 0.2s ease;
+
+        &.active {
+            border-color: rgb(165 180 252);
+            background-color: rgb(224 231 255);
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px 16px;
-            margin-bottom: 12px;
-
-            .info-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-height: 28px;
-                padding: 4px 0;
-
-                .label {
-                    flex-shrink: 0;
-                    font-size: 13px;
-                    color: #606266;
-                    font-weight: 500;
-                    white-space: nowrap;
-                }
-
-                .value {
-                    flex: 1;
-                    font-size: 13px;
-                    color: #303133;
-                    font-weight: 600;
-                    word-break: break-all;
-                    min-width: 0;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-
-                    &.selectable {
-                        user-select: text;
-                        -webkit-user-select: text;
-                        -moz-user-select: text;
-                        -ms-user-select: text;
-                        cursor: text;
-                    }
-                }
-            }
-        }
-
-        .withdraw-row {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e4e7ed;
-
-            .withdraw-item {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 8px;
-                padding: 12px 16px;
-                background: #f5f7fa;
-                border-radius: 6px;
-                min-width: 0;
-                width: 100%;
-                min-height: 44px;
-
-                .label {
-                    flex-shrink: 0;
-                    font-size: 13px;
-                    color: #909399;
-                    font-weight: 500;
-                    white-space: nowrap;
-                }
-
-                .value {
-                    font-size: 15px;
-                    color: #409EFF;
-                    font-weight: 700;
-                    white-space: nowrap;
-                    overflow: visible;
-                    min-width: fit-content;
-
-                    &.selectable {
-                        user-select: text;
-                        -webkit-user-select: text;
-                        -moz-user-select: text;
-                        -ms-user-select: text;
-                        cursor: text;
-                    }
-                }
-            }
+        &.passive {
+            background-color: rgb(248 250 252);
         }
     }
 
-    .btnBox {
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 18px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 6px;
+    }
+
+    .label {
+        flex-shrink: 0;
+        color: #606266;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .value {
+        min-width: 0;
+        color: #303133;
+        font-size: 13px;
+        font-weight: 600;
+        word-break: break-all;
+    }
+
+    .wallet-button {
+        padding: 0;
+    }
+
+    .withdraw-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #ebeef5;
+
+        .value {
+            color: #409eff;
+            font-size: 15px;
+        }
+    }
+
+    .status-tag {
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #f0f9eb;
+        color: #67c23a;
+        font-size: 12px;
+
+        &.frozen {
+            background: #fef0f0;
+            color: #f56c6c;
+        }
+    }
+
+    .toggle-box {
         display: flex;
         justify-content: center;
 
         button {
             width: 30px;
             height: 30px;
-            font-size: 36px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid #ccc;
-            line-height: 28px;
-            text-align: center;
-            cursor: pointer;
+            border: 1px solid #dcdfe6;
             background: #fff;
-
-            &:hover {
-                background: #f0f0f0;
-            }
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
         }
     }
 
-    .contentBox.active {
-        border-color: #409EFF;
-        background: linear-gradient(135deg, #ecf5ff 0%, #e1f3ff 100%);
-        box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
-        transform: translateY(-2px);
-    }
-
-    .contentBox.passive {
-        background-color: #fff;
-    }
-
-    .contentBox:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        transform: translateY(-1px);
+    .empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
     }
 }
 </style>

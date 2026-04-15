@@ -21,6 +21,8 @@ export const _getTaskLogs = data => _Request('/admin/deposit/daily-reward-calcul
 export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
+export const _userListV2 = data => _Request('/admin/v2/user/list', data) // v2 用户列表
+export const _userModelTreeV2 = data => _Request('/admin/v2/user/model-tree', data, 'get') // v2 经济模型树
 export const _GeoRegion = data => _Request('/admin/geoRegion/page', data) //地域管理列表
 export const _GeoRegionGeoType = data => _Request('/geoRegion/geoType', data,'get') //地域管理列表
 export const _GeoRegionRemoveGeo = data => _Request('/admin/geoRegion/removeGeo', data) //地域删除
@@ -45,6 +47,13 @@ export const _updateAssetPackage = data => _Request('/admin/user/update-asset-pa
 export const _freezeUserWithdraw = data => _Request('/admin/user/freeze-withdraw', data) //冻结用户提现
 export const _unfreezeUserWithdraw = data => _Request('/admin/user/unfreeze-withdraw', data) //解冻用户提现
 export const _getTeamStakingWithdrawDetails = data => _Request('/admin/user/team-staking-withdraw-details', data) //查询团队质押提现详情
+export const _updateCommunityRoleLevelV2 = data => _Request('/admin/v2/user/update-community-role-level', data) //更新 v2 用户社区角色
+export const _addCollaboratorNodeV2 = data => _Request('/admin/v2/user/add-collaborator-node', data) //添加 v2 共谋者节点
+export const _removeCollaboratorNodeV2 = data => _Request('/admin/v2/user/remove-collaborator-node', data) //解除 v2 共谋者节点
+export const _freezeUserWithdrawV2 = data => _Request('/admin/v2/user/freeze-withdraw', data) //冻结 v2 用户提现
+export const _unfreezeUserWithdrawV2 = data => _Request('/admin/v2/user/unfreeze-withdraw', data) //解冻 v2 用户提现
+export const _getTeamStakingWithdrawDetailsV2 = data => _Request('/admin/v2/user/team-staking-withdraw-details', data) //查询 v2 团队质押提现详情
+export const _updateAssetPackageV2 = data => _Request('/admin/v2/user/update-asset-package', data) //更新 v2 资产包额度
 export const _FeeDividendPoolList = data => _Request('/admin/fee-dividend-pool/list', data, 'get') //获取分红池列表
 export const _FeeDividendPoolDistribute = data => _Request('/admin/fee-dividend-pool/distribute', data) //触发分红
 export const _FeeDividendPoolAdjust = data => _Request('/admin/fee-dividend-pool/adjust-node-conspiracy', data) //调整共谋者节点角色分红池余额
@@ -71,6 +80,8 @@ export const _GlobalApi = {
     _WithdrawList,
     _WithdrawAudit,
     _UserModellingTree,
+    _userListV2,
+    _userModelTreeV2,
     _GeoRegion,
     _GeoRegionGeoType,
     _GeoRegionRemoveGeo,
@@ -95,6 +106,13 @@ export const _GlobalApi = {
     _freezeUserWithdraw,
     _unfreezeUserWithdraw,
     _getTeamStakingWithdrawDetails,
+    _updateCommunityRoleLevelV2,
+    _addCollaboratorNodeV2,
+    _removeCollaboratorNodeV2,
+    _freezeUserWithdrawV2,
+    _unfreezeUserWithdrawV2,
+    _getTeamStakingWithdrawDetailsV2,
+    _updateAssetPackageV2,
     _FeeDividendPoolList,
     _FeeDividendPoolDistribute,
     _FeeDividendPoolAdjust,
