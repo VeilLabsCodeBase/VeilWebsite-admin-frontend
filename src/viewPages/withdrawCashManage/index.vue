@@ -2,8 +2,8 @@
     <div class="batchUpload">
         <div class="filter">
             <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
-                <el-form-item label="用户名">
-                    <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 100px" />
+                <el-form-item label="钱包地址">
+                    <el-input v-model="formValue.walletAddress" placeholder="钱包地址" clearable style="width: 140px" />
                 </el-form-item>
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
@@ -40,7 +40,8 @@
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
                         <el-table-column prop="id" label="id" min-width="70" fixed="left" show-overflow-tooltip />
-                        <el-table-column prop="username" label="用户名" min-width="120" fixed="left" show-overflow-tooltip />
+                        <el-table-column prop="userId" label="用户ID" min-width="90" fixed="left" show-overflow-tooltip />
+                        <el-table-column prop="walletAddress" label="钱包地址" min-width="180" fixed="left" show-overflow-tooltip />
                         <el-table-column prop="createdAt" label="申请时间" min-width="180" fixed="left" show-overflow-tooltip>
                             <template #default="{ row }">
                                 {{ formatDateTime(row.createdAt) }}
@@ -51,14 +52,14 @@
                                 {{ formatCrypto(row.amount) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="usdtBalanceBefore" label="提现前USDT" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="balanceBefore" label="提现前USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatCrypto(row.usdtBalanceBefore) }}
+                                {{ formatCrypto(row.balanceBefore) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="usdtBalanceAfter" label="提现后USDT" min-width="130" show-overflow-tooltip>
+                        <el-table-column prop="balanceAfter" label="提现后USDT" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatCrypto(row.usdtBalanceAfter) }}
+                                {{ formatCrypto(row.balanceAfter) }}
                             </template>
                         </el-table-column>
                         <el-table-column prop="address" label="提现地址" min-width="350" show-overflow-tooltip />
@@ -71,17 +72,15 @@
                                 <span v-else style="color: #909399;">-</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="fee" label="手续费" min-width="110" show-overflow-tooltip>
-                            <template #default="{ row }">
-                                {{ formatCrypto(row.fee) }}
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="actualTokenAmount" label="到账VEILX" min-width="130" show-overflow-tooltip>
                             <template #default="{ row }">
-                                {{ formatCrypto(row.actualTokenAmount) }}
+                                <span v-if="row.actualTokenAmount != null">
+                                    {{ formatCrypto(row.actualTokenAmount) }}
+                                </span>
+                                <span v-else style="color: #909399;">-</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="status" label="提现状态" min-width="125" show-overflow-tooltip>
+                        <el-table-column prop="status" label="提现状态" min-width="125" show-overflow-tooltip class-name="status-column">
                             <template #default="{ row }">
                                 <el-tag :type="getStatusType(row.status)">
                                     {{ status[row.status] }}
@@ -113,16 +112,16 @@
             <div class="audit-dialog-content" v-if="rowData">
                 <!-- 用户信息展示 -->
                 <el-descriptions :column="1" border class="user-info">
-                    <el-descriptions-item label="用户名">
-                        <span class="info-value">{{ rowData.username || '-' }}</span>
+                    <el-descriptions-item label="用户ID">
+                        <span class="info-value">{{ rowData.userId || '-' }}</span>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="钱包地址">
+                        <span class="info-value">{{ rowData.walletAddress || '-' }}</span>
                     </el-descriptions-item>
                     <el-descriptions-item label="到账金额">
                         <div class="amount-info">
-                            <span class="amount-token" v-if="rowData.actualTokenAmount">
-                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
-                            </span>
-                            <span v-else class="no-amount">
-                                {{ formatCrypto(rowData.actualAmount) || '-' }}
+                            <span class="amount-usdt">
+                                {{ formatCrypto(rowData.amount) }} U
                             </span>
                         </div>
                     </el-descriptions-item>
@@ -144,17 +143,11 @@
                 <el-form :model="auditForm" label-width="100px" class="audit-form">
                     <el-form-item label="审核状态" required>
                         <el-radio-group v-model="auditForm.status" class="status-radio-group">
-                            <el-radio value="APPROVAL" size="large">
-                                <span class="status-label">{{ status.APPROVAL }}</span>
-                            </el-radio>
                             <el-radio value="FAILED" size="large">
                                 <span class="status-label">{{ status.FAILED }}</span>
                             </el-radio>
                             <el-radio value="SUCCESSFULLY" size="large">
                                 <span class="status-label">{{ status.SUCCESSFULLY }}</span>
-                            </el-radio>
-                            <el-radio value="CANCELED" size="large">
-                                <span class="status-label">{{ status.CANCELED }}</span>
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
@@ -190,15 +183,13 @@
                     show-icon>
                 </el-alert>
                 <div class="confirm-info" v-if="rowData">
-                    <p><strong>用户名：</strong>{{ rowData.username }}</p>
+                    <p><strong>用户ID：</strong>{{ rowData.userId || '-' }}</p>
+                    <p><strong>钱包地址：</strong>{{ rowData.walletAddress || '-' }}</p>
                     <div class="confirm-amount-row">
                         <strong>到账金额：</strong>
                         <div class="confirm-amount-info">
-                            <span class="confirm-amount-token" v-if="rowData.actualTokenAmount">
-                                {{ formatCrypto(rowData.actualTokenAmount) }} VEILX
-                            </span>
-                            <span v-else>
-                                {{ formatCrypto(rowData.actualAmount) || '0.00' }}
+                            <span class="confirm-amount-usdt">
+                                {{ formatCrypto(rowData.amount) }} U
                             </span>
                         </div>
                     </div>
@@ -269,13 +260,13 @@
                     <div class="large-items-table">
                         <div class="large-tbl-header">
                             <span class="col-idx">#</span>
-                            <span class="col-user">用户名</span>
+                            <span class="col-user">钱包地址</span>
                             <span class="col-amount">金额</span>
                             <span class="col-addr">提现地址</span>
                         </div>
                         <div class="large-tbl-row" v-for="(item, index) in batchSummary.largeItems" :key="index">
                             <span class="col-idx"><i class="idx-badge">{{ index + 1 }}</i></span>
-                            <span class="col-user">{{ item.username }}</span>
+                            <span class="col-user">{{ truncateAddress(item.walletAddress) }}</span>
                             <span class="col-amount">{{ formatCrypto(item.amount) }}</span>
                             <span class="col-addr">
                                 <span class="addr-tag" :title="item.address" @click="copyAddress(item.address)">
@@ -423,17 +414,14 @@
     </div>
 </template>
 <script setup>
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { Loading, WarningFilled, SuccessFilled, CircleCloseFilled } from '@element-plus/icons-vue'
-import {
-    _SessionCache
-} from '@/utils/cache'
 import { reactive, ref, inject, onUnmounted } from 'vue'
-import { formatUsdt, formatToken, formatDateTime, formatCrypto } from '@/utils/format'
+import { formatDateTime, formatCrypto } from '@/utils/format'
 import { handleApiError } from '@/utils/request'
 const formValue = reactive({
     userId: "",
-    username: "",
+    walletAddress: "",
     status: "",
     txHash: "",
     address: "",
@@ -452,7 +440,7 @@ const auditForm = reactive({
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
-    auditForm.status = row?.status || ''
+    auditForm.status = ''
     auditForm.reason = ''
 }
 const _Api = inject('$api')
@@ -460,14 +448,35 @@ const pageSize = ref(8)
 const currentPage = ref(1)
 const loading = ref(false)
 
+const buildQueryPayload = (page) => {
+    const payload = {
+        pageNo: page,
+        pageSize: pageSize.value
+    }
+
+    if (formValue.userId) {
+        payload.userId = Number(formValue.userId)
+    }
+    if (formValue.walletAddress) {
+        payload.walletAddress = formValue.walletAddress.trim()
+    }
+    if (formValue.status) {
+        payload.status = formValue.status
+    }
+    if (formValue.txHash) {
+        payload.txHash = formValue.txHash.trim()
+    }
+    if (formValue.address) {
+        payload.address = formValue.address.trim()
+    }
+
+    return payload
+}
+
 const getTableData = async (page) => {
     loading.value = true
     try {
-        const res = await _Api._WithdrawList({
-            pageNo: page,
-            pageSize: pageSize.value,
-            ...formValue
-        })
+        const res = await _Api._WithdrawListV2(buildQueryPayload(page))
         if (res) {
             tableData.value = res
         }
@@ -532,8 +541,8 @@ const handConfirm = async () => {
     submitLoading.value = true
     confirmLoading.value = true
     try {
-        const res = await _Api._WithdrawAudit({
-            userWithdrawId: rowData.value.id,
+        const res = await _Api._WithdrawAuditV2({
+            withdrawId: rowData.value.id,
             status: auditForm.status,
             reason: auditForm.reason
         })
@@ -584,9 +593,9 @@ const truncateAddress = (address) => {
 
 // 获取确认弹框标题
 const getConfirmTitle = () => {
-    const username = rowData.value?.username || ''
+    const walletAddress = rowData.value?.walletAddress || ''
     const statusText = status[auditForm.status] || ''
-    return `确定要将用户 ${username} 的提现审核状态修改为"${statusText}"吗？`
+    return `确定要将用户 ${rowData.value?.userId || '-'}（${truncateAddress(walletAddress)}）的提现审核状态修改为"${statusText}"吗？`
 }
 const onSearch = () => {
     currentPage.value = 1
@@ -595,7 +604,7 @@ const onSearch = () => {
 
 const onReset = () => {
     formValue.userId = ""
-    formValue.username = ""
+    formValue.walletAddress = ""
     formValue.status = ""
     formValue.txHash = ""
     formValue.address = ""
@@ -621,7 +630,7 @@ let batchPollTimer = null
 const handleBatchAudit = async () => {
     batchSummaryLoading.value = true
     try {
-        const res = await _Api._BatchAuditPendingSummary()
+        const res = await _Api._BatchAuditPendingSummaryV2()
         if (!res || res.totalPendingCount === 0) {
             ElMessage.info('暂无待审核的提现记录')
             return
@@ -638,7 +647,7 @@ const handleBatchAudit = async () => {
 const handleBatchSubmit = async () => {
     batchSubmitLoading.value = true
     try {
-        const batchId = await _Api._BatchAuditSubmit()
+        const batchId = await _Api._BatchAuditSubmitV2()
         if (!batchId) {
             ElMessage.error('批量审核提交失败')
             return
@@ -677,7 +686,7 @@ const pollBatchStatus = (batchId) => {
         }
         batchPolling = true
         try {
-            const res = await _Api._BatchAuditStatus(batchId)
+            const res = await _Api._BatchAuditStatusV2(batchId)
             if (!res) return
 
             if (res.status === 'COMPLETED') {
@@ -923,15 +932,9 @@ onUnmounted(() => {
     }
 
     // 提现状态列样式，确保内容完整显示
-    :deep(.el-table__body-wrapper) {
-        .el-table__body {
-            td:nth-child(9) {
-                .cell {
-                    overflow: visible !important;
-                    white-space: nowrap !important;
-                }
-            }
-        }
+    :deep(.status-column .cell) {
+        overflow: visible !important;
+        white-space: nowrap !important;
     }
 
     .confirm-dialog-content {
@@ -968,6 +971,15 @@ onUnmounted(() => {
 
             .confirm-amount-info {
                 display: inline-block;
+
+                .confirm-amount-usdt {
+                    color: #409EFF;
+                    font-weight: 600;
+                    font-size: 16px;
+                    padding: 4px 8px;
+                    background: #f0f7ff;
+                    border-radius: 4px;
+                }
 
                 .confirm-amount-token {
                     color: #67C23A;

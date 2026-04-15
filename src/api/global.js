@@ -20,6 +20,11 @@ export const _executeDailyRewardCalculation = (params) => {
 export const _getTaskLogs = data => _Request('/admin/deposit/daily-reward-calculation/logs', data, 'get') //查询任务执行日志列表
 export const _WithdrawList = data => _Request('/withdraw/list', data) //提现记录
 export const _WithdrawAudit = data => _Request('/admin/withdraw/audit', data) //审查
+export const _WithdrawListV2 = data => _Request('/admin/v2/withdraw/list', data) // v2 提现记录
+export const _WithdrawAuditV2 = data => _Request('/admin/v2/withdraw/audit', data) // v2 提现审核
+export const _BatchAuditPendingSummaryV2 = () => _Request('/admin/v2/withdraw/batch-audit/pending-summary', {}, 'get') // v2 批量审核待处理汇总
+export const _BatchAuditSubmitV2 = () => _Request('/admin/v2/withdraw/batch-audit/submit', {}) // v2 批量审核提交
+export const _BatchAuditStatusV2 = batchId => _Request('/admin/v2/withdraw/batch-audit/status/' + batchId, {}, 'get') // v2 批量审核轮询状态
 export const _UserModellingTree = data => _Request('/admin/user/modellingTree', data,'get') //获取经济模型树
 export const _userListV2 = data => _Request('/admin/v2/user/list', data) // v2 用户列表
 export const _userModelTreeV2 = data => _Request('/admin/v2/user/model-tree', data, 'get') // v2 经济模型树
@@ -79,6 +84,11 @@ export const _GlobalApi = {
     _getTaskLogs,
     _WithdrawList,
     _WithdrawAudit,
+    _WithdrawListV2,
+    _WithdrawAuditV2,
+    _BatchAuditPendingSummaryV2,
+    _BatchAuditSubmitV2,
+    _BatchAuditStatusV2,
     _UserModellingTree,
     _userListV2,
     _userModelTreeV2,
