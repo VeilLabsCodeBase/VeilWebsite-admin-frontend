@@ -35,8 +35,10 @@ export const _Request = async (url, param, method = 'post') => {
             return data || true
         } else if (res?.code == 401) {
             router.push('/login')
+            return Promise.reject(_CreateBusinessError(res))
         } else {
-            _ErrorMethod(res?.message)
+            const hasShownMessage = _ErrorMethod(res?.message)
+            return Promise.reject(_CreateBusinessError(res, { messageShown: hasShownMessage }))
         }
     } catch (error) {
         console.log(error);
@@ -48,8 +50,7 @@ export const _Request = async (url, param, method = 'post') => {
         // 其他错误，如果有 message 则显示，并标记已处理（因为 _Request 已经处理了）
         const errorMessage = error?.response?.data?.message
         if (errorMessage) {
-            error._handledByBusiness = true
-            _ErrorMethod(errorMessage)
+            error._messageShown = _ErrorMethod(errorMessage)
         }
         return Promise.reject(error)
     }
@@ -97,7 +98,19 @@ const _ErrorMethod = res => {
     // 只有当错误消息存在且不为空时才显示
     if (res && typeof res === 'string' && res.trim() !== '') {
         ElMessage.error(res)
+        return true
     }
+    return false
+}
+
+const _CreateBusinessError = (response, options = {}) => {
+    const error = new Error(response?.message || '操作失败，请稍后重试')
+    error.code = response?.code
+    error.response = {
+        data: response
+    }
+    error._messageShown = Boolean(options.messageShown)
+    return error
 }
 
 /**
@@ -107,6 +120,9 @@ const _ErrorMethod = res => {
  * @param {string} defaultMessage - 业务自定义错误消息（可选，作为兜底）
  */
 export const handleApiError = (error, defaultMessage = null) => {
+    if (error?._messageShown) {
+        return
+    }
     // 标记业务层已经处理了这个错误，拦截器将不再显示
     error._handledByBusiness = true
     

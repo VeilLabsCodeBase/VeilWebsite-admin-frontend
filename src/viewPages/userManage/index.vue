@@ -309,8 +309,8 @@
                 确认对用户 {{ currentRow.userId }}（{{ shortenAddress(currentRow.walletAddress) }}）执行“{{ actionDialogTitle }}”操作？
             </div>
             <template #footer>
-                <el-button @click="closeActionDialog">取消</el-button>
-                <el-button :type="actionConfirmType" @click="submitActionDialog">确定</el-button>
+                <el-button :disabled="actionDialogLoading" @click="closeActionDialog">取消</el-button>
+                <el-button :type="actionConfirmType" :loading="actionDialogLoading" @click="submitActionDialog">确定</el-button>
             </template>
         </el-dialog>
 
@@ -468,6 +468,7 @@ const assetPackageForm = reactive({
 
 const actionDialogVisible = ref(false)
 const actionDialogType = ref('')
+const actionDialogLoading = ref(false)
 
 const teamDialogVisible = ref(false)
 const teamLoading = ref(false)
@@ -651,12 +652,14 @@ const openActionDialog = (type, row) => {
 const closeActionDialog = () => {
     actionDialogVisible.value = false
     actionDialogType.value = ''
+    actionDialogLoading.value = false
 }
 
 const submitActionDialog = async () => {
-    if (!currentRow.value || !actionDialogType.value) {
+    if (!currentRow.value || !actionDialogType.value || actionDialogLoading.value) {
         return
     }
+    actionDialogLoading.value = true
     try {
         await _Api[actionApiMap[actionDialogType.value]]({
             userId: currentRow.value.userId
@@ -666,6 +669,8 @@ const submitActionDialog = async () => {
         fetchTableData()
     } catch (error) {
         handleApiError(error, `${actionDialogTitleMap[actionDialogType.value]}失败`)
+    } finally {
+        actionDialogLoading.value = false
     }
 }
 
