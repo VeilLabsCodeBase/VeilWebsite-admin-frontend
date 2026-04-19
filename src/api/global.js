@@ -52,6 +52,8 @@ export const _FeeDividendPoolOperationLogs = data => _Request('/admin/fee-divide
 export const _BatchAuditPendingSummary = () => _Request('/admin/withdraw/batch-audit/pending-summary', {}, 'get') //批量审核待处理汇总
 export const _BatchAuditSubmit = () => _Request('/admin/withdraw/batch-audit/submit', {}) //批量审核提交
 export const _BatchAuditStatus = batchId => _Request('/admin/withdraw/batch-audit/status/' + batchId, {}, 'get') //批量审核轮询状态
+export const _WithdrawAutoAuditConfig = () => _Request('/admin/withdraw/auto-audit-config', {}, 'get') //提现自动审核配置
+export const _WithdrawAutoAuditConfigUpdate = data => _Request('/admin/withdraw/auto-audit-config', data) //更新提现自动审核配置
 
 // 积分价格管理
 export const _TokenPointPriceCreate = data => _Request('/admin/token-point-price/create', data) //设置新积分价格
@@ -108,6 +110,8 @@ export const _GlobalApi = {
     _BatchAuditPendingSummary,
     _BatchAuditSubmit,
     _BatchAuditStatus,
+    _WithdrawAutoAuditConfig,
+    _WithdrawAutoAuditConfigUpdate,
     _TokenPointPriceCreate,
     _TokenPointPriceCurrent,
     _TokenPointPriceHistory,

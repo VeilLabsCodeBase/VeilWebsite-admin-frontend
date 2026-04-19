@@ -29,6 +29,66 @@
                 </el-form-item>
             </el-form>
         </div>
+        <div class="auto-audit-panel" v-loading="autoAuditLoading">
+            <div class="panel-top">
+                <div class="panel-title-wrap">
+                    <div class="panel-title">自动审核配置</div>
+                    <div class="panel-subtitle">小额提现自动到账，提现记录照常保留</div>
+                </div>
+                <div class="panel-actions">
+                    <el-tag :type="autoAuditForm.enabled ? 'success' : 'info'" effect="light" round>
+                        {{ autoAuditForm.enabled ? '已开启' : '已关闭' }}
+                    </el-tag>
+                    <el-button
+                        type="primary"
+                        class="save-btn"
+                        :loading="autoAuditSaving"
+                        @click="saveAutoAuditConfig"
+                    >
+                        保存配置
+                    </el-button>
+                </div>
+            </div>
+
+            <div class="panel-content">
+                <div class="compact-metric-card">
+                    <span class="metric-label">当前阈值</span>
+                    <div class="metric-inline">
+                        <span class="metric-value">{{ formatCrypto(autoAuditForm.threshold || 0) }}</span>
+                        <span class="metric-unit">USDT</span>
+                    </div>
+                </div>
+
+                <div class="config-inline-item switch-item">
+                    <span class="inline-label">自动审核</span>
+                    <el-switch v-model="autoAuditForm.enabled" />
+                    <span class="inline-desc">
+                        {{ autoAuditForm.enabled ? '命中阈值自动到账' : '全部走人工审核' }}
+                    </span>
+                </div>
+
+                <div class="config-inline-item threshold-item">
+                    <span class="inline-label">阈值额度</span>
+                    <el-input
+                        v-model="autoAuditForm.threshold"
+                        placeholder="请输入自动审核阈值"
+                        clearable
+                        style="width: 180px"
+                    >
+                        <template #append>USDT</template>
+                    </el-input>
+                    <el-button text type="primary" @click="resetAutoAuditThreshold">恢复默认 200</el-button>
+                </div>
+
+                <div class="config-inline-item summary-item">
+                    <span class="inline-label">当前规则</span>
+                    <div class="summary-rule">
+                        <span class="status-dot" :class="{ enabled: autoAuditForm.enabled }"></span>
+                        <span>{{ autoAuditForm.enabled ? `单笔 <= ${formatCrypto(autoAuditForm.threshold || 0)} USDT 自动审核` : '自动审核关闭' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="uploadList">
             <div class="taskUploadList">
                 <div class="title">
@@ -442,8 +502,15 @@ const dialogVisible = ref(false)
 const confirmDialogVisible = ref(false)
 const confirmLoading = ref(false)
 const submitLoading = ref(false)
+const autoAuditLoading = ref(false)
+const autoAuditSaving = ref(false)
 const tableData = ref()
 const rowData = ref(null)
+const DEFAULT_AUTO_AUDIT_THRESHOLD = '200'
+const autoAuditForm = reactive({
+    enabled: false,
+    threshold: DEFAULT_AUTO_AUDIT_THRESHOLD
+})
 const auditForm = reactive({
     status: '',
     reason: ''
@@ -479,6 +546,62 @@ const getTableData = async (page) => {
     }
 }
 getTableData(currentPage.value)
+
+const normalizeThreshold = value => {
+    const str = String(value ?? '').trim()
+    if (!str) return ''
+    if (!/^\d+(\.\d+)?$/.test(str)) return ''
+    const num = Number(str)
+    if (!Number.isFinite(num) || num <= 0) return ''
+    return str
+}
+
+const fetchAutoAuditConfig = async () => {
+    autoAuditLoading.value = true
+    try {
+        const res = await _Api._WithdrawAutoAuditConfig()
+        if (res) {
+            autoAuditForm.enabled = !!res.enabled
+            autoAuditForm.threshold = String(res.threshold ?? DEFAULT_AUTO_AUDIT_THRESHOLD)
+        }
+    } catch (error) {
+        handleApiError(error, '获取自动审核配置失败')
+    } finally {
+        autoAuditLoading.value = false
+    }
+}
+
+fetchAutoAuditConfig()
+
+const resetAutoAuditThreshold = () => {
+    autoAuditForm.threshold = DEFAULT_AUTO_AUDIT_THRESHOLD
+}
+
+const saveAutoAuditConfig = async () => {
+    const normalizedThreshold = normalizeThreshold(autoAuditForm.threshold)
+    if (!normalizedThreshold) {
+        ElMessage.warning('请输入大于0的自动审核阈值')
+        return
+    }
+
+    autoAuditSaving.value = true
+    try {
+        const res = await _Api._WithdrawAutoAuditConfigUpdate({
+            enabled: autoAuditForm.enabled,
+            threshold: normalizedThreshold
+        })
+        if (res) {
+            autoAuditForm.enabled = !!res.enabled
+            autoAuditForm.threshold = String(res.threshold ?? normalizedThreshold)
+            ElMessage.success('自动审核配置已保存')
+        }
+    } catch (error) {
+        handleApiError(error, '保存自动审核配置失败')
+    } finally {
+        autoAuditSaving.value = false
+    }
+}
+
 const handleSizeChange = (val) => {
     pageSize.value = val;
     getTableData(currentPage.value)
@@ -731,6 +854,178 @@ onUnmounted(() => {
         }
     }
 
+    .auto-audit-panel {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid #e7edf5;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        box-shadow: 0 6px 16px rgba(80, 116, 180, 0.05);
+
+        .panel-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #22304a;
+            line-height: 1.2;
+        }
+
+        .panel-subtitle {
+            margin-top: 2px;
+            font-size: 11px;
+            color: #7d8ca3;
+            line-height: 1.35;
+        }
+
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .panel-content {
+            display: grid;
+            grid-template-columns: 170px minmax(180px, 0.95fr) minmax(220px, 1fr) minmax(220px, 1fr);
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .compact-metric-card,
+        .config-inline-item {
+            min-height: 56px;
+            border-radius: 10px;
+            border: 1px solid #e9eef5;
+            background: #fff;
+            padding: 8px 10px;
+        }
+
+        .compact-metric-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(135deg, #2383ff 0%, #57b1ff 100%);
+            color: #fff;
+
+            .metric-label {
+                font-size: 11px;
+                opacity: 0.8;
+            }
+
+            .metric-inline {
+                display: flex;
+                align-items: baseline;
+                gap: 5px;
+                margin-top: 4px;
+            }
+
+            .metric-value {
+                font-size: 20px;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .metric-unit {
+                font-size: 11px;
+                opacity: 0.9;
+            }
+        }
+
+        .config-inline-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .inline-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7d8ca3;
+            line-height: 1.1;
+        }
+
+        .inline-desc {
+            font-size: 11px;
+            color: #5b6b82;
+            line-height: 1.3;
+        }
+
+        .switch-item {
+            align-items: flex-start;
+
+            .inline-desc {
+                margin-top: 0;
+            }
+        }
+
+        .threshold-item {
+            justify-content: space-between;
+        }
+
+        .summary-item {
+            background: radial-gradient(circle at top right, rgba(64, 158, 255, 0.14), transparent 42%), #ffffff;
+        }
+
+        .summary-rule {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #405066;
+            line-height: 1.35;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #c0c4cc;
+            box-shadow: 0 0 0 3px rgba(192, 196, 204, 0.18);
+            flex-shrink: 0;
+
+            &.enabled {
+                background: #67c23a;
+                box-shadow: 0 0 0 3px rgba(103, 194, 58, 0.14);
+            }
+        }
+
+        .save-btn {
+            min-width: 88px;
+            height: 30px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 1500px) {
+            .panel-content {
+                grid-template-columns: repeat(2, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 980px) {
+            .panel-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .panel-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .panel-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+
     .add {
         height: 0.32rem;
     }
@@ -782,6 +1077,8 @@ onUnmounted(() => {
                 display: flex;
                 justify-content: center;
                 width: 100%;
+                padding: 16px 0 22px;
+                margin-top: 6px;
             }
         }
     }
