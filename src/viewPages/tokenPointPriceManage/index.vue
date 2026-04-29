@@ -38,7 +38,8 @@
       <div class="stat-card">
         <div class="stat-card__label"><span class="dot dot--purple"></span>较上次变化</div>
         <div v-if="priceChange !== null" class="stat-card__change" :class="priceChange >= 0 ? 'up':'down'">
-          {{ priceChange >= 0 ? '▲' : '▼' }} {{ Math.abs(priceChange).toFixed(8) }}<span class="stat-unit">USDT</span>
+          <el-icon><CaretTop v-if="priceChange >= 0" /><CaretBottom v-else /></el-icon>
+          {{ Math.abs(priceChange).toFixed(8) }}<span class="stat-unit">USDT</span>
         </div>
         <div class="stat-card__price stat--empty" v-else>首次设置</div>
         <div class="stat-card__meta" :class="priceChange === null ? '' : (priceChange >= 0 ? 'up':'down')">
@@ -89,18 +90,18 @@
           v-for="(row, idx) in historyList"
           :key="row.id"
           class="price-table__row"
-          :class="idx === 0 ? 'row--live' : ''"
+          :class="(historyPageNo === 1 && idx === 0) ? 'row--live' : ''"
         >
           <div class="col-no">{{ (historyPageNo - 1) * historyPageSize + idx + 1 }}</div>
           <div class="col-price">
-            <span class="price-val" :class="idx === 0 ? 'price-val--live' : ''">
+            <span class="price-val" :class="(historyPageNo === 1 && idx === 0) ? 'price-val--live' : ''">
               {{ formatPrice(row.price) }}
             </span>
           </div>
           <div class="col-time">{{ formatDT(row.createdAt) }}</div>
           <div class="col-remark" :title="row.remark">{{ row.remark || '—' }}</div>
           <div class="col-status">
-            <span v-if="idx === 0" class="status-badge status-badge--live">
+            <span v-if="historyPageNo === 1 && idx === 0" class="status-badge status-badge--live">
               <span class="status-dot"></span>生效中
             </span>
             <span v-else class="status-badge status-badge--old">历史</span>
@@ -130,127 +131,151 @@
     <el-dialog
       v-model="setVisible"
       :show-close="false"
-      width="420px"
+      width="400px"
       :close-on-click-modal="false"
-      class="set-dialog"
+      class="modern-dialog set-dialog"
       append-to-body
     >
-      <template #header>
-        <div class="pd-head">
-          <div class="pd-head__intro">
-            <span class="pd-head__eyebrow">价格设置</span>
-            <span class="pd-head__title">设置积分价格</span>
-            <span class="pd-head__desc">更新后立即生效，并保留完整历史记录。</span>
+      <div class="dialog-shell">
+        <div class="dialog-header">
+          <div class="header-icon">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+              <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            </svg>
           </div>
-          <button class="pd-head__close" type="button" @click="setVisible=false" aria-label="关闭">
+          <div class="header-content">
+            <h3 class="header-title">价格设置</h3>
+            <p class="header-desc">更新后立即生效，保留历史记录</p>
+          </div>
+          <button class="header-close" @click="setVisible=false">
             <el-icon><Close /></el-icon>
           </button>
         </div>
-      </template>
 
-      <div class="pd-body">
-        <div class="pd-panel pd-panel--highlight">
-          <div class="pd-panel__meta">
-            <span class="pd-panel__label">当前生效价格</span>
-            <span class="pd-panel__value" :class="{ 'pd-panel__value--empty': !currentPrice }">
+        <div class="dialog-body">
+          <!-- 当前价格卡片 -->
+          <div class="current-price-card">
+            <div class="card-label">当前生效价格</div>
+            <div class="card-value" :class="{ 'is-empty': !currentPrice }">
               {{ currentPreviewPrice }}
-            </span>
-          </div>
-          <div class="pd-panel__hint">当前价格仅作对照，新价格以输入内容为准。</div>
-        </div>
-
-        <div class="pd-field">
-          <label class="pd-label">积分单价 <em>*</em><span class="pd-label-sub">输入 1 积分对应的 USDT 价格</span></label>
-          <div class="pd-price-card" :class="{ 'pd-price-card--focus': priceFocus, 'pd-price-card--error': priceErr }">
-            <div class="pd-price-top">
-              <span class="pd-price-top__tag">新价格</span>
-              <span class="pd-price-top__note">最多 8 位小数</span>
             </div>
-            <div class="pd-price-row">
-              <input
-                v-model="setForm.price"
-                class="pd-price-input"
-                placeholder="0.00000000"
-                type="text"
-                inputmode="decimal"
-                @input="onPriceInput"
-                @focus="priceFocus=true"
-                @blur="onPriceBlur"
-              />
-              <span class="pd-price-unit">USDT / 积分</span>
+            <div class="card-bg-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              </svg>
             </div>
           </div>
-          <p class="pd-err" v-if="priceErr">{{ priceErr }}</p>
-          <p class="pd-hint" v-else-if="validPriceNum">
-            生效后前台将按 <strong>{{ validPriceNum }}</strong> USDT / 积分进行展示
-          </p>
-        </div>
 
-        <div class="pd-field">
-          <label class="pd-label">备注说明 <span class="pd-label-opt">选填</span></label>
-          <div class="pd-remark-wrap">
-            <textarea
-              v-model="setForm.remark"
-              class="pd-remark"
-              placeholder="记录本次调价背景，例如活动策略调整..."
-              maxlength="100"
-              rows="2"
-            ></textarea>
-            <p class="pd-char">{{ setForm.remark.length }}/100</p>
+          <!-- 输入区域 -->
+          <div class="input-section">
+            <div class="field-group">
+              <div class="field-header">
+                <label class="field-label">积分单价 <span class="required">*</span></label>
+                <span class="field-tip">最多 8 位小数</span>
+              </div>
+              <div class="price-input-wrapper" :class="{ 'is-focus': priceFocus, 'is-error': priceErr }">
+                <div class="input-prefix">
+                  <span class="currency-tag">USDT</span>
+                </div>
+                <input
+                  v-model="setForm.price"
+                  class="price-main-input"
+                  placeholder="0.00000000"
+                  type="text"
+                  inputmode="decimal"
+                  @input="onPriceInput"
+                  @focus="priceFocus=true"
+                  @blur="onPriceBlur"
+                />
+                <div class="input-suffix">/ 积分</div>
+              </div>
+              <Transition name="fade-slide">
+                <div class="msg-container">
+                  <p class="error-msg" v-if="priceErr">{{ priceErr }}</p>
+                  <p class="helper-msg" v-else-if="validPriceNum && currentPrice">
+                    <span class="change-preview" :class="priceDiff >= 0 ? 'is-up' : 'is-down'">
+                      <el-icon><CaretTop v-if="priceDiff >= 0" /><CaretBottom v-else /></el-icon>
+                      较当前价格 {{ priceDiff >= 0 ? '上浮' : '下降' }} 
+                      <strong>{{ Math.abs(priceDiff).toFixed(8) }}</strong> USDT
+                    </span>
+                  </p>
+                </div>
+              </Transition>
+            </div>
+
+            <div class="field-group no-margin">
+              <div class="field-header">
+                <label class="field-label">备注说明</label>
+                <span class="field-tip">{{ setForm.remark.length }}/100</span>
+              </div>
+              <div class="remark-input-wrapper">
+                <textarea
+                  v-model="setForm.remark"
+                  class="remark-textarea"
+                  placeholder="记录本次调价背景..."
+                  maxlength="100"
+                  rows="2"
+                ></textarea>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <template #footer>
-        <div class="pd-foot">
-          <button class="pd-btn pd-btn--cancel" @click="setVisible=false">取消</button>
-          <button class="pd-btn pd-btn--ok" :disabled="!isPriceValid" @click="preConfirm">
-            下一步
+        <div class="dialog-footer">
+          <button class="btn-modern btn-secondary" @click="setVisible=false">取消</button>
+          <button class="btn-modern btn-primary" :disabled="!isPriceValid" @click="preConfirm">
+            <span>下一步</span>
+            <el-icon class="btn-icon"><ArrowRight /></el-icon>
           </button>
         </div>
-      </template>
+      </div>
     </el-dialog>
 
-    <!-- 二次确认弹框（替换 ElMessageBox，完全自定义样式） -->
+    <!-- 二次确认弹框 -->
     <el-dialog
       v-model="confirmVisible"
       :show-close="false"
-      width="380px"
+      width="400px"
       :close-on-click-modal="false"
-      class="confirm-dialog"
+      class="modern-dialog confirm-dialog"
       append-to-body
     >
-      <div class="cd-shell">
-        <div class="cd-body">
-          <div class="cd-icon-wrap">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 21h20L12 2z" fill="#3b82f6" opacity=".12"/>
-              <path d="M12 2L2 21h20L12 2z" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round"/>
-              <path d="M12 8.8v5.4M12 17.1v.5" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+      <div class="dialog-shell">
+        <div class="confirm-content">
+          <div class="confirm-status-icon">
+            <div class="pulse-ring"></div>
+            <svg viewBox="0 0 24 24" fill="none" class="w-8 h-8 text-blue-500">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 8V12L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
-          <p class="cd-kicker">确认变更</p>
-          <p class="cd-title">确认设置新价格？</p>
-          <p class="cd-desc">设置后立即全局生效，历史记录会保留。</p>
+          
+          <h3 class="confirm-title">确认变更价格？</h3>
+          <p class="confirm-desc">变更将立即同步至全站，请确保输入的价格准确无误。</p>
 
-          <div class="cd-price-show">
-            <span class="cd-price-label">新价格</span>
-            <div class="cd-price-main">
-              <span class="cd-price-val">{{ setForm.price || '0.00000000' }}</span>
-              <span class="cd-price-unit">USDT / 积分</span>
+          <div class="confirm-preview-box">
+            <div class="preview-item">
+              <span class="preview-label">变更后价格</span>
+              <div class="preview-value">
+                <span class="val">{{ setForm.price || '0.00000000' }}</span>
+                <span class="unit">USDT / 积分</span>
+              </div>
             </div>
           </div>
 
-          <div class="cd-note">
-            <span class="cd-note__dot"></span>
-            <span>请确认价格无误，再执行生效。</span>
+          <div class="confirm-warning">
+            <el-icon class="warn-icon"><Warning /></el-icon>
+            <span>此操作不可撤销，但会保留历史记录。</span>
           </div>
         </div>
-        <div class="cd-foot">
-          <button class="pd-btn pd-btn--cancel" @click="confirmVisible=false">返回修改</button>
-          <button class="pd-btn pd-btn--ok" :disabled="setLoading" @click="doSet">
-            <span v-if="!setLoading">立即生效</span>
-            <span v-else>设置中…</span>
+
+        <div class="dialog-footer is-confirm">
+          <button class="btn-modern btn-secondary" @click="confirmVisible=false">返回修改</button>
+          <button class="btn-modern btn-primary is-danger" :disabled="setLoading" @click="doSet">
+            <el-icon v-if="setLoading" class="is-loading"><Loading /></el-icon>
+            <span>{{ setLoading ? '提交中...' : '确认生效' }}</span>
           </button>
         </div>
       </div>
@@ -262,7 +287,7 @@
 <script setup>
 import { ref, reactive, computed, inject, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Close } from '@element-plus/icons-vue'
+import { Plus, Close, ArrowRight, Warning, Loading, CaretTop, CaretBottom } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { handleApiError } from '@/utils/request'
 
@@ -288,6 +313,12 @@ const setLoading     = ref(false)
 const setForm        = reactive({ price:'', remark:'' })
 const priceFocus     = ref(false)
 const priceErr       = ref('')
+
+// 计算与当前价格的差值
+const priceDiff = computed(() => {
+  if (!setForm.price || !currentPrice.value?.price) return 0
+  return parseFloat(setForm.price) - parseFloat(currentPrice.value.price)
+})
 
 // 实时校验并计算换算值
 const validPriceNum = computed(() => {
@@ -639,9 +670,16 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  line-height: 1;
 }
-.dot { display:inline-block; width:7px; height:7px; border-radius:50%; }
+.dot { 
+  display: inline-block; 
+  width: 7px; 
+  height: 7px; 
+  border-radius: 50%; 
+  flex-shrink: 0;
+}
 .dot--green  { background:#22c55e; box-shadow:0 0 5px #22c55e; animation:blink 2s infinite; }
 .dot--blue   { background:#0ea5e9; }
 .dot--purple { background:#7c3aed; }
@@ -654,9 +692,10 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   font-family: 'JetBrains Mono','Menlo','Courier New',monospace;
   letter-spacing: .5px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
   flex-wrap: wrap;
+  margin-top: 4px;
 }
 .stat-card__count {
   font-size: 28px;
@@ -664,22 +703,27 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   color: #0ea5e9;
   font-family: 'JetBrains Mono',monospace;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
+  margin-top: 4px;
 }
 .stat-card__change {
   font-size: 18px;
   font-weight: 700;
   font-family: 'JetBrains Mono',monospace;
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: center;
+  gap: 4px;
   flex-wrap: wrap;
+  margin-top: 4px;
+}
+.stat-card__change .el-icon {
+  font-size: 16px;
 }
 .stat-unit { font-size: 12px; color: #9ca3af; font-weight: 400; }
 .stat--empty { color: #d1d5db; font-size: 16px; font-style: italic; font-weight: 400; }
-.up   { color: #16a34a; }
-.down { color: #dc2626; }
+.up   { color: #22c55e; }
+.down { color: #ef4444; }
 
 .stat-card__meta {
   font-size: 12px;
@@ -855,402 +899,479 @@ onUnmounted(() => { ro?.disconnect(); eChart?.dispose() })
   padding: 0 8px;
 }
 
-/* ── 设置价格弹窗 ── */
-:deep(.set-dialog .el-overlay),
-:deep(.confirm-dialog .el-overlay) {
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(4px);
+/* ── 现代弹窗重构 (Modern Dialog Styles) ── */
+:deep(.modern-dialog) {
+  --dialog-bg: #ffffff;
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #f8fafc;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --error-color: #ef4444;
 }
-:deep(.set-dialog .el-dialog),
-:deep(.confirm-dialog .el-dialog) {
-  border-radius: 28px !important;
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow:
-    0 18px 48px rgba(15, 23, 42, 0.1),
-    0 2px 10px rgba(59, 130, 246, 0.04) !important;
-}
-:deep(.set-dialog .el-dialog__header),
-:deep(.confirm-dialog .el-dialog__header) { padding: 0 !important; }
-:deep(.set-dialog .el-dialog__body),
-:deep(.confirm-dialog .el-dialog__body) { padding: 0 !important; }
-:deep(.set-dialog .el-dialog__footer),
-:deep(.confirm-dialog .el-dialog__footer) { padding: 0 !important; }
 
-.pd-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid #eef2f7;
+:deep(.modern-dialog .el-overlay) {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px);
 }
-.pd-head__intro {
+
+:deep(.modern-dialog .el-dialog) {
+  border-radius: 24px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--dialog-bg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  padding: 0 !important;
+}
+
+:deep(.modern-dialog .el-dialog__header),
+:deep(.modern-dialog .el-dialog__body),
+:deep(.modern-dialog .el-dialog__footer) {
+  padding: 0 !important;
+}
+
+.dialog-shell {
   display: flex;
   flex-direction: column;
-  gap: 3px;
 }
-.pd-head__eyebrow {
-  font-size: 10px;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  color: #3b82f6;
-  font-weight: 700;
+
+/* Header */
+.dialog-header {
+  padding: 24px 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
 }
-.pd-head__title {
+
+.header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.header-title {
   font-size: 18px;
-  line-height: 1.2;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
+  margin: 0 0 4px;
 }
-.pd-head__desc {
-  font-size: 12px;
-  line-height: 1.5;
-  color: #64748b;
+
+.header-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
 }
-.pd-head__close {
+
+.header-close {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid #dbe3ef;
-  background: #f8fafc;
-  color: #64748b;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .18s ease;
-  flex-shrink: 0;
-}
-.pd-head__close:hover {
-  color: #2563eb;
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  transition: all 0.2s;
 }
 
-.pd-body {
-  padding: 12px 18px 4px;
+.header-close:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
 }
-.pd-panel {
-  border-radius: 22px;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
-  padding: 10px 12px;
-  margin-bottom: 12px;
+
+/* Body */
+.dialog-body {
+  padding: 20px 24px;
 }
-.pd-panel__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+
+.current-price-card {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: white;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.25);
 }
-.pd-panel__label {
+
+.card-label {
   font-size: 11px;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: #2563eb;
-  font-weight: 700;
-}
-.pd-panel__value {
-  font-size: 16px;
-  line-height: 1.3;
-  color: #0f172a;
-  font-weight: 700;
-  font-family: 'JetBrains Mono','Menlo','Courier New',monospace;
-}
-.pd-panel__value--empty {
-  color: #94a3b8;
-  font-family: inherit;
-}
-.pd-panel__hint {
-  margin-top: 4px;
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.pd-field { margin-bottom: 12px; }
-.pd-label {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 13px;
   font-weight: 600;
-  color: #334155;
-  margin-bottom: 8px;
-}
-.pd-label em { color: #ef4444; font-style: normal; }
-.pd-label-sub,
-.pd-label-opt {
-  font-size: 11px;
-  color: #64748b;
-  font-weight: 400;
-}
-.pd-label-sub { margin-left: 6px; }
-
-.pd-price-card {
-  border-radius: 22px;
-  border: 1px solid #dbe3ef;
-  background: #ffffff;
-  padding: 10px 12px;
-  transition: all .18s ease;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
-}
-.pd-price-card--focus {
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
-}
-.pd-price-card--error {
-  border-color: #fca5a5;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
-}
-.pd-price-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
   margin-bottom: 6px;
 }
-.pd-price-top__tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  color: #2563eb;
-  font-size: 10px;
-  font-weight: 600;
-}
-.pd-price-top__note {
-  color: #94a3b8;
-  font-size: 11px;
-}
-.pd-price-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.pd-price-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 0;
-  font-size: 20px;
-  line-height: 1.1;
+
+.card-value {
+  font-size: 18px;
   font-weight: 700;
-  font-family: 'JetBrains Mono','Menlo',monospace;
-  color: #0f172a;
-  background: transparent;
-  width: 0;
-}
-.pd-price-input::placeholder {
-  color: #cbd5e1;
-  font-weight: 500;
-  font-size: 20px;
-}
-.pd-price-unit {
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .4px;
-  color: #64748b;
-  white-space: nowrap;
-}
-.pd-err {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #ef4444;
-}
-.pd-hint {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.45;
-}
-.pd-hint strong {
-  font-family: 'JetBrains Mono','Menlo',monospace;
-  color: #2563eb;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-.pd-remark-wrap {
-  border-radius: 22px;
-  border: 1px solid #dbe3ef;
+.card-value.is-empty {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.card-bg-icon {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  width: 64px;
+  height: 64px;
+  opacity: 0.1;
+  transform: rotate(-15deg);
+}
+
+/* Form Fields */
+.field-group {
+  margin-bottom: 16px;
+}
+.field-group.no-margin {
+  margin-bottom: 0;
+}
+
+.field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.required {
+  color: var(--error-color);
+  margin-left: 2px;
+}
+
+.field-tip {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 2px 12px;
+  transition: all 0.2s;
+}
+
+.price-input-wrapper.is-focus {
   background: #ffffff;
-  padding: 9px 12px 7px;
-  transition: border-color .18s ease, box-shadow .18s ease;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
-.pd-remark-wrap:focus-within {
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+
+.price-input-wrapper.is-error {
+  border-color: var(--error-color);
+  background: #fffafa;
 }
-.pd-remark {
+
+.currency-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: #eff6ff;
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.price-main-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 10px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: #2563eb !important;
+  outline: none;
+  width: 100%;
+}
+
+.price-main-input::placeholder {
+  color: #cbd5e1;
+}
+
+.input-suffix {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.msg-container {
+  min-height: 20px;
+}
+
+.error-msg {
+  color: var(--error-color);
+  font-size: 11px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.helper-msg {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.helper-msg .highlight {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.change-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+.change-preview.is-up { color: #22c55e; }
+.change-preview.is-down { color: #ef4444; }
+.change-preview strong { font-family: 'JetBrains Mono', monospace; }
+
+.remark-input-wrapper {
+  background: #f8fafc;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 10px;
+  transition: all 0.2s;
+}
+
+.remark-input-wrapper:focus-within {
+  background: #ffffff;
+  border-color: var(--primary-color);
+}
+
+.remark-textarea {
   width: 100%;
   border: none;
   background: transparent;
-  padding: 0;
-  font-size: 13px;
-  color: #334155;
   resize: none;
+  font-size: 13px;
+  color: var(--text-main);
   outline: none;
-  font-family: inherit;
-  box-sizing: border-box;
   line-height: 1.5;
-  min-height: 52px;
-}
-.pd-remark::placeholder { color: #94a3b8; }
-.pd-char {
-  margin-top: 4px;
-  font-size: 11px;
-  color: #94a3b8;
-  text-align: right;
 }
 
-.pd-foot, .cd-foot {
+/* Footer */
+.dialog-footer {
+  padding: 16px 24px 20px;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 12px 18px 16px;
-  border-top: 1px solid #eef2f7;
-  background: #fcfdff;
-}
-.pd-btn {
-  min-width: 102px;
-  padding: 9px 18px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: .2px;
-  cursor: pointer;
-  transition: all .18s ease;
-  border: none;
-  line-height: 1;
-}
-.pd-btn--cancel {
-  background: #ffffff;
-  color: #475569;
-  border: 1px solid #dbe3ef;
-}
-.pd-btn--cancel:hover {
-  background: #f8fafc;
-  color: #0f172a;
-}
-.pd-btn--ok {
-  background: linear-gradient(180deg, #5b8cff 0%, #3f76f6 100%);
-  color: #ffffff;
-  box-shadow: 0 12px 26px rgba(63, 118, 246, .32);
-}
-.pd-btn--ok:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(63, 118, 246, .38);
-}
-.pd-btn--ok:disabled {
-  background: linear-gradient(180deg, #c9d7fb 0%, #b9ccfa 100%);
-  color: rgba(255, 255, 255, 0.9);
-  opacity: 1;
-  cursor: not-allowed;
-  box-shadow: none;
+  gap: 12px;
+  border-top: 1px solid var(--border-color);
+  background: #fafafa;
 }
 
-/* 二次确认弹框 */
-.cd-shell {
-  position: relative;
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
 }
-.cd-body {
-  padding: 20px 18px 12px;
+
+.btn-primary {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:disabled {
+  background-color: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  color: var(--text-main);
+}
+
+/* Confirm Dialog Specific */
+.confirm-content {
+  padding: 40px 32px 32px;
   text-align: center;
 }
-.cd-icon-wrap {
-  width: 42px;
-  height: 42px;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
+
+.confirm-status-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 10px;
 }
-.cd-kicker {
-  margin: 0 0 4px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: #3b82f6;
+
+.pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #eff6ff;
+  animation: pulse 2s infinite;
 }
-.cd-title {
-  font-size: 18px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 4px;
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.5; }
 }
-.cd-desc {
-  margin: 0 auto 12px;
-  max-width: 240px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #64748b;
-}
-.cd-price-show {
-  text-align: left;
-  border-radius: 20px;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
-  padding: 10px 12px;
-  margin-bottom: 8px;
-}
-.cd-price-label {
-  display: inline-block;
-  margin-bottom: 6px;
-  font-size: 10px;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  color: #2563eb;
-  font-weight: 700;
-}
-.cd-price-main {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.cd-price-val {
-  font-family: 'JetBrains Mono',monospace;
+
+.confirm-title {
   font-size: 20px;
-  line-height: 1;
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px;
 }
-.cd-price-unit {
-  font-size: 12px;
-  color: #64748b;
-  padding-bottom: 2px;
+
+.confirm-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
-.cd-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 18px;
+
+.confirm-preview-box {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.45;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.preview-item {
   text-align: left;
 }
-.cd-note__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-top: 5px;
-  background: #60a5fa;
-  flex-shrink: 0;
+
+.preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.preview-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.preview-value .val {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #2563eb !important;
+}
+
+.preview-value .unit {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.confirm-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fff7ed;
+  border-radius: 12px;
+  color: #9a3412;
+  font-size: 12px;
+  text-align: left;
+}
+
+.warn-icon {
+  font-size: 16px;
+  color: #ea580c;
+}
+
+.dialog-footer.is-confirm {
+  background: white;
+  border-top: none;
+  padding-top: 0;
+}
+
+.btn-primary.is-danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-primary.is-danger:hover {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+/* Animations */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.is-loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

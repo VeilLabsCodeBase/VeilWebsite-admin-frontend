@@ -25,6 +25,12 @@
             <div class="taskUploadList">
                 <div class="title">
                     <span>充值管理列表</span>
+                    <div class="title-actions">
+                        <el-button type="primary" plain @click="openExportDialog" :loading="exportLoading">
+                            <el-icon><Download /></el-icon>
+                            导出
+                        </el-button>
+                    </div>
                 </div>
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
@@ -101,10 +107,82 @@
                 </div>
             </template>
         </el-dialog>
+
+        <el-dialog
+            v-model="exportDialogVisible"
+            width="460"
+            destroy-on-close
+            :close-on-click-modal="!exportLoading"
+            :close-on-press-escape="!exportLoading"
+            :show-close="!exportLoading"
+            class="export-dialog"
+        >
+            <template #header>
+                <div class="export-header">
+                    <div class="export-header-icon">
+                        <el-icon><Download /></el-icon>
+                    </div>
+                    <div class="export-header-copy">
+                        <span>导出充值记录</span>
+                        <small>默认导出最近 3 个月已完成充值，可按充值类型筛选</small>
+                    </div>
+                </div>
+            </template>
+
+            <div class="export-dialog-content" v-loading="exportLoading">
+                <div class="export-banner">
+                    <el-icon><Calendar /></el-icon>
+                    <span>仅导出状态为已完成的充值记录，时间区间最多支持 3 个月。</span>
+                </div>
+
+                <div class="export-filter-card">
+                    <div class="export-field">
+                        <label>充值时间区间</label>
+                        <el-date-picker
+                            v-model="exportForm.timeRange"
+                            type="datetimerange"
+                            range-separator="至"
+                            start-placeholder="开始时间"
+                            end-placeholder="结束时间"
+                            format="YYYY-MM-DD HH:mm"
+                            value-format="YYYY-MM-DD HH:mm:ss"
+                            :clearable="false"
+                            @change="handleExportRangeChange"
+                            class="export-date-picker"
+                        />
+                        <p class="field-tip">默认当前时间倒推 3 个月，手动调整时跨度不能超过 3 个月。</p>
+                    </div>
+
+                    <div class="export-field">
+                        <label>充值类型</label>
+                        <el-select
+                            v-model="exportForm.depositType"
+                            placeholder="全部类型"
+                            clearable
+                            class="export-type-select"
+                        >
+                            <el-option label="钱包充值" value="WALLET" />
+                            <el-option label="资产包充值" value="ASSET_PACKAGE" />
+                        </el-select>
+                        <p class="field-tip">转账地址等于 `ASSET_PACKAGE` 视为资产包充值，其余视为钱包充值。</p>
+                    </div>
+                </div>
+            </div>
+
+            <template #footer>
+                <div class="dialog-footer export-footer">
+                    <el-button @click="closeExportDialog" :disabled="exportLoading">取消</el-button>
+                    <el-button type="primary" @click="submitExport" :loading="exportLoading">
+                        {{ exportLoading ? '导出中...' : '确定导出' }}
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup>
 import { ElMessage } from 'element-plus'
+import { Download, Calendar } from '@element-plus/icons-vue'
 import {
     _SessionCache
 } from '@/utils/cache'
@@ -121,6 +199,14 @@ const dialogVisible = ref(false)
 const tableData = ref()
 const rowData = ref('')
 const dialogForm = reactive({})
+const MAX_EXPORT_RANGE_MONTHS = 3
+const exportDialogVisible = ref(false)
+const exportLoading = ref(false)
+const exportForm = reactive({
+    timeRange: [],
+    depositType: ''
+})
+const lastValidExportRange = ref([])
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
@@ -130,6 +216,24 @@ const _Api = inject('$api')
 const pageSize = ref(8)
 const currentPage = ref(1)
 const loading = ref(false)
+
+const padDateTime = value => String(value).padStart(2, '0')
+const formatExportDateTime = date => `${date.getFullYear()}-${padDateTime(date.getMonth() + 1)}-${padDateTime(date.getDate())} ${padDateTime(date.getHours())}:${padDateTime(date.getMinutes())}:00`
+const getDefaultExportRange = () => {
+    const end = new Date()
+    const start = new Date(end)
+    start.setMonth(start.getMonth() - MAX_EXPORT_RANGE_MONTHS)
+    return [formatExportDateTime(start), formatExportDateTime(end)]
+}
+const isExportRangeExceeded = (range) => {
+    if (!range || range.length !== 2) return false
+    const start = new Date(range[0])
+    const end = new Date(range[1])
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return false
+    const maxEnd = new Date(start)
+    maxEnd.setMonth(maxEnd.getMonth() + MAX_EXPORT_RANGE_MONTHS)
+    return end.getTime() > maxEnd.getTime()
+}
 
 const getTableData = async (page) => {
     loading.value = true
@@ -216,6 +320,96 @@ const copyTxHash = (txHash) => {
         ElMessage.error('复制失败')
     })
 }
+
+const openExportDialog = () => {
+    const defaultRange = getDefaultExportRange()
+    exportForm.timeRange = [...defaultRange]
+    exportForm.depositType = ''
+    lastValidExportRange.value = [...defaultRange]
+    exportDialogVisible.value = true
+}
+
+const closeExportDialog = () => {
+    if (exportLoading.value) return
+    exportDialogVisible.value = false
+}
+
+const handleExportRangeChange = (value) => {
+    if (!value || value.length !== 2) {
+        const defaultRange = getDefaultExportRange()
+        exportForm.timeRange = [...defaultRange]
+        lastValidExportRange.value = [...defaultRange]
+        return
+    }
+    if (isExportRangeExceeded(value)) {
+        ElMessage.warning('充值时间区间最多只能选择 3 个月')
+        exportForm.timeRange = [...lastValidExportRange.value]
+        return
+    }
+    lastValidExportRange.value = [...value]
+}
+
+const parseExportError = async (error) => {
+    const blob = error?.response?.data
+    if (!(blob instanceof Blob)) return null
+    try {
+        const text = await blob.text()
+        const json = JSON.parse(text)
+        return json?.message || null
+    } catch (e) {
+        return null
+    }
+}
+
+const submitExport = async () => {
+    if (!exportForm.timeRange || exportForm.timeRange.length !== 2) {
+        const defaultRange = getDefaultExportRange()
+        exportForm.timeRange = [...defaultRange]
+        lastValidExportRange.value = [...defaultRange]
+    }
+    if (isExportRangeExceeded(exportForm.timeRange)) {
+        ElMessage.warning('充值时间区间最多只能选择 3 个月')
+        return
+    }
+    exportLoading.value = true
+    try {
+        const payload = {
+            startTime: exportForm.timeRange[0],
+            endTime: exportForm.timeRange[1]
+        }
+        if (exportForm.depositType) {
+            payload.depositType = exportForm.depositType
+        }
+        const blob = await _Api._depositExport(payload)
+        const downloadBlob = blob instanceof Blob
+            ? blob
+            : new Blob([blob], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            })
+        const now = new Date()
+        const pad = n => String(n).padStart(2, '0')
+        const fileName = `deposit-export-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.xlsx`
+        const url = window.URL.createObjectURL(downloadBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        exportDialogVisible.value = false
+        ElMessage.success('充值记录导出成功')
+    } catch (error) {
+        const exportError = await parseExportError(error)
+        if (exportError) {
+            ElMessage.error(exportError)
+        } else {
+            handleApiError(error, '充值记录导出失败')
+        }
+    } finally {
+        exportLoading.value = false
+    }
+}
 </script>
 <style lang="scss" scoped>
 .batchUpload {
@@ -262,6 +456,12 @@ const copyTxHash = (txHash) => {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+
+                .title-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
 
                 p {
                     color: red;
@@ -330,6 +530,107 @@ const copyTxHash = (txHash) => {
             font-size: 0.16rem;
             color: #67C23A;
         }
+    }
+
+    .export-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+
+        .export-header-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+            color: #409EFF;
+            flex-shrink: 0;
+
+            .el-icon {
+                font-size: 16px;
+            }
+        }
+
+        .export-header-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+
+            small {
+                font-size: 11px;
+                color: #8c9aad;
+                font-weight: 400;
+                line-height: 1.4;
+            }
+        }
+    }
+
+    .export-dialog-content {
+        padding: 2px 0 0;
+
+        .export-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            margin-bottom: 12px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #eff8ff 0%, #f8fbff 100%);
+            border: 1px solid #d9ecff;
+            color: #4f647f;
+            font-size: 11px;
+
+            .el-icon {
+                color: #409EFF;
+                font-size: 14px;
+                flex-shrink: 0;
+            }
+        }
+
+        .export-filter-card {
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e8edf5;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        .export-field + .export-field {
+            margin-top: 14px;
+        }
+
+        .export-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #24364d;
+            }
+
+            .field-tip {
+                margin: 0;
+                font-size: 10px;
+                line-height: 1.45;
+                color: #8b97aa;
+            }
+        }
+
+        .export-date-picker,
+        .export-type-select {
+            width: 100%;
+        }
+    }
+
+    .export-footer {
+        padding-top: 4px;
     }
 }
 </style>

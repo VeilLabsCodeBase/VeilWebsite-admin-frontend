@@ -1,3 +1,4 @@
+import axios from '@/utils/axios'
 import { _Request } from '../utils/request'
 
 // 全局接口
@@ -5,6 +6,7 @@ export const _upLogin = data => _Request('/admin/login', data) //登陆
 export const _userList = data => _Request('/admin/user/list', data) //用户列表
 export const _depositList = data => _Request('/admin/deposit/list', data, 'get') //充值列表
 export const _depositUpdate = data => _Request('/admin/deposit/update', data) //更新充值信息
+export const _depositExport = data => axios.post('/admin/deposit/export', data, { responseType: 'blob' }) //充值记录导出
 export const _stakingRecordsList = data => _Request('/admin/deposit/staking-records', data, 'get') //质押记录列表
 export const _stakingRecordDetail = id => _Request(`/admin/deposit/staking-records/${id}`, {}, 'get') //质押记录详情
 export const _stakingRecordUpdate = data => _Request('/admin/deposit/staking-records/update', data, 'post') //修改质押记录
@@ -54,6 +56,7 @@ export const _BatchAuditSubmit = () => _Request('/admin/withdraw/batch-audit/sub
 export const _BatchAuditStatus = batchId => _Request('/admin/withdraw/batch-audit/status/' + batchId, {}, 'get') //批量审核轮询状态
 export const _WithdrawAutoAuditConfig = () => _Request('/admin/withdraw/auto-audit-config', {}, 'get') //提现自动审核配置
 export const _WithdrawAutoAuditConfigUpdate = data => _Request('/admin/withdraw/auto-audit-config', data) //更新提现自动审核配置
+export const _WithdrawExport = data => axios.post('/admin/user/withdraw/export', data, { responseType: 'blob' }) //提现记录导出
 
 // 积分价格管理
 export const _TokenPointPriceCreate = data => _Request('/admin/token-point-price/create', data) //设置新积分价格
@@ -66,6 +69,7 @@ export const _GlobalApi = {
     _userList,
     _depositList,
     _depositUpdate,
+    _depositExport,
     _stakingRecordsList,
     _stakingRecordDetail,
     _stakingRecordUpdate,
@@ -112,6 +116,7 @@ export const _GlobalApi = {
     _BatchAuditStatus,
     _WithdrawAutoAuditConfig,
     _WithdrawAutoAuditConfigUpdate,
+    _WithdrawExport,
     _TokenPointPriceCreate,
     _TokenPointPriceCurrent,
     _TokenPointPriceHistory,
