@@ -4,7 +4,7 @@
             <el-form :inline="true" :model="formValue" class="demo-form-inline filter-form">
                 <el-form-item label="用户ID">
                     <el-input v-model="formValue.userId" placeholder="用户ID" clearable style="width: 90px"
-                              @input="handleUserIdInput" />
+                        @input="handleUserIdInput" />
                 </el-form-item>
                 <el-form-item label="用户名">
                     <el-input v-model="formValue.username" placeholder="用户名" clearable style="width: 110px" />
@@ -27,7 +27,9 @@
                     <span>充值管理列表</span>
                     <div class="title-actions">
                         <el-button type="primary" plain @click="openExportDialog" :loading="exportLoading">
-                            <el-icon><Download /></el-icon>
+                            <el-icon>
+                                <Download />
+                            </el-icon>
                             导出
                         </el-button>
                     </div>
@@ -35,7 +37,7 @@
                 <div class="list">
                     <el-table :data="tableData?.records" border style="width: 100%" height="100%" v-loading="loading">
                         <el-table-column prop="id" label="id" min-width="70" show-overflow-tooltip />
-                        <el-table-column prop="userId" label="用户id" min-width="90" show-overflow-tooltip />
+                        <el-table-column prop="userId" label="用户ID" min-width="90" show-overflow-tooltip />
                         <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
                         <el-table-column prop="role" label="角色" min-width="110" show-overflow-tooltip />
                         <el-table-column prop="userStatus" label="用户状态" min-width="120" show-overflow-tooltip />
@@ -49,8 +51,9 @@
                         <el-table-column prop="fromAddr" label="转账地址" min-width="260" show-overflow-tooltip />
                         <el-table-column prop="transactionHash" label="交易Hash" min-width="350" show-overflow-tooltip>
                             <template #default="{ row }">
-                                <span v-if="row.transactionHash" style="font-family: monospace; color: #409EFF; cursor: pointer;" 
-                                      @click="copyTxHash(row.transactionHash)" :title="row.transactionHash">
+                                <span v-if="row.transactionHash"
+                                    style="font-family: monospace; color: #409EFF; cursor: pointer;"
+                                    @click="copyTxHash(row.transactionHash)" :title="row.transactionHash">
                                     {{ row.transactionHash }}
                                 </span>
                                 <span v-else style="color: #909399;">-</span>
@@ -108,19 +111,14 @@
             </template>
         </el-dialog>
 
-        <el-dialog
-            v-model="exportDialogVisible"
-            width="460"
-            destroy-on-close
-            :close-on-click-modal="!exportLoading"
-            :close-on-press-escape="!exportLoading"
-            :show-close="!exportLoading"
-            class="export-dialog"
-        >
+        <el-dialog v-model="exportDialogVisible" width="460" destroy-on-close :close-on-click-modal="!exportLoading"
+            :close-on-press-escape="!exportLoading" :show-close="!exportLoading" class="export-dialog">
             <template #header>
                 <div class="export-header">
                     <div class="export-header-icon">
-                        <el-icon><Download /></el-icon>
+                        <el-icon>
+                            <Download />
+                        </el-icon>
                     </div>
                     <div class="export-header-copy">
                         <span>导出充值记录</span>
@@ -131,40 +129,37 @@
 
             <div class="export-dialog-content" v-loading="exportLoading">
                 <div class="export-banner">
-                    <el-icon><Calendar /></el-icon>
+                    <el-icon>
+                        <Calendar />
+                    </el-icon>
                     <span>仅导出状态为已完成的充值记录，时间区间最多支持 3 个月。</span>
                 </div>
 
                 <div class="export-filter-card">
                     <div class="export-field">
+                        <label>用户ID</label>
+                        <el-input v-model="exportForm.userIds" placeholder="多个用户ID请用英文逗号分隔，如 1001,1002"
+                            class="export-userids-input" @input="handleExportUserIdsInput" />
+                        <p v-if="exportUserIdsError" class="field-tip is-error">{{ exportUserIdsError }}</p>
+                        <p v-else class="field-tip">仅支持数字和英文逗号，多个用户ID用英文逗号分隔。</p>
+                    </div>
+
+                    <div class="export-field">
                         <label>充值时间区间</label>
-                        <el-date-picker
-                            v-model="exportForm.timeRange"
-                            type="datetimerange"
-                            range-separator="至"
-                            start-placeholder="开始时间"
-                            end-placeholder="结束时间"
-                            format="YYYY-MM-DD HH:mm"
-                            value-format="YYYY-MM-DD HH:mm:ss"
-                            :clearable="false"
-                            @change="handleExportRangeChange"
-                            class="export-date-picker"
-                        />
+                        <el-date-picker v-model="exportForm.timeRange" type="datetimerange" range-separator="至"
+                            start-placeholder="开始时间" end-placeholder="结束时间" format="YYYY-MM-DD HH:mm"
+                            value-format="YYYY-MM-DD HH:mm:ss" :clearable="false" @change="handleExportRangeChange"
+                            class="export-date-picker" />
                         <p class="field-tip">默认当前时间倒推 3 个月，手动调整时跨度不能超过 3 个月。</p>
                     </div>
 
                     <div class="export-field">
                         <label>充值类型</label>
-                        <el-select
-                            v-model="exportForm.depositType"
-                            placeholder="全部类型"
-                            clearable
-                            class="export-type-select"
-                        >
+                        <el-select v-model="exportForm.depositType" placeholder="全部类型" clearable
+                            class="export-type-select">
                             <el-option label="钱包充值" value="WALLET" />
                             <el-option label="资产包充值" value="ASSET_PACKAGE" />
                         </el-select>
-                        <p class="field-tip">转账地址等于 `ASSET_PACKAGE` 视为资产包充值，其余视为钱包充值。</p>
                     </div>
                 </div>
             </div>
@@ -203,10 +198,12 @@ const MAX_EXPORT_RANGE_MONTHS = 3
 const exportDialogVisible = ref(false)
 const exportLoading = ref(false)
 const exportForm = reactive({
+    userIds: '',
     timeRange: [],
     depositType: ''
 })
 const lastValidExportRange = ref([])
+const exportUserIdsError = ref('')
 const showDialog = (index, row) => {
     dialogVisible.value = true;
     rowData.value = row
@@ -323,9 +320,11 @@ const copyTxHash = (txHash) => {
 
 const openExportDialog = () => {
     const defaultRange = getDefaultExportRange()
+    exportForm.userIds = ''
     exportForm.timeRange = [...defaultRange]
     exportForm.depositType = ''
     lastValidExportRange.value = [...defaultRange]
+    exportUserIdsError.value = ''
     exportDialogVisible.value = true
 }
 
@@ -349,6 +348,43 @@ const handleExportRangeChange = (value) => {
     lastValidExportRange.value = [...value]
 }
 
+const normalizeExportUserIds = (value) => {
+    const source = String(value ?? '')
+    const normalizedSource = source
+        .replace(/，/g, ',')
+        .replace(/\s+/g, '')
+    const sanitized = normalizedSource
+        .replace(/[^\d,]/g, '')
+        .replace(/,{2,}/g, ',')
+        .replace(/^,+/g, '')
+    return {
+        sanitized,
+        hadInvalid: sanitized !== normalizedSource
+    }
+}
+
+const parseExportUserIds = (value) => {
+    const normalized = String(value ?? '')
+        .replace(/，/g, ',')
+        .replace(/\s+/g, '')
+        .trim()
+    if (!normalized) {
+        return []
+    }
+    if (!/^\d+(,\d+)*$/.test(normalized)) {
+        return null
+    }
+    return normalized.split(',').map(item => item.trim()).filter(Boolean)
+}
+
+const handleExportUserIdsInput = (value) => {
+    const { sanitized, hadInvalid } = normalizeExportUserIds(value)
+    exportForm.userIds = sanitized
+    exportUserIdsError.value = hadInvalid
+        ? '仅支持数字和英文逗号，多个用户ID请用英文逗号分隔'
+        : ''
+}
+
 const parseExportError = async (error) => {
     const blob = error?.response?.data
     if (!(blob instanceof Blob)) return null
@@ -362,6 +398,13 @@ const parseExportError = async (error) => {
 }
 
 const submitExport = async () => {
+    const parsedUserIds = parseExportUserIds(exportForm.userIds)
+    if (parsedUserIds === null) {
+        exportUserIdsError.value = '仅支持数字和英文逗号，多个用户ID请用英文逗号分隔'
+        ElMessage.warning('用户ID格式不正确，请使用英文逗号分隔多个数字ID')
+        return
+    }
+    exportUserIdsError.value = ''
     if (!exportForm.timeRange || exportForm.timeRange.length !== 2) {
         const defaultRange = getDefaultExportRange()
         exportForm.timeRange = [...defaultRange]
@@ -376,6 +419,9 @@ const submitExport = async () => {
         const payload = {
             startTime: exportForm.timeRange[0],
             endTime: exportForm.timeRange[1]
+        }
+        if (parsedUserIds.length) {
+            payload.userIds = parsedUserIds.join(',')
         }
         if (exportForm.depositType) {
             payload.depositType = exportForm.depositType
@@ -600,7 +646,7 @@ const submitExport = async () => {
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
-        .export-field + .export-field {
+        .export-field+.export-field {
             margin-top: 14px;
         }
 
@@ -624,8 +670,13 @@ const submitExport = async () => {
         }
 
         .export-date-picker,
-        .export-type-select {
+        .export-type-select,
+        .export-userids-input {
             width: 100%;
+        }
+
+        .field-tip.is-error {
+            color: #f56c6c;
         }
     }
 

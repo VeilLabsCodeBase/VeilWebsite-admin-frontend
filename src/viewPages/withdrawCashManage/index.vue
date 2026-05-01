@@ -516,6 +516,18 @@
 
                 <div class="export-filter-card">
                     <div class="export-field">
+                        <label>用户ID</label>
+                        <el-input
+                            v-model="exportForm.userIds"
+                            placeholder="多个用户ID请用英文逗号分隔，如 1001,1002"
+                            class="export-userids-input"
+                            @input="handleExportUserIdsInput"
+                        />
+                        <p v-if="exportUserIdsError" class="field-tip is-error">{{ exportUserIdsError }}</p>
+                        <p v-else class="field-tip">仅支持数字和英文逗号，多个用户ID用英文逗号分隔。</p>
+                    </div>
+
+                    <div class="export-field">
                         <label>提现时间区间</label>
                         <el-date-picker
                             v-model="exportForm.timeRange"
@@ -822,10 +834,12 @@ const MAX_EXPORT_RANGE_MONTHS = 3
 const exportDialogVisible = ref(false)
 const exportLoading = ref(false)
 const exportForm = reactive({
+    userIds: '',
     timeRange: [],
     status: ''
 })
 const lastValidExportRange = ref([])
+const exportUserIdsError = ref('')
 
 const padDateTime = value => String(value).padStart(2, '0')
 const formatExportDateTime = date => `${date.getFullYear()}-${padDateTime(date.getMonth() + 1)}-${padDateTime(date.getDate())} ${padDateTime(date.getHours())}:${padDateTime(date.getMinutes())}:00`
@@ -864,9 +878,11 @@ const handleBatchAudit = async () => {
 
 const openExportDialog = () => {
     const defaultRange = getDefaultExportRange()
+    exportForm.userIds = ''
     exportForm.timeRange = [...defaultRange]
     exportForm.status = ''
     lastValidExportRange.value = [...defaultRange]
+    exportUserIdsError.value = ''
     exportDialogVisible.value = true
 }
 
@@ -890,6 +906,43 @@ const handleExportRangeChange = (value) => {
     lastValidExportRange.value = [...value]
 }
 
+const normalizeExportUserIds = (value) => {
+    const source = String(value ?? '')
+    const normalizedSource = source
+        .replace(/，/g, ',')
+        .replace(/\s+/g, '')
+    const sanitized = normalizedSource
+        .replace(/[^\d,]/g, '')
+        .replace(/,{2,}/g, ',')
+        .replace(/^,+/g, '')
+    return {
+        sanitized,
+        hadInvalid: sanitized !== normalizedSource
+    }
+}
+
+const parseExportUserIds = (value) => {
+    const normalized = String(value ?? '')
+        .replace(/，/g, ',')
+        .replace(/\s+/g, '')
+        .trim()
+    if (!normalized) {
+        return []
+    }
+    if (!/^\d+(,\d+)*$/.test(normalized)) {
+        return null
+    }
+    return normalized.split(',').map(item => item.trim()).filter(Boolean)
+}
+
+const handleExportUserIdsInput = (value) => {
+    const { sanitized, hadInvalid } = normalizeExportUserIds(value)
+    exportForm.userIds = sanitized
+    exportUserIdsError.value = hadInvalid
+        ? '仅支持数字和英文逗号，多个用户ID请用英文逗号分隔'
+        : ''
+}
+
 const parseExportError = async (error) => {
     const blob = error?.response?.data
     if (!(blob instanceof Blob)) return null
@@ -903,6 +956,13 @@ const parseExportError = async (error) => {
 }
 
 const submitExport = async () => {
+    const parsedUserIds = parseExportUserIds(exportForm.userIds)
+    if (parsedUserIds === null) {
+        exportUserIdsError.value = '仅支持数字和英文逗号，多个用户ID请用英文逗号分隔'
+        ElMessage.warning('用户ID格式不正确，请使用英文逗号分隔多个数字ID')
+        return
+    }
+    exportUserIdsError.value = ''
     if (!exportForm.timeRange || exportForm.timeRange.length !== 2) {
         const defaultRange = getDefaultExportRange()
         exportForm.timeRange = [...defaultRange]
@@ -915,6 +975,9 @@ const submitExport = async () => {
     exportLoading.value = true
     try {
         const payload = {}
+        if (parsedUserIds.length) {
+            payload.userIds = parsedUserIds.join(',')
+        }
         payload.startTime = exportForm.timeRange[0]
         payload.endTime = exportForm.timeRange[1]
         if (exportForm.status) {
@@ -1582,8 +1645,13 @@ onUnmounted(() => {
         }
 
         .export-date-picker,
-        .export-status-select {
+        .export-status-select,
+        .export-userids-input {
             width: 100%;
+        }
+
+        .field-tip.is-error {
+            color: #f56c6c;
         }
     }
 
