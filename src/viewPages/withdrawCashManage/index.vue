@@ -539,6 +539,8 @@
                             value-format="YYYY-MM-DD HH:mm:ss"
                             :clearable="false"
                             @change="handleExportRangeChange"
+                            placement="top-start"
+                            popper-class="export-date-range-popper"
                             class="export-date-picker"
                         />
                         <p class="field-tip">默认当前时间倒推 3 个月，手动调整时跨度不能超过 3 个月。</p>
@@ -2039,6 +2041,53 @@ onUnmounted(() => {
             strong { color: #c45e1a; font-size: 13px; }
         }
 
+    }
+}
+
+:global(.export-date-range-popper) {
+    .el-picker-panel {
+        font-size: 12px;
+    }
+
+    .el-date-range-picker__content {
+        width: 280px;
+        padding: 8px 10px;
+    }
+
+    .el-date-range-picker__header {
+        margin-bottom: 8px;
+
+        div {
+            font-size: 15px;
+        }
+    }
+
+    .el-date-table th {
+        padding: 4px 0;
+        font-size: 12px;
+    }
+
+    .el-date-table td div {
+        height: 28px;
+        padding: 1px 0;
+    }
+
+    .el-date-table td span {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+    }
+
+    .el-time-panel {
+        width: 108px;
+    }
+
+    .el-time-spinner__wrapper {
+        max-height: 160px;
+    }
+
+    .el-picker-panel__footer {
+        padding: 6px 10px;
     }
 }
 </style>
