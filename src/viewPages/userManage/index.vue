@@ -97,11 +97,11 @@
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="userModelling.withdrawFrozen" label="提现状态" min-width="100"
+                        <el-table-column prop="userModelling.userFrozen" label="冻结状态" min-width="100"
                             show-overflow-tooltip>
                             <template #default="{ row }">
-                                <el-tag :type="getWithdrawFrozenStatus(row) ? 'danger' : 'success'">
-                                    {{ getWithdrawFrozenStatus(row) ? '已冻结' : '正常' }}
+                                <el-tag :type="getUserFrozenStatus(row) ? 'danger' : 'success'">
+                                    {{ getUserFrozenStatus(row) ? '已冻结' : '正常' }}
                                 </el-tag>
                             </template>
                         </el-table-column>
@@ -140,12 +140,12 @@
                                     <el-button link type="danger" v-if="scope.row.isCollaboratorNode"
                                         @click="showRemoveCollaboratorNodeDialog(scope.$index, scope.row)"
                                         :disabled="isAdminRow(scope.row)" size="small">解除共谋者节点</el-button>
-                                    <el-button link type="warning" v-if="!getWithdrawFrozenStatus(scope.row)"
+                                    <el-button link type="warning" v-if="!getUserFrozenStatus(scope.row)"
                                         @click="showFreezeWithdrawDialog(scope.$index, scope.row)"
-                                        :disabled="isAdminRow(scope.row)" size="small">冻结提现</el-button>
-                                    <el-button link type="success" v-if="getWithdrawFrozenStatus(scope.row)"
+                                        :disabled="isAdminRow(scope.row)" size="small">冻结用户</el-button>
+                                    <el-button link type="success" v-if="getUserFrozenStatus(scope.row)"
                                         @click="showUnfreezeWithdrawDialog(scope.$index, scope.row)"
-                                        :disabled="isAdminRow(scope.row)" size="small">解冻提现</el-button>
+                                        :disabled="isAdminRow(scope.row)" size="small">解冻用户</el-button>
                                     <el-button type="primary"
                                         @click="showTeamStakingDetailsDialog(scope.$index, scope.row)"
                                         :disabled="isAdminRow(scope.row)" size="small"
@@ -390,13 +390,13 @@
             </template>
         </el-dialog>
 
-        <!-- 冻结提现确认对话框 -->
-        <el-dialog v-model="freezeWithdrawDialogVisible" title="冻结提现" width="500" destroy-on-close>
+        <!-- 冻结用户确认对话框 -->
+        <el-dialog v-model="freezeWithdrawDialogVisible" title="冻结用户" width="500" destroy-on-close>
             <div v-if="currentFreezeWithdrawRow" class="freeze-withdraw-content">
                 <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
                         <p>确定要冻结用户 <strong>{{ currentFreezeWithdrawRow.username }}</strong> (ID: {{
-                            currentFreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                            currentFreezeWithdrawRow.userModelling?.userId }}) 吗？冻结后该用户无法登录、提现、产生或获取收益。</p>
                     </template>
                 </el-alert>
             </div>
@@ -408,13 +408,13 @@
             </template>
         </el-dialog>
 
-        <!-- 解冻提现确认对话框 -->
-        <el-dialog v-model="unfreezeWithdrawDialogVisible" title="解冻提现" width="500" destroy-on-close>
+        <!-- 解冻用户确认对话框 -->
+        <el-dialog v-model="unfreezeWithdrawDialogVisible" title="解冻用户" width="500" destroy-on-close>
             <div v-if="currentUnfreezeWithdrawRow" class="unfreeze-withdraw-content">
                 <el-alert title="确认操作" type="warning" :closable="false" show-icon>
                     <template #default>
                         <p>确定要解冻用户 <strong>{{ currentUnfreezeWithdrawRow.username }}</strong> (ID: {{
-                            currentUnfreezeWithdrawRow.userModelling?.userId }}) 的提现功能吗？</p>
+                            currentUnfreezeWithdrawRow.userModelling?.userId }}) 吗？</p>
                     </template>
                 </el-alert>
             </div>
@@ -868,7 +868,7 @@ const updateCommunityRoleConfirm = async () => {
     }
 }
 
-// 冻结提现相关
+// 冻结用户相关
 const freezeWithdrawDialogVisible = ref(false)
 const currentFreezeWithdrawRow = ref(null)
 
@@ -882,7 +882,7 @@ const confirmFreezeWithdraw = async () => {
         return
     }
     try {
-        const res = await _Api._freezeUserWithdraw({
+        const res = await _Api._freezeUser({
             userId: currentFreezeWithdrawRow.value.userModelling?.userId
         })
         if (res) {
@@ -901,7 +901,7 @@ const cancelFreezeWithdraw = () => {
     currentFreezeWithdrawRow.value = null
 }
 
-// 解冻提现相关
+// 解冻用户相关
 const unfreezeWithdrawDialogVisible = ref(false)
 const currentUnfreezeWithdrawRow = ref(null)
 
@@ -915,7 +915,7 @@ const confirmUnfreezeWithdraw = async () => {
         return
     }
     try {
-        const res = await _Api._unfreezeUserWithdraw({
+        const res = await _Api._unfreezeUser({
             userId: currentUnfreezeWithdrawRow.value.userModelling?.userId
         })
         if (res) {
@@ -945,9 +945,9 @@ const formatDateTime = (dateStr) => {
     return formatted || '-'
 }
 
-// 获取提现冻结状态（处理null/undefined情况）
-const getWithdrawFrozenStatus = (row) => {
-    return row?.userModelling?.withdrawFrozen === true
+// 获取用户冻结状态（处理null/undefined情况）
+const getUserFrozenStatus = (row) => {
+    return row?.userModelling?.userFrozen === true
 }
 
 // 团队质押详情相关
